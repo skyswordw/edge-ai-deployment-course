@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>端侧模型量化部署技术专题 | HTML 课件</title>
+    <link rel="stylesheet" href="/vendor/reveal/reveal.css" />
+    <link rel="stylesheet" href="/vendor/reveal/white.css" />
+    <style>
+      :root {
+        --course-ink: #10212b;
+        --course-muted: #52616b;
+        --course-line: #d9e4e8;
+        --course-teal: #137c8b;
+        --course-cobalt: #2356d7;
+        --course-amber: #d89024;
+      }
+
+      body {
+        background: #edf4f7;
+      }
+
+      .reveal {
+        color: var(--course-ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .reveal .slides {
+        text-align: left;
+      }
+
+      .reveal section {
+        box-sizing: border-box;
+        padding: 56px 72px;
+      }
+
+      .reveal h1,
+      .reveal h2,
+      .reveal p,
+      .reveal li,
+      .reveal div {
+        letter-spacing: 0;
+        font-family: inherit;
+      }
+
+      .reveal h1 {
+        color: var(--course-ink);
+        font-size: 66px;
+        line-height: 1.08;
+      }
+
+      .reveal h2 {
+        color: var(--course-ink);
+        font-size: 42px;
+        line-height: 1.16;
+      }
+
+      .reveal p,
+      .reveal li {
+        color: #334955;
+        font-size: 24px;
+        line-height: 1.5;
+      }
+
+      .cover,
+      .divider,
+      .close {
+        min-height: 720px;
+        background:
+          linear-gradient(90deg, rgba(247, 251, 253, 0.98) 0%, rgba(247, 251, 253, 0.88) 44%, rgba(247, 251, 253, 0.1) 70%),
+          url('/img/edge-ai-course-hero.png') center right / cover no-repeat;
+      }
+
+      .cover h1 {
+        max-width: 760px;
+        margin: 34px 0 0;
+      }
+
+      .cover-copy {
+        max-width: 700px;
+        margin-top: 28px;
+      }
+
+      .cover-meta {
+        display: flex;
+        gap: 12px;
+        margin-top: 42px;
+      }
+
+      .cover-meta span {
+        padding: 10px 16px;
+        border: 1px solid var(--course-line);
+        border-radius: 999px;
+        color: var(--course-ink);
+        background: rgba(255, 255, 255, 0.78);
+        font-size: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 22px;
+        color: var(--course-teal) !important;
+        font-size: 18px !important;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .agenda,
+      .objective,
+      .content,
+      .takeaway {
+        min-height: 720px;
+        background: #fbfdfe;
+      }
+
+      .agenda ol {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin: 34px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .agenda li {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        gap: 16px;
+        align-items: center;
+        padding: 18px 20px;
+        border: 1px solid var(--course-line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .agenda li span {
+        color: var(--course-amber);
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .agenda li strong {
+        color: var(--course-ink);
+        font-size: 21px;
+      }
+
+      .agenda li em {
+        color: var(--course-muted);
+        font-size: 17px;
+        font-style: normal;
+      }
+
+      .divider h2,
+      .close h2 {
+        max-width: 760px;
+        margin-top: 140px;
+      }
+
+      .divider span {
+        color: var(--course-amber);
+        font-size: 40px;
+        font-weight: 800;
+      }
+
+      .divider p {
+        margin-top: 28px;
+        color: var(--course-teal);
+        font-weight: 700;
+      }
+
+      .objective p:last-child {
+        max-width: 980px;
+        margin-top: 36px;
+        color: #273f4b;
+        font-size: 30px;
+        line-height: 1.55;
+      }
+
+      .content ul {
+        display: grid;
+        gap: 24px;
+        margin-top: 34px;
+        padding-left: 28px;
+      }
+
+      .content li {
+        max-width: 1060px;
+      }
+
+      .takeaway-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 42px;
+      }
+
+      .takeaway-grid div {
+        min-height: 188px;
+        padding: 26px;
+        border: 1px solid var(--course-line);
+        border-radius: 8px;
+        color: var(--course-ink);
+        background: #fff;
+        font-size: 24px;
+        line-height: 1.45;
+      }
+
+      .close p:last-child {
+        max-width: 860px;
+        margin-top: 32px;
+        font-size: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section class="cover">
+          <p class="eyebrow">Edge AI Deployment Course</p>
+          <h1>端侧模型量化部署技术专题</h1>
+          <p class="cover-copy">从问题框架、量化方法、精度修复到真实设备部署链路</p>
+          <div class="cover-meta">
+            <span>8 个专题</span>
+            <span>全天课程</span>
+            <span>HTML slides</span>
+          </div>
+        </section>
+
+        <section class="agenda">
+          <h2>课程路径</h2>
+          <ol>
+            <li><span>01</span><strong>端侧部署问题框架</strong><em>09:00-09:30</em></li>
+            <li><span>02</span><strong>量化基础与 PTQ/QAT</strong><em>09:30-10:30</em></li>
+            <li><span>03</span><strong>大模型量化方法</strong><em>10:45-12:00</em></li>
+            <li><span>04</span><strong>量化精度修复</strong><em>13:30-14:25</em></li>
+            <li><span>05</span><strong>压缩与蒸馏</strong><em>14:25-15:10</em></li>
+            <li><span>06</span><strong>推理框架与部署链路</strong><em>15:25-16:10</em></li>
+            <li><span>07</span><strong>VLM 与 Agent 端侧形态</strong><em>16:10-16:45</em></li>
+            <li><span>08</span><strong>案例串联与 Q&A</strong><em>16:45-17:00</em></li>
+          </ol>
+        </section>
+
+        <section>
+          <section class="divider"><span>01</span><h2>专题一 端侧部署问题框架</h2><p>09:00-09:30</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题一 端侧部署问题框架</h2><p>帮助学员建立端侧模型部署的整体判断框架，理解端侧 AI 落地需要同时处理模型能力、设备资源、运行时框架、功耗散热、网络环境和产品体验之间的平衡。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>端侧部署问题框架</h2><ul><li>端侧推理重新受到重视，来自隐私、延迟、弱网、成本和个性化体验等约束。</li><li>典型场景包括手机、PC、车载、IoT、工业终端、摄像头和机器人。</li><li>评价维度包括精度、端到端延迟、首 token 延迟、内存峰值、KV Cache、功耗、发热和维护成本。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>端侧部署不是把云端模型直接搬到设备上运行。</div><div>量化、压缩、蒸馏和 runtime 选型都服务于业务可用目标。</div><div>判断部署成败要同时看精度、延迟、内存、功耗和维护成本。</div></div></section>
+        </section>
+
+        <section>
+          <section class="divider"><span>02</span><h2>专题二 量化基础与 PTQ/QAT</h2><p>09:30-10:30</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题二 量化基础与 PTQ/QAT</h2><p>帮助学员掌握模型量化的基本概念、误差来源和常见工程流程，理解权重量化、激活量化、KV Cache 量化和 weight-only / weight-activation quantization 的差异。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>量化基础与 PTQ/QAT</h2><ul><li>用更低精度表示权重、激活或推理缓存，降低存储、内存带宽和计算压力。</li><li>比较 FP32、FP16、BF16、INT8、INT4、NF4、FP8 等格式。</li><li>PTQ 适合快速验证，QAT 更稳但需要训练数据、训练资源和工程投入。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>不同数值格式和量化粒度会改变精度与性能平衡。</div><div>PTQ 优先服务快速验证，QAT 适合更高精度风险场景。</div><div>路线选择要看项目阶段、数据条件、训练资源和精度要求。</div></div></section>
+        </section>
+
+        <section>
+          <section class="divider"><span>03</span><h2>专题三 大模型量化方法</h2><p>10:45-12:00</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题三 大模型量化方法</h2><p>帮助学员理解 LLM 和 VLM 为什么需要区别于传统 INT8 PTQ/QAT 的大模型量化方法，掌握 GPTQ、AWQ、SmoothQuant、LLM.int8() 和 KV Cache 量化的基本思想。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>大模型量化方法</h2><ul><li>LLM 和 VLM 参数规模大，完整重新训练成本高，Transformer 存在 outlier、层敏感和长上下文 KV Cache 增长问题。</li><li>VLM 还涉及 vision encoder、projector 和多模态对齐链路。</li><li>GPTQ、AWQ、SmoothQuant、LLM.int8() 和 KV Cache 量化需要结合模型结构、校准样本和推理框架理解。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>大模型量化不是单纯降低 bit-width。</div><div>低比特策略要同时考虑 outlier、层敏感、上下文长度和框架支持。</div><div>VLM 量化要单独评估视觉编码器、多模态投影和对齐链路。</div></div></section>
+        </section>
+
+        <section>
+          <section class="divider"><span>04</span><h2>专题四 量化精度修复</h2><p>13:30-14:25</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题四 量化精度修复</h2><p>帮助学员掌握量化后精度下降的系统排查方法，能够从 baseline、数据预处理、模型导出、runtime 实现、校准数据、敏感层、outlier 和评估指标等角度定位问题。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>量化精度修复</h2><ul><li>精度下降可能表现为指标下降、生成质量变差、格式错误增多、VLM 细粒度识别退化或 Agent 规划不稳定。</li><li>问题可能来自 baseline、预处理后处理、模型导出、runtime 行为或评估指标。</li><li>修复手段包括校准集重构、敏感性分析、逐层回退、mixed precision、clipping、outlier 处理、QAT、LoRA、Adapter 或蒸馏。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>精度下降不一定来自量化算法本身。</div><div>先确认问题，再定位原因，最后选择修复手段。</div><div>所有修复都要回到目标设备重新 profiling。</div></div></section>
+        </section>
+
+        <section>
+          <section class="divider"><span>05</span><h2>专题五 压缩与蒸馏</h2><p>14:25-15:10</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题五 压缩与蒸馏</h2><p>帮助学员把视角从量化扩展到完整模型压缩体系，理解剪枝、低秩分解、参数共享、知识蒸馏、小模型训练和架构重设计如何共同服务于端侧部署。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>压缩与蒸馏</h2><ul><li>比较量化、剪枝、低秩分解、参数共享、知识蒸馏和架构重设计。</li><li>非结构化剪枝理论压缩率高，但未必带来真实端侧加速。</li><li>蒸馏既可以迁移大模型能力，也可以修复量化后的能力下降。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>非结构化剪枝未必带来真实端侧加速。</div><div>蒸馏可以用于能力迁移，也可以用于量化后补偿。</div><div>有时选择更端侧友好的模型，比压缩不合适的模型更有效。</div></div></section>
+        </section>
+
+        <section>
+          <section class="divider"><span>06</span><h2>专题六 推理框架与部署链路</h2><p>15:25-16:10</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题六 推理框架与部署链路</h2><p>帮助学员理解模型从训练环境走向端侧设备的完整部署链路，掌握推理框架选型的核心维度。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>推理框架与部署链路</h2><ul><li>部署链路包括模型导出、图优化、算子融合、layout 转换、量化转换、runtime 加载、kernel 选择和目标设备 profiling。</li><li>常见框架包括 ONNX Runtime、TensorRT、TFLite、NCNN、MNN、Core ML、llama.cpp、ExecuTorch 和厂商 NPU SDK。</li><li>unsupported op、量化算子缺失、dynamic shape 和 CPU fallback 都可能抵消量化收益。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>量化能否真正提速取决于目标设备、runtime、kernel 和 fallback 行为。</div><div>部署链路要覆盖导出、图优化、量化转换、加载和 profiling。</div><div>profiling 必须覆盖延迟、tokens/s、内存、功耗和 fallback log。</div></div></section>
+        </section>
+
+        <section>
+          <section class="divider"><span>07</span><h2>专题七 VLM 与 Agent 端侧形态</h2><p>16:10-16:45</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题七 VLM 与 Agent 端侧形态</h2><p>帮助学员理解 VLM 与 Agent 的端侧部署已经从单模型优化扩展到系统架构优化，区分 VLM 的感知理解链路和 Agent 的规划执行链路。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>VLM 与 Agent 端侧形态</h2><ul><li>VLM 链路包括图像预处理、vision encoder、projector、LLM、tokenizer、多轮上下文和输出后处理。</li><li>Agent 更关注 planner、tool registry、executor、memory、permission manager、safety policy 和交互循环。</li><li>端云协同让简单和隐私任务在端侧完成，让复杂 reasoning 和兜底能力交给云端。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>VLM 的瓶颈不只在 LLM。</div><div>Agent 的关键问题还包括工具链稳定性、权限边界、状态维护和失败恢复。</div><div>端云协同要按任务复杂度、隐私和兜底能力做 routing。</div></div></section>
+        </section>
+
+        <section>
+          <section class="divider"><span>08</span><h2>专题八 案例串联与 Q&A</h2><p>16:45-17:00</p></section>
+          <section class="objective"><p class="eyebrow">授课目标</p><h2>专题八 案例串联与 Q&A</h2><p>通过典型案例把全天内容串联起来，帮助学员把量化算法、精度修复、压缩蒸馏、推理框架选型和 VLM/Agent 部署形态整合为完整工程判断。</p></section>
+          <section class="content"><p class="eyebrow">核心内容</p><h2>案例串联与 Q&A</h2><ul><li>传统视觉模型案例关注 INT8 PTQ/QAT、结构化剪枝、TFLite/NCNN/MNN 和真实设备延迟。</li><li>小型 LLM 案例关注 AWQ/GPTQ、INT4、group size、KV Cache、first token latency、tokens/s 和本地 runtime。</li><li>VLM 与 Hybrid Agent 案例关注系统级部署、工具权限、任务 routing、状态管理和失败恢复。</li></ul></section>
+          <section class="takeaway"><p class="eyebrow">Takeaways</p><h2>这一节要带走什么</h2><div class="takeaway-grid"><div>案例复盘要覆盖目标定义、baseline、量化压缩、框架适配、profiling 到上线验证。</div><div>不同模型形态的优化路径不同，不能用同一套指标粗暴套用。</div><div>产品级系统设计需要同时处理模型、权限、routing、状态和失败恢复。</div></div></section>
+        </section>
+
+        <section class="close">
+          <p class="eyebrow">Wrap-up</p>
+          <h2>把单点优化放回部署系统</h2>
+          <p>端侧模型部署的最终判断，不是某个量化方法是否先进，而是模型在真实设备、真实 runtime、真实任务和真实产品约束下是否稳定可用。</p>
+        </section>
+      </div>
+    </div>
+    <script src="/vendor/reveal/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        hash: true,
+        center: false,
+        transition: 'slide',
+        width: 1280,
+        height: 720,
+        margin: 0.06
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+.launchPage {
+  min-height: calc(100vh - var(--ifm-navbar-height));
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+  background:
+    linear-gradient(90deg, rgba(247, 251, 253, 0.98) 0%, rgba(247, 251, 253, 0.84) 44%, rgba(247, 251, 253, 0.2) 72%),
+    url('/img/edge-ai-course-hero.png') center right / cover no-repeat;
+}
+
+.launchPanel {
+  width: min(760px, 100%);
+  margin-right: auto;
+  padding: 0 max(24px, calc((100vw - 1180px) / 2));
+}
+
+.launchPanel span {
+  color: var(--course-teal);
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.launchPanel h1 {
+  margin: 18px 0 0;
+  color: #10212b;
+  font-size: 54px;
+  line-height: 1.1;
+}
+
+.launchPanel p {
+  max-width: 620px;
+  margin: 24px 0 32px;
+  color: #40515b;
+  font-size: 19px;
+  line-height: 1.75;
+}
+
+.launchPanel div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media screen and (max-width: 996px) {
+  .launchPage {
+    place-items: start;
+    padding-top: 56px;
+  }
+
+  .launchPanel {
+    padding: 0;
+  }
+
+  .launchPanel h1 {
+    font-size: 38px;
+  }
+}
