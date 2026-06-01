@@ -49,6 +49,21 @@ flowchart TD
 | GPU offload | 有多少层放到 GPU | `-ngl`、VRAM 变化 |
 | 服务化 | API 是否稳定可调用 | local server、HTTP smoke test |
 
+## Runtime 选型地图
+
+| Runtime | 更适合 | 课程中的定位 |
+| --- | --- | --- |
+| llama.cpp | GGUF、本地 LLM、CPU/GPU 混合、本地 server | 本课程实作主线 |
+| ONNX Runtime | 跨平台传统模型和部分 Transformer 部署 | 理解通用部署链路 |
+| TensorRT | NVIDIA GPU 上高性能推理 | 深入 NVIDIA 部署优化 |
+| TensorRT-LLM | NVIDIA GPU 上 LLM 服务化优化 | 后续高级路线 |
+| TensorFlow Lite | 移动端和嵌入式模型 | 传统端侧路线 |
+| ExecuTorch | PyTorch 模型端侧部署 | PyTorch 生态端侧路线 |
+| Core ML | Apple 设备 | iOS/macOS 部署 |
+| MLC LLM | 跨平台 LLM 编译部署 | 移动端/浏览器/多后端探索 |
+
+选型时不要先问“哪个框架最快”，而要先问目标设备、模型类型、低比特格式、算子覆盖、调试能力和团队维护成本。
+
 ## 代码/命令示例
 
 llama.cpp 当前推荐使用 CMake 构建。NVIDIA GPU 路径可开启 CUDA 后端：
@@ -101,3 +116,8 @@ cmake --build build --config Release -j
 - [llama.cpp build docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
+- [ONNX Runtime documentation](https://onnxruntime.ai/docs/)
+- [TensorRT documentation](https://docs.nvidia.com/deeplearning/tensorrt/latest/)
+- [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)
+- [ExecuTorch documentation](https://pytorch.org/executorch/stable/)
+- [MLC LLM documentation](https://llm.mlc.ai/docs/)

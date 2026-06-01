@@ -40,6 +40,18 @@ flowchart TD
 | 输出质量 | 是否满足任务 | 固定 prompt + 备注 |
 | 失败日志 | fallback、OOM、格式错误 | 保存原始日志 |
 
+## 实验设计
+
+为了让结果可比较，profiling 至少分三组：
+
+| 实验 | 固定变量 | 改变变量 | 观察重点 |
+| --- | --- | --- | --- |
+| 量化格式对比 | 模型基座、prompt、ctx、`-ngl` | Q8/Q5/Q4 | 文件、显存、速度、质量 |
+| 上下文长度对比 | 模型文件、prompt、`-ngl` | ctx 1024/2048/4096 | KV Cache 和首 token |
+| 服务化 smoke test | 模型文件、ctx、采样参数 | CLI vs server | API 可用性和额外开销 |
+
+如果有时间，可以加 `llama-bench` 作为更标准化的 benchmark，但课堂主线仍以“业务 prompt + 日志记录”为主，因为最终要回答模型是否满足实际任务。
+
 ## 代码/命令示例
 
 运行时用另一窗口观察显存：
@@ -52,6 +64,16 @@ watch -n 0.5 nvidia-smi
 
 ```bash
 cp labs/templates/profiling-results.md ~/edge-ai-lab/results/profiling-results.md
+```
+
+可选：使用 llama.cpp 自带 benchmark 工具做补充记录：
+
+```bash
+./build/bin/llama-bench \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  -ngl 99 \
+  -p 512 \
+  -n 128
 ```
 
 ## 配套实作
@@ -81,4 +103,7 @@ cp labs/templates/profiling-results.md ~/edge-ai-lab/results/profiling-results.m
 ## 参考资料
 
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [llama.cpp llama-bench](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)

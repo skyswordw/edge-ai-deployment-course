@@ -48,6 +48,27 @@ flowchart LR
 | LLM.int8() | 对 outlier 做特殊处理的 8-bit 矩阵乘 | 适合保持较高精度的低风险压缩 |
 | KV Cache 量化 | 降低长上下文生成时 cache 占用 | 适合多轮对话、长文本、RAG 场景 |
 
+## 方法对比
+
+| 维度 | GPTQ | AWQ | SmoothQuant | LLM.int8() | GGUF 量化 |
+| --- | --- | --- | --- | --- | --- |
+| 主要对象 | 权重 | 权重，结合激活敏感性 | 权重和激活范围迁移 | 矩阵乘和 outlier | llama.cpp 生态模型文件 |
+| 常见目标 | 低比特 weight-only | 低比特且尽量保质量 | W8A8 部署 | 8-bit 推理 | 本地 CPU/GPU 推理 |
+| 需要校准数据 | 通常需要 | 通常需要 | 需要 | 依实现而定 | 使用已有文件时不需要 |
+| 课程实作位置 | 方法理解 | 方法理解 | 方法理解 | 方法理解 | Qwen/llama.cpp 实作 |
+
+这张表不是为了给出绝对排名，而是提醒学习者：量化方法要和目标 runtime 绑定。论文里的方法成立，不代表目标设备上的 kernel、显存和服务化路径已经准备好。
+
+## KV Cache 专题
+
+LLM 推理的显存可以粗略拆成三块：
+
+- 模型权重：低比特 weight-only 主要压缩这一块。
+- 临时激活和 buffer：和实现、batch、kernel、图优化有关。
+- KV Cache：和层数、hidden size、上下文长度、batch/并发相关。
+
+当业务从单轮短问答变成长上下文、多轮对话或 RAG，KV Cache 会快速变成核心变量。后续 profiling 时要单独做 ctx-size 对比实验，不能只比较模型文件大小。
+
 ## 代码/命令示例
 
 使用 llama.cpp 跑同一个 prompt，先让不同量化模型的测试条件保持一致：
@@ -103,6 +124,8 @@ flowchart LR
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
 - [llama.cpp quantize README](https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md)
+- [Hugging Face Transformers KV cache](https://huggingface.co/docs/transformers/kv_cache)
+- [vLLM PagedAttention paper](https://arxiv.org/abs/2309.06180)
 - [GPTQ paper](https://arxiv.org/abs/2210.17323)
 - [AWQ paper](https://arxiv.org/abs/2306.00978)
 - [SmoothQuant paper](https://arxiv.org/abs/2211.10438)

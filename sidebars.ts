@@ -5,6 +5,20 @@ const sidebars: SidebarsConfig = {
     'intro',
     {
       type: 'category',
+      label: '前置知识',
+      collapsed: false,
+      items: [
+        'prerequisites',
+        'ml-inference-basics',
+        'transformer-llm-basics',
+        'quantization-math-basics',
+        'linux-gpu-toolchain',
+        'reference-map',
+        'similar-courses',
+      ],
+    },
+    {
+      type: 'category',
       label: '课程书主线',
       collapsed: false,
       items: [

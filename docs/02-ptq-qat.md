@@ -51,6 +51,19 @@ flowchart TD
 | Static PTQ | 预先用校准集估计激活范围 | 对校准数据分布敏感 |
 | Dynamic quantization | 运行时动态估计范围 | 简化校准，但 runtime 开销和支持度要验证 |
 
+## 方法路线
+
+PTQ 和 QAT 可以按项目阶段理解：
+
+| 阶段 | 推荐动作 | 证据来源 |
+| --- | --- | --- |
+| 快速可行性验证 | 先做 PTQ 或直接使用已有 GGUF/INT8 权重 | 文件大小、首轮质量、基础性能 |
+| 质量风险评估 | 构建固定校准集和评估集 | baseline 对比、失败样例 |
+| 低 bit 深入优化 | 调整 group size、mixed precision、敏感层策略 | per-layer 或 per-case 误差 |
+| 仍不达标 | 考虑 QAT、LoRA、蒸馏或换模型 | 训练预算、数据质量、业务阈值 |
+
+在传统视觉模型中，ONNX Runtime、TensorFlow Lite、TensorRT 等工具链通常会提供 PTQ/QAT 或 INT8 校准流程；在 LLM 中，常见路线更多是 weight-only、AWQ/GPTQ/GGUF 等低比特权重量化，再结合 runtime 支持判断真实收益。
+
 ## 代码/命令示例
 
 一个最小的线性量化示意，用来理解 scale 和 clipping，不用于生产部署：
@@ -93,6 +106,10 @@ print("abs error:", np.abs(x - x_hat))
 
 ## 参考资料
 
+- [PyTorch Quantization](https://pytorch.org/docs/stable/quantization.html)
+- [ONNX Runtime Quantization](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
+- [TensorFlow Lite post-training quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)
+- [Hugging Face Transformers quantization](https://huggingface.co/docs/transformers/quantization/overview)
 - [GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323)
 - [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438)
 - [LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale](https://arxiv.org/abs/2208.07339)
