@@ -74,6 +74,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'vlm-agent',
         'cases-qa',
+        'final-project',
         'reference-map',
         'similar-courses',
       ],

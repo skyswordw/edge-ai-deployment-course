@@ -4,90 +4,328 @@ title: VLM 与 Agent 端侧形态
 
 # VLM 与 Agent 端侧形态
 
+## 建议学时
+
+4 学时。
+
+建议拆成四段：
+
+| 时段 | 内容 | 课堂产出 |
+| --- | --- | --- |
+| 第 1 学时 | VLM 推理链路和端侧瓶颈 | VLM 组件拆解图 |
+| 第 2 学时 | Local Agent 的规划、工具和权限 | Agent 权限边界表 |
+| 第 3 学时 | 端云协同、多模型路由和 fallback | 端云协同架构草图 |
+| 第 4 学时 | VLM/Agent 案例评审 | 系统级风险清单 |
+
 ## 学习目标
 
 - 区分 VLM 的感知理解链路和 Agent 的规划执行链路。
-- 理解 VLM 端侧瓶颈不只在 LLM，还包括图像分辨率、视觉 token、projector 和多模态对齐。
-- 理解 Agent 的关键问题包括工具权限、状态管理、失败恢复和端云协同。
+- 理解 VLM 端侧瓶颈不只在 LLM，还包括图像分辨率、视觉 token、vision encoder、projector 和多模态对齐。
+- 理解 Agent 的关键问题包括工具权限、状态管理、失败恢复、本地数据边界和端云协同。
 - 能把单模型优化扩展到系统级部署判断。
+- 能判断哪些 VLM/Agent 能端侧化，哪些只能局部端侧化。
+- 能为最终项目报告写出 VLM/Agent 扩展路线，而不是只给概念性描述。
 
 ## 问题背景
 
-VLM 与 Agent 的端侧部署已经从单模型优化扩展到系统架构优化。VLM 要处理图像预处理、vision encoder、projector、LLM、tokenizer、多轮上下文和输出后处理；Agent 则包含 planner、tool registry、executor、memory、permission manager、safety policy 和交互循环。
+VLM 与 Agent 的端侧部署已经从单模型优化扩展到系统架构优化。
+
+VLM 要处理图像预处理、vision encoder、projector、LLM、tokenizer、多轮上下文和输出后处理。Agent 则包含 planner、tool registry、executor、memory、permission manager、safety policy 和交互循环。任何一个组件不稳定，系统就可能表现为“模型不好用”，但真实原因可能是输入、工具、权限、状态或 fallback 设计有问题。
 
 因此，端侧 VLM/Agent 的瓶颈不只是模型大小，还包括输入管线、工具链稳定性、权限边界、本地上下文、失败恢复和端云协同策略。
 
-## 图示讲解
+本章不要求学生从零训练 VLM 或完整 Agent。课程目标是建立系统设计能力：看见组件、识别瓶颈、定义边界、设计可验证的端侧路径。
+
+## VLM 端侧链路
+
+VLM 的一次推理通常比纯文本 LLM 多出视觉侧处理。
 
 ```mermaid
 flowchart LR
-  A[图像/视频输入] --> B[预处理]
-  B --> C[Vision Encoder]
-  C --> D[Projector]
-  D --> E[LLM]
-  E --> F[文本/结构化输出]
-  E --> G[KV Cache]
+  A["图像/视频输入"] --> B["预处理: resize/crop/normalize"]
+  B --> C["Vision Encoder"]
+  C --> D["Projector / Adapter"]
+  D --> E["LLM"]
+  E --> F["文本或结构化输出"]
+  E --> G["KV Cache"]
+  A --> H["图像元数据"]
+  H --> F
 ```
+
+每个环节都有端侧部署问题：
+
+| 环节 | 端侧风险 | 需要记录 |
+| --- | --- | --- |
+| 图像输入 | 分辨率过高、帧率过高、摄像头延迟 | 输入尺寸、帧率、预处理耗时 |
+| 预处理 | CPU 占用、内存复制、格式转换 | resize/crop 策略、数据格式 |
+| Vision Encoder | 算子支持、显存/内存占用 | 模型大小、runtime、推理耗时 |
+| Projector | 多模态对齐、精度敏感 | 是否量化、输出质量变化 |
+| LLM | KV Cache、低比特、首 token | ctx-size、tokens/s、质量样例 |
+| 输出后处理 | 格式不稳定、幻觉、坐标错误 | JSON 合法性、人工检查、失败样例 |
+
+## VLM 的端侧部署形态
+
+VLM 不一定要完整放在端侧。常见形态如下：
+
+| 形态 | 端侧运行 | 云端运行 | 适用场景 |
+| --- | --- | --- | --- |
+| 纯端侧 VLM | 视觉侧 + LLM | 无 | 隐私强、输入规模小、任务简单 |
+| 视觉端侧 + 云端 LLM | 图像预处理、视觉特征、OCR 初筛 | 复杂语言推理 | 图片含隐私但可上传脱敏文本 |
+| 端侧小 VLM + 云端兜底 | 快速识别、低风险问题 | 高难问题、长上下文 | 交互产品、巡检助手 |
+| 端侧检测 + LLM 解释 | 传统视觉模型 | 语言总结、原因分析 | 工业视觉、安防、设备巡检 |
+
+课程建议先从“拆分组件”开始，而不是直接追求完整本地 VLM。对很多产品来说，端侧视觉前处理和本地隐私过滤已经能产生价值。
+
+## VLM 量化与加速关注点
+
+VLM 量化不能只看语言模型部分。
+
+| 优化对象 | 常见方法 | 风险 |
+| --- | --- | --- |
+| Vision Encoder | INT8、TensorRT、ONNX、分辨率控制 | 小目标、OCR、空间关系下降 |
+| Projector | 保持高精度或谨慎量化 | 对齐质量下降，错误难以定位 |
+| LLM | GGUF、AWQ、GPTQ、KV Cache 控制 | 文本质量、长上下文、格式稳定性 |
+| 输入管线 | resize、batch、缓存、零拷贝 | 图像质量损失或工程复杂度上升 |
+| 输出约束 | JSON schema、规则校验、重试 | 延迟增加，错误恢复复杂 |
+
+如果 VLM 任务涉及 OCR、小目标、图表理解或空间关系，低比特量化后的质量下降可能比纯文本任务更难通过主观观察发现。课程要求保留失败样例。
+
+## Agent 系统链路
+
+Agent 的端侧部署更像一个受控系统，而不是一个单模型推理任务。
 
 ```mermaid
 flowchart TD
-  A[用户任务] --> B[Planner]
-  B --> C[Tool Registry]
-  C --> D[Executor]
-  D --> E[本地文件/系统/API]
-  D --> F[Memory]
-  F --> B
-  B --> G{复杂或高风险?}
-  G -- 是 --> H[云端大模型兜底]
-  G -- 否 --> I[端侧小模型执行]
+  A["用户任务"] --> B["输入解析"]
+  B --> C["Planner"]
+  C --> D["Tool Registry"]
+  D --> E["Permission Manager"]
+  E --> F{"工具是否允许?"}
+  F -- "否" --> G["拒绝/请求确认"]
+  F -- "是" --> H["Executor"]
+  H --> I["本地文件/系统/API"]
+  H --> J["Memory / State"]
+  J --> C
+  C --> K{"复杂或高风险?"}
+  K -- "是" --> L["云端大模型或人工确认"]
+  K -- "否" --> M["端侧小模型执行"]
+  L --> N["结果校验"]
+  M --> N
+  N --> O["返回用户"]
 ```
 
-## 核心概念
+Agent 端侧化的关键不是“模型会不会调用工具”，而是“工具调用是否可控、可回滚、可审计”。
 
-| 系统 | 主要瓶颈 | 量化关注点 |
-| --- | --- | --- |
-| VLM | 图像分辨率、视觉 token、projector、OCR、小目标 | 不能只量化 LLM，还要评估视觉链路 |
-| Local Agent | 工具调用稳定性、权限边界、状态维护 | 小模型可做轻任务，复杂 reasoning 需兜底 |
-| Hybrid Agent | routing、隐私、网络、失败恢复 | 端侧处理隐私/低延迟任务，云端处理复杂任务 |
+## Agent 权限边界
 
-## 代码/命令示例
-
-Agent 本地服务调用应先固定权限边界，只暴露明确工具：
+端侧 Agent 接近真实系统操作，必须先定义工具权限。
 
 ```json
 {
-  "allowed_tools": ["read_local_note", "summarize_text"],
+  "allowed_tools": ["read_local_note", "summarize_text", "search_local_index"],
+  "confirm_required": ["rename_file", "move_file", "send_request"],
   "blocked_tools": ["delete_file", "send_email", "run_shell"],
   "fallback": "cloud_model_when_task_requires_complex_reasoning"
 }
+```
+
+推荐把工具分成四类：
+
+| 类别 | 示例 | 默认策略 |
+| --- | --- | --- |
+| 只读工具 | 读取笔记、查询本地索引、查看图片元数据 | 可允许，但要限制路径和范围 |
+| 可逆写入 | 新建草稿、生成报告、标记分类 | 可执行，但要保留日志 |
+| 高风险操作 | 删除、发送、支付、设备控制 | 默认禁止或必须确认 |
+| 外部联网 | 云端检索、远程 API、模型 fallback | 需要隐私和网络策略 |
+
+## 端侧 Agent 的状态管理
+
+Agent 经常失败在状态，而不是单次推理。
+
+| 状态 | 风险 | 处理建议 |
+| --- | --- | --- |
+| 对话历史 | 上下文膨胀、隐私泄露 | 摘要、截断、分级保存 |
+| 工具结果 | 旧结果被误用 | 给每次工具结果加时间和来源 |
+| 用户偏好 | 过度个性化或错误记忆 | 可查看、可删除、可关闭 |
+| 任务进度 | 中断后重复执行 | 使用步骤状态和确认点 |
+| 错误日志 | 泄露路径或敏感内容 | 脱敏后保存 |
+
+端侧 Agent 的“记忆”不应该默认永久保存。课程建议先实现短期状态和显式项目记录，再讨论长期记忆。
+
+## 端云协同 Agent
+
+本地小模型适合处理隐私、低延迟和格式化任务；云端大模型适合复杂推理、长上下文和知识密集任务。
+
+```mermaid
+flowchart LR
+  A["任务输入"] --> B["隐私分类"]
+  B --> C{"包含敏感数据?"}
+  C -- "是" --> D["本地模型: 摘要/脱敏/初筛"]
+  C -- "否" --> E["复杂度评估"]
+  D --> F{"本地是否足够?"}
+  E --> F
+  F -- "足够" --> G["本地返回"]
+  F -- "不足" --> H{"是否允许云端?"}
+  H -- "允许" --> I["云端模型"]
+  H -- "不允许" --> J["返回受限答案/请求确认"]
+  I --> K["结果校验"]
+  K --> G
+```
+
+端云协同需要明确三种规则：
+
+- 隐私规则：哪些内容只能本地处理。
+- 能力规则：哪些任务本地模型不应硬做。
+- 失败规则：本地失败、云端失败、网络失败时如何退化。
+
+## Jetson 上的 VLM/Agent 形态
+
+Jetson 在 VLM/Agent 中更适合作为边缘节点，而不是所有能力的唯一承载点。
+
+| 形态 | Jetson 职责 | 其他组件 | 适用场景 |
+| --- | --- | --- | --- |
+| 摄像头 + 视觉模型 | 图像采集、检测、告警 | 云端报表或人工复核 | 工业巡检、安防 |
+| Jetson + 小 LLM | 本地问答、状态解释、轻量总结 | 云端知识库或大模型 | 设备运维助手 |
+| Jetson + VLM 初筛 | 低分辨率理解、隐私过滤 | 云端复杂视觉问答 | 机器人、现场助手 |
+| Jetson Agent 节点 | 本地工具调用、传感器状态、权限控制 | 云端 planner | 边缘自动化 |
+
+评估 Jetson 方案时要记录温度、功耗模式和长时间运行稳定性。VLM/Agent 通常比单次 LLM 推理更容易暴露系统问题。
+
+## 代码/命令示例
+
+本地服务是 VLM/Agent 的基础组件。先确认 OpenAI-compatible API 可被调用。
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://127.0.0.1:8080/v1",
+    api_key="local-no-key",
+)
+
+response = client.chat.completions.create(
+    model="local-model",
+    messages=[
+        {"role": "system", "content": "你是一个只处理低风险本地任务的助手。"},
+        {"role": "user", "content": "把这段日志总结成三条问题。"},
+    ],
+)
+
+print(response.choices[0].message.content)
+```
+
+Agent 工具注册建议先用静态白名单：
+
+```yaml
+tools:
+  read_local_note:
+    mode: read_only
+    path_scope: ./workspace/notes
+  summarize_text:
+    mode: transform
+    network: false
+  run_shell:
+    mode: blocked
+    reason: requires explicit human approval
 ```
 
 ## 配套实作
 
 对应实作章节：[本地 OpenAI-compatible 服务](/docs/lab-local-service)。
 
-本课程的第一阶段实作不直接部署 VLM 或完整 Agent，而是先完成本地 LLM 服务化。它是后续 VLM/Agent 的基础组件：
+本课程第一阶段不直接部署完整 VLM 或完整 Agent，而是先完成本地 LLM 服务化。它是后续 VLM/Agent 的基础组件：
 
 - VLM 可以把 LLM server 作为文本推理模块。
-- Agent 可以把本地小模型作为低风险任务 planner 或 summarizer。
+- Agent 可以把本地小模型作为低风险任务 planner、summarizer 或 formatter。
 - 端云协同可以把本地 server 作为隐私优先路径。
+- Jetson 可以作为边缘节点承载采集、预处理、小模型推理和权限控制。
 
 ## 验收结果
 
 | 产物 | 验收标准 |
 | --- | --- |
-| VLM 链路图 | 能指出 vision encoder、projector、LLM 各自可能的瓶颈 |
-| Agent 权限表 | 能区分允许、拒绝、需要云端兜底的工具 |
+| VLM 链路图 | 能指出 vision encoder、projector、LLM、输入管线各自可能的瓶颈 |
+| Agent 权限表 | 能区分允许、确认、拒绝、需要云端兜底的工具 |
+| 端云协同图 | 能说明本地、云端、fallback 和隐私边界 |
 | 服务化基线 | 本地 LLM server 可被后续 VLM/Agent 组件调用 |
+| 风险清单 | 至少覆盖权限、状态、输出格式、网络和日志脱敏 |
+
+## 案例模板：VLM
+
+```markdown
+## VLM 任务
+
+- 输入类型：
+- 图像分辨率：
+- 输出类型：
+- 是否涉及隐私：
+- 是否需要实时：
+
+## 组件拆解
+
+| 组件 | 模型/工具 | 是否端侧运行 | 风险 |
+| --- | --- | --- | --- |
+| 预处理 | 待填 | 待填 | 待填 |
+| Vision Encoder | 待填 | 待填 | 待填 |
+| Projector | 待填 | 待填 | 待填 |
+| LLM | 待填 | 待填 | 待填 |
+| 后处理 | 待填 | 待填 | 待填 |
+
+## 质量样例
+
+- 成功样例：
+- 失败样例：
+- 需要人工复核的样例：
+```
+
+## 案例模板：Agent
+
+```markdown
+## Agent 任务
+
+- 用户目标：
+- 本地数据范围：
+- 可用工具：
+- 禁止工具：
+- 是否允许云端兜底：
+
+## 工具权限表
+
+| 工具 | 权限级别 | 是否需要确认 | 日志要求 |
+| --- | --- | --- | --- |
+| 待填 | 待填 | 待填 | 待填 |
+
+## 失败恢复
+
+- 本地模型输出格式错误：
+- 工具调用失败：
+- 网络不可用：
+- 用户拒绝授权：
+```
+
+## 复盘问题
+
+- VLM 任务失败时，如何判断问题来自图像侧、projector、LLM 还是后处理？
+- 对 OCR、小目标和空间关系任务，为什么不能只看普通文本问答质量？
+- Agent 端侧运行时，哪些工具必须默认禁止？
+- 本地小模型不够聪明时，是换模型、降低任务复杂度，还是引入云端 fallback？
+- Jetson 作为边缘节点时，哪些组件应本地运行，哪些组件应放到云端？
+- 如何在日志里保留足够证据，同时避免泄露本地路径和敏感内容？
 
 ## 常见问题
 
-- **只压缩 LLM**：VLM 的图像侧和 projector 也可能是瓶颈。
+- **只压缩 LLM**：VLM 的图像侧、projector 和输入管线也可能是瓶颈。
 - **忽略工具权限**：Agent 端侧运行更接近真实系统操作，权限边界必须先定义。
 - **把端侧当成全离线**：很多产品更适合端云协同，而不是强行全端侧。
 - **没有失败恢复**：工具调用失败、网络失败、输出格式错误都需要恢复策略。
+- **把 demo 当产品**：一次成功调用不能证明权限、状态和日志策略可用。
 
 ## 参考资料
 
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [Hugging Face Vision-Language Models task guide](https://huggingface.co/tasks/image-text-to-text)
+- [OpenAI Function Calling guide](https://platform.openai.com/docs/guides/function-calling)
+- [NVIDIA Jetson AI Lab](https://www.jetson-ai-lab.com/)
+- [The Machine Learning Systems Book](https://www.mlsysbook.ai/)

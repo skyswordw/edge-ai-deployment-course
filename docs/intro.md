@@ -51,7 +51,7 @@ flowchart LR
 | Part III 量化与压缩 | PTQ/QAT、LLM 量化、KV Cache、精度修复、蒸馏压缩 | 建立方法选择能力 |
 | Part IV 推理加速与 Runtime | 图优化、kernel、TensorRT、llama.cpp、vLLM、profiling | 建立性能优化视角 |
 | Part V Ubuntu/Jetson 实作 | Qwen GGUF、量化对比、推理加速、API 服务 | 把概念落到可运行命令 |
-| Part VI 案例复盘 | 视觉、LLM、VLM、Agent、最终报告 | 输出部署评估报告 |
+| Part VI 案例复盘 | 视觉、LLM、VLM、Agent、最终项目 | 输出部署评估报告 |
 
 每个主线章节都按相同模板组织：学习目标、问题背景、图示讲解、核心概念、代码/命令示例、配套实作、验收结果、常见问题和参考资料。这样做的目的，是让课程书既适合系统阅读，也适合作为实作手册查阅。
 
@@ -67,10 +67,15 @@ flowchart LR
 - **HTML 课件**：使用 reveal.js 构建，服务于课堂投屏和在线演示。
 - **PPTX**：后续可由课程书和 HTML 课件继续生成，不作为当前版本范围。
 
+## 学习产出
+
+课程最终不以“看完章节”为完成标准，而以能交付一份部署评估报告为标准。学习者需要把方法选择、实验命令、性能记录、失败日志和部署建议整理成可以评审的材料。建议从第一部分开始就维护自己的实验记录，最后汇总到 [最终项目与验收标准](/docs/final-project)。
+
 ## 参考资料
 
 - [前置知识学习路径](/docs/prerequisites)
 - [40/52 学时教学安排](/docs/course-hours)
+- [最终项目与验收标准](/docs/final-project)
 - [资料对比与课程取舍](/docs/source-comparison)
 - [参考资料地图](/docs/reference-map)
 - [类似教材与教程参考](/docs/similar-courses)

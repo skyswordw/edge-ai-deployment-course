@@ -6,79 +6,344 @@ title: 机器学习推理基础
 
 ## 学习目标
 
-- 理解模型推理从输入到输出的基本链路。
-- 区分 latency、throughput、batch size、memory footprint 和 warmup。
-- 知道为什么模型转换、量化和 runtime 优化都要回到真实设备验证。
+- 理解模型推理从输入到输出的完整链路, 而不是只看模型前向计算。
+- 区分 latency, throughput, batch size, warmup, memory footprint 和 end-to-end time。
+- 能把 LLM 的 prefill, decode, first-token latency 和 tokens/s 放到通用推理框架里理解。
+- 知道为什么量化, runtime 优化和硬件加速都必须回到真实设备验证。
+- 能设计一个不编造数字, 可复现, 可对比的基础推理实验。
+
+:::tip
+推理基础的核心问题不是“模型能不能运行”, 而是“模型在指定设备, 指定输入, 指定服务形态下能否稳定地满足指标”。
+:::
 
 ## 问题背景
 
-端侧部署关心的是推理，不是训练。训练阶段强调梯度、优化器和收敛；推理阶段强调输入预处理、算子执行、内存移动、后处理、服务接口和稳定性。很多部署项目失败，不是算法指标不够，而是端到端链路中某个环节拖慢或出错。
+端侧部署关心的是推理, 不是训练。训练阶段强调梯度, 优化器, 数据增强和收敛; 推理阶段强调输入预处理, 算子执行, 内存移动, 后处理, 服务接口和稳定性。很多部署项目失败, 不是因为模型精度不够, 而是端到端链路中某个环节拖慢, 某个算子 fallback, 某个输入格式错误, 或某个指标口径没有统一。
+
+在服务器上, 问题常表现为:
+
+- GPU 显存足够, 但首 token 很慢。
+- 模型文件已经变小, 但 tokens/s 没有明显提升。
+- 单次 CLI 推理正常, 但服务接口延迟不稳定。
+- batch 增大后吞吐提升, 但交互体验变差。
+
+在 Jetson 上, 问题还会增加:
+
+- CPU, GPU 和内存共享资源, 峰值内存更敏感。
+- 功耗模式和温度会影响持续性能。
+- 同样的模型格式在服务器和 Jetson 上可能表现不同。
+
+本章的作用是建立统一语言: 先定义测量边界, 再讨论优化方法。
 
 ## 图示讲解
 
+### 通用推理链路
+
 ```mermaid
 flowchart LR
-  A[原始输入] --> B[预处理]
-  B --> C[Tokenizer/Feature Extractor]
-  C --> D[模型前向推理]
-  D --> E[后处理/解码]
-  E --> F[业务输出]
-  D --> G[Profiling 日志]
+  A["原始输入"] --> B["预处理"]
+  B --> C["Tokenizer / Feature Extractor"]
+  C --> D["张量准备"]
+  D --> E["模型前向推理"]
+  E --> F["后处理 / 解码"]
+  F --> G["业务输出"]
+  E --> H["Profiling 日志"]
+  B --> H
+  F --> H
 ```
+
+如果只测 `E: 模型前向推理`, 很容易低估真实业务延迟。端侧应用常见的瓶颈可能在图像 resize, tokenizer, CPU/GPU 拷贝, JSON 编解码, 后处理 NMS, 或服务队列等待。
+
+### LLM 推理链路
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant S as Local Service
+  participant T as Tokenizer
+  participant M as Runtime
+  participant G as GPU/Jetson
+  U->>S: prompt / messages
+  S->>T: apply chat template
+  T->>M: token ids
+  M->>G: prefill prompt
+  G-->>M: KV Cache
+  loop generate tokens
+    M->>G: decode next token
+    G-->>M: logits
+    M-->>S: sampled token
+  end
+  S-->>U: text / stream
+```
+
+LLM 与传统分类模型的不同在于它会持续生成。一次请求通常包含:
+
+- 模型加载: 加载权重和初始化 runtime。
+- Prompt 处理: 对输入 token 做 prefill。
+- 首 token: 从请求开始到第一个输出 token。
+- Decode 循环: 每次生成一个 token, 直到达到停止条件。
+- 服务返回: CLI 输出, HTTP JSON 或流式响应。
 
 ## 核心概念
 
-| 概念 | 解释 | 常见误区 |
+### Latency
+
+Latency 是单个请求的耗时。它可以有多个边界:
+
+| 口径 | 起点 | 终点 | 适用场景 |
+| --- | --- | --- | --- |
+| Kernel latency | 单个算子开始 | 单个算子结束 | 算子优化, kernel 对比 |
+| Model latency | 输入张量就绪 | 模型输出张量完成 | runtime 对比 |
+| End-to-end latency | 原始输入进入系统 | 业务结果返回 | 产品体验评估 |
+| First-token latency | 用户请求开始 | LLM 第一个 token 输出 | 对话, Agent, 流式输出 |
+
+课程实验默认记录端到端口径, 同时从 llama.cpp 日志中拆出 prompt eval 和 eval 统计。
+
+### Throughput
+
+Throughput 是单位时间处理量。传统 CV/NLP 模型常用 samples/s, LLM 常用 tokens/s。吞吐和延迟不总是一致:
+
+- 增大 batch 可能提升吞吐, 但单个请求等待更久。
+- 并发请求可能提升设备利用率, 但增加排队时间。
+- 在 Jetson 上, 长时间高负载可能受功耗和温度影响, 吞吐不稳定。
+
+### Batch size
+
+Batch size 是一次推理处理的样本数量。端侧交互式 LLM 通常 batch 不大, 更关心单请求响应。离线批处理或网关服务则可能通过 batching 提高吞吐。
+
+### Warmup
+
+Warmup 指首次运行前后的初始化成本, 可能包括:
+
+- 动态库加载。
+- GPU context 初始化。
+- kernel 编译或选择。
+- 内存池初始化。
+- 模型权重和 tokenizer 缓存。
+
+因此第一次运行不能直接代表稳定性能。实验应至少区分冷启动和稳定运行。
+
+### Memory footprint
+
+推理内存不是模型文件大小。它通常由下面几部分组成:
+
+| 内存部分 | 说明 | LLM 场景 |
 | --- | --- | --- |
-| Latency | 单次请求耗时 | 只看模型层耗时，忽略预处理和服务 |
-| Throughput | 单位时间处理量 | batch 变大可能让单请求等待更久 |
-| Warmup | 首次运行的初始化成本 | 把第一次运行当成稳定性能 |
-| Memory footprint | 权重、激活、缓存、临时 buffer 总占用 | 只看模型文件大小 |
-| End-to-end | 从输入到业务输出的完整耗时 | 只测 runtime 内核 |
+| Weights | 模型权重 | 量化主要降低这一部分 |
+| Activations | 中间激活 | 与 batch, shape, runtime 策略相关 |
+| KV Cache | attention 历史缓存 | 与层数, heads, hidden size, context length 相关 |
+| Runtime buffers | workspace, 临时 buffer | 与后端和 kernel 实现相关 |
+| Service overhead | tokenizer, Python, HTTP, 日志 | 服务化时不可忽略 |
+
+:::caution
+权重量化后, 模型文件变小, 但长上下文下 KV Cache 仍会增长。不能用“GGUF 文件大小”直接推断端到端显存。
+:::
+
+### End-to-end
+
+End-to-end 是从业务输入到业务输出的完整链路。课程强调端到端, 因为端侧部署的最终约束来自用户体验和设备资源, 而不是单个算子分数。
+
+## 指标口径表
+
+| 指标 | 单位 | 怎么测 | 注意事项 |
+| --- | --- | --- | --- |
+| 模型加载时间 | s | CLI 日志或手动计时 | 不要混入首 token |
+| 首 token 延迟 | s/ms | 请求开始到第一个 token | 流式输出时尤其重要 |
+| tokens/s | tokens/s | decode 阶段 token 数 / 时间 | 固定 prompt 和生成长度 |
+| 峰值显存 | MiB/GiB | `nvidia-smi`, runtime 日志 | Jetson 需看 shared memory |
+| CPU 占用 | % | `top`, `htop`, `pidstat` | tokenizer 和 fallback 常见 |
+| GPU 利用率 | % | `nvidia-smi dmon`, `tegrastats` | 采样频率影响判断 |
+| 温度/功耗 | C/W | Jetson `tegrastats`, `nvpmodel` | 边缘设备必记 |
+| 质量备注 | 文本 | 人工检查或任务指标 | 不要只看速度 |
 
 ## 代码/命令示例
 
-用最小 Python 计时器区分“能跑”和“稳定耗时”：
+### Python 最小计时器
 
 ```python
+import statistics
 import time
 
-def measure(fn, repeat=5):
+def measure(fn, warmup=2, repeat=5):
+    for _ in range(warmup):
+        fn()
+
     values = []
     for _ in range(repeat):
         start = time.perf_counter()
         fn()
         values.append(time.perf_counter() - start)
-    return values
+
+    return {
+        "min": min(values),
+        "median": statistics.median(values),
+        "max": max(values),
+        "all": values,
+    }
+
+def workload():
+    text = "端侧模型部署需要同时观察速度, 显存和质量。"
+    return "|".join(text)
+
+print(measure(workload))
 ```
 
-LLM 实验中还要单独看生成日志里的 prompt eval 和 eval 阶段，而不是只记录总耗时。
+这个示例不代表真实模型性能, 但它提供了实验习惯:
+
+- 先 warmup。
+- 多次重复。
+- 记录 min/median/max, 不只记录一次。
+- 明确 workload。
+
+### llama.cpp 固定 workload
+
+```bash
+./build/bin/llama-cli \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  -p "请用三点说明端侧部署为什么要同时看速度、显存和质量。" \
+  -n 128 \
+  --ctx-size 2048 \
+  -ngl 99
+```
+
+记录时至少写清楚:
+
+- 模型文件。
+- prompt。
+- 生成长度 `-n`。
+- 上下文长度 `--ctx-size`。
+- GPU offload 参数 `-ngl`。
+- llama.cpp commit。
+- 设备型号和驱动/JetPack 版本。
+
+### HTTP 服务端到端计时
+
+如果使用本地 OpenAI-compatible API, 可以用下面的 Python 结构做 smoke test:
+
+```python
+import json
+import time
+import urllib.request
+
+payload = {
+    "model": "local-qwen",
+    "messages": [
+        {"role": "user", "content": "用一句话解释什么是首 token 延迟。"}
+    ],
+    "max_tokens": 64,
+}
+
+start = time.perf_counter()
+request = urllib.request.Request(
+    "http://127.0.0.1:8080/v1/chat/completions",
+    data=json.dumps(payload).encode("utf-8"),
+    headers={"Content-Type": "application/json"},
+)
+
+with urllib.request.urlopen(request, timeout=60) as response:
+    body = response.read().decode("utf-8")
+
+elapsed = time.perf_counter() - start
+print(f"end_to_end={elapsed:.3f}s")
+print(body[:500])
+```
+
+这段代码用于验证服务链路, 不用于替代系统 profiling。
 
 ## 配套实作
 
-在 [Qwen 基线推理](/docs/lab-qwen-baseline) 中，把 llama.cpp 的输出日志保存下来，找出：
+### 实作 1: 拆解一次 Qwen 推理日志
 
-- 模型加载耗时。
-- prompt eval 相关统计。
-- decode/eval 相关统计。
-- 生成结果质量备注。
+对应章节: [Qwen 基线推理](/docs/lab-qwen-baseline)
+
+步骤:
+
+1. 固定一个 prompt 和 `-n 128`。
+2. 分别运行 CPU 路径和 GPU offload 路径。
+3. 保存完整终端日志。
+4. 从日志中标注模型加载, prompt eval, eval/decode。
+5. 记录输出质量备注。
+
+结果表:
+
+| 设备/路径 | 模型 | ctx | ngl | 加载时间 | prompt eval | decode tokens/s | 质量备注 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Ubuntu GPU | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 |
+| Jetson | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 |
+
+### 实作 2: 观察上下文长度对内存的影响
+
+对应章节: [Transformer 与 LLM 基础](/docs/transformer-llm-basics), [Profiling 与结果记录](/docs/lab-profiling)
+
+固定模型和 prompt, 分别设置:
+
+```bash
+--ctx-size 1024
+--ctx-size 2048
+--ctx-size 4096
+```
+
+每次记录:
+
+- 峰值显存或内存。
+- 首 token 延迟。
+- tokens/s。
+- 是否出现 OOM 或明显降速。
+
+### 实作 3: 对比 CLI 与 API
+
+对应章节: [本地服务与 OpenAI-compatible API](/docs/lab-local-service)
+
+同一个 prompt, 分别用 CLI 和 HTTP API 调用, 对比:
+
+- 端到端耗时。
+- 输出是否一致。
+- 服务日志中是否有错误。
+- 是否能进行流式输出。
 
 ## 验收结果
 
 | 产物 | 验收标准 |
 | --- | --- |
-| 推理链路图 | 能解释每个环节可能带来的延迟 |
-| 指标表 | latency、throughput、memory、warmup 含义清楚 |
-| 日志片段 | 能从一次运行日志中指出关键性能字段 |
+| 推理链路图 | 能解释预处理, tokenizer, 前向计算, 后处理和服务层的关系 |
+| 指标口径表 | 能区分模型 latency, end-to-end latency, first-token latency 和 tokens/s |
+| Qwen 日志标注 | 能从一次运行日志中指出 prompt eval 和 decode 指标 |
+| 内存拆分说明 | 能说明权重, activation, KV Cache, runtime buffer 的差别 |
+| 实验记录模板 | 不编造数字, 但预留字段完整, 能支持后续填数 |
 
 ## 常见问题
 
-- **只测核心算子**：业务上真正感知的是端到端体验。
-- **忽略数据搬运**：CPU/GPU 间拷贝、格式转换、tokenizer 都可能成为瓶颈。
-- **把吞吐当交互体验**：交互式应用更看重首 token 和响应稳定性。
+### 为什么我用低比特模型后速度没有变快?
+
+可能原因包括:
+
+- 设备瓶颈不在权重读取, 而在 decode kernel, tokenizer 或服务层。
+- runtime 没有使用对应的低比特优化 kernel。
+- 低比特格式需要 dequant, 抵消了部分收益。
+- GPU offload 参数没有正确启用。
+- Jetson 上受内存带宽, 功耗模式或温度影响。
+
+### 为什么第一次推理特别慢?
+
+常见原因是冷启动: 加载权重, 初始化 GPU context, 分配内存池, 加载 tokenizer 和选择 kernel。实验中要区分冷启动和稳定运行。
+
+### 为什么 tokens/s 高, 但用户仍然觉得慢?
+
+用户首先感知的是首 token 延迟。如果 prefill 很慢, 或服务队列等待很长, decode tokens/s 再高也不能完全改善体验。
+
+### 为什么要固定 prompt?
+
+LLM 的 prompt 长度, 语言, 模板和生成长度都会影响结果。比较模型格式或运行参数时, 必须尽量只改变一个变量。
+
+### 可以只看平均值吗?
+
+不建议。至少记录 min, median, max。端侧设备可能有温度, 后台进程或服务队列带来的波动, 只看平均值容易掩盖问题。
 
 ## 参考资料
 
 - [ONNX Runtime performance documentation](https://onnxruntime.ai/docs/performance/)
 - [TensorFlow Lite performance best practices](https://www.tensorflow.org/lite/performance/best_practices)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [llama.cpp llama-bench](https://github.com/ggml-org/llama.cpp)
+- [Qwen llama.cpp local run guide](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

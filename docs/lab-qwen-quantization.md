@@ -4,15 +4,61 @@ title: Qwen GGUF 量化对比实验
 
 # Qwen GGUF 量化对比实验
 
+## 建议学时
+
+2 学时。
+
+建议安排：
+
+| 课时 | 内容 | 产出 |
+| --- | --- | --- |
+| 1 | 准备 Q8/Q5/Q4 GGUF，统一实验变量 | 模型清单和实验矩阵 |
+| 2 | 运行对比、填写速度/显存/质量记录 | 量化选择结论 |
+
+本实验对应理论章节：
+
+- [LLM 量化与 KV Cache](/docs/llm-quantization)
+- [推理加速基础](/docs/inference-acceleration)
+- [Profiling 与结果记录](/docs/lab-profiling)
+
 ## 学习目标
 
+完成本实验后，学习者应能：
+
 - 用同一套条件比较 Qwen GGUF 的不同量化格式。
-- 观察文件大小、VRAM、首 token、tokens/s 和输出质量之间的取舍。
-- 建立“不预设结果，只记录真实设备数据”的实验习惯。
+- 观察文件大小、VRAM/RAM、首 token、tokens/s 和输出质量之间的取舍。
+- 解释为什么 Q4 文件更小但不一定在所有设备上都更快。
+- 在 Ubuntu Server 与 Jetson 上分别记录量化对比结果。
+- 建立“不预设 benchmark 数字，只记录真实设备数据”的实验习惯。
 
 ## 问题背景
 
-Q8、Q5、Q4 等 GGUF 变体通常会带来不同的文件大小和运行特征，但具体收益取决于模型、runtime、GPU offload、上下文长度和设备。课程不预置性能数字，而是让学员在自己的设备上记录。
+Q8、Q5、Q4 等 GGUF 变体通常会带来不同的文件大小和运行特征。
+
+但具体收益取决于：
+
+- 模型基座是否一致。
+- runtime 是否支持对应量化格式。
+- GPU offload 是否生效。
+- `ctx-size` 和 KV Cache 占用。
+- 目标设备是独立 GPU 还是 Jetson 统一内存。
+- 输出质量是否仍满足任务。
+
+所以本实验不预置性能数字。
+
+每位学员必须在自己的设备上记录结果。
+
+## 实验边界
+
+本实验只比较 GGUF 文件的运行表现。
+
+不要求学员自己从原始权重重新量化。
+
+如果课程提供了 Q8/Q5/Q4 文件，直接使用这些文件。
+
+如果只拿到两个量化文件，也可以先比较两个，但实验报告中应说明缺失项。
+
+不要把 `.gguf` 文件放进课程仓库。
 
 ## 图示讲解
 
@@ -21,33 +67,90 @@ flowchart TD
   A[同一 Qwen 基座] --> B[Q8 GGUF]
   A --> C[Q5 GGUF]
   A --> D[Q4 GGUF]
-  B --> E[同一 prompt / ctx / runtime]
+  B --> E[同一 prompt / ctx / runtime / ngl]
   C --> E
   D --> E
-  E --> F[速度/显存/质量对比]
+  E --> F[性能日志]
+  E --> G[显存/内存监控]
+  E --> H[输出质量记录]
+  F --> I[部署取舍结论]
+  G --> I
+  H --> I
 ```
 
-## 核心概念
+KV Cache 和权重共同占用资源：
 
-| 变量 | 必须保持一致吗 | 说明 |
-| --- | --- | --- |
-| Prompt | 是 | 否则无法比较质量 |
-| `--ctx-size` | 是 | 影响 KV Cache 和显存 |
-| `-n` | 是 | 影响生成长度和速度统计 |
-| `-ngl` | 是 | 影响 GPU offload |
-| 模型基座 | 是 | 不同模型尺寸不能直接比较量化格式 |
+```mermaid
+flowchart LR
+  A[设备内存预算] --> B[模型权重]
+  A --> C[KV Cache]
+  A --> D[Runtime/系统进程]
+  A --> E[临时 buffer]
+  B --> F{是否能稳定运行?}
+  C --> F
+  D --> F
+  E --> F
+```
 
-## 代码/命令示例
+## 前置条件
 
-把不同量化文件放在同一目录：
+已经完成：
+
+- [Ubuntu Server 与 NVIDIA GPU 环境](/docs/lab-ubuntu-nvidia)
+- [Qwen 基线推理](/docs/lab-qwen-baseline)
+
+需要准备：
+
+| 项目 | 要求 |
+| --- | --- |
+| llama.cpp | 已构建，`llama-cli` 可运行 |
+| 模型文件 | 至少两个 Qwen GGUF 量化变体 |
+| 日志目录 | `~/edge-ai-lab/logs` |
+| 结果目录 | `~/edge-ai-lab/results` |
+| GPU 监控 | Ubuntu 用 `nvidia-smi`，Jetson 用 `tegrastats` |
+
+## Step 1：列出模型文件
 
 ```bash
 ls -lh ~/edge-ai-lab/models/qwen/*.gguf
 ```
 
-分别运行同一 prompt：
+把实际模型填入：
+
+| 文件名 | 量化格式 | 文件大小 | 来源 | 备注 |
+| --- | --- | --- | --- | --- |
+| 待填 | Q8 | 待填 | 待填 | 待填 |
+| 待填 | Q5 | 待填 | 待填 | 待填 |
+| 待填 | Q4 | 待填 | 待填 | 待填 |
+
+如果文件名中没有清晰量化信息，需要查模型来源页面或教师说明。
+
+不要靠猜测填写。
+
+## Step 2：固定实验变量
+
+量化对比必须尽量只改变模型量化格式。
+
+| 变量 | 建议固定值 | 说明 |
+| --- | --- | --- |
+| prompt | `用三句话解释端侧模型量化的价值。` | 与 baseline 一致 |
+| `-n` | `128` | 固定生成长度 |
+| `--ctx-size` | `2048` | 固定上下文 |
+| `-ngl` | `99` | 尽量 GPU offload |
+| 采样参数 | 默认或统一设置 | 不要每次不同 |
+| 运行目录 | `~/edge-ai-lab/src/llama.cpp` | 避免路径错误 |
+
+如果设备内存不足，可以改成 `--ctx-size 1024`。
+
+但所有量化文件都要用同一个 `ctx-size`。
+
+## Step 3：运行 Q8/Q5/Q4 对比
+
+按实际文件名修改数组。
 
 ```bash
+cd ~/edge-ai-lab/src/llama.cpp
+
 for model in \
   qwen2.5-1.5b-instruct-q8_0.gguf \
   qwen2.5-1.5b-instruct-q5_k_m.gguf \
@@ -63,35 +166,182 @@ do
 done
 ```
 
-## 配套实作
-
-把每个模型的结果填入：
+如果只有两个模型：
 
 ```bash
-cp labs/templates/profiling-results.md ~/edge-ai-lab/results/qwen-quantization-results.md
+for model in \
+  qwen2.5-1.5b-instruct-q8_0.gguf \
+  qwen2.5-1.5b-instruct-q4_k_m.gguf
+do
+  ./build/bin/llama-cli \
+    -m ~/edge-ai-lab/models/qwen/${model} \
+    -p "用三句话解释端侧模型量化的价值。" \
+    -n 128 \
+    -ngl 99 \
+    --ctx-size 2048 \
+    2>&1 | tee ~/edge-ai-lab/logs/${model}.log
+done
 ```
 
-记录至少三类结果：
+## Step 4：同步记录 GPU 或 Jetson 状态
 
-- 文件大小和峰值 VRAM。
-- 首 token 延迟和 tokens/s。
-- 输出质量备注，包括是否跑题、重复、格式错误或明显事实错误。
+Ubuntu Server：
+
+```bash
+watch -n 0.5 nvidia-smi
+```
+
+可在每次运行前后保存：
+
+```bash
+nvidia-smi > ~/edge-ai-lab/results/nvidia-smi-quantization.txt
+```
+
+Jetson：
+
+```bash
+tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-quantization-tegrastats.txt
+```
+
+记录重点：
+
+| 平台 | 重点 |
+| --- | --- |
+| Ubuntu Server | 峰值显存、是否看到进程、GPU 使用变化 |
+| Jetson | RAM、GPU/GR3D、温度、功耗模式、是否降频 |
+
+## Step 5：整理性能字段
+
+从每个日志中提取：
+
+- 模型加载是否成功。
+- prompt eval 或 prefill 时间。
+- eval 或 decode 速度。
+- tokens/s。
+- warning、fallback、OOM、unsupported 等异常。
+- 输出文本。
+
+如果字段名称随 llama.cpp 版本不同，以实际日志为准。
+
+不要把没有出现的字段硬填。
+
+## Step 6：质量对比
+
+用同一 prompt 比较输出。
+
+建议从以下维度记录：
+
+| 维度 | 记录方式 |
+| --- | --- |
+| 是否回答问题 | 是/否/部分 |
+| 是否满足“三句话” | 是/否/大致 |
+| 是否概念正确 | 简短说明 |
+| 是否重复 | 无/轻微/严重 |
+| 是否有格式问题 | 简短说明 |
+| 中文是否自然 | 简短说明 |
+
+不要只看速度。
+
+低比特模型如果输出质量明显下降，就需要在结论中说明。
+
+## 结果记录表
+
+| 硬件 | 模型文件 | 量化 | 文件大小 | `ctx-size` | `-ngl` | 首 token / prefill | tokens/s | 峰值内存/显存 | 温度/功耗 | 质量备注 | 日志 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Ubuntu Server | 待填 | Q8 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 |
+| Ubuntu Server | 待填 | Q5 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 |
+| Ubuntu Server | 待填 | Q4 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 |
+| Jetson | 待填 | Q4 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 |
+
+## Step 7：写部署选择结论
+
+结论不需要很长，但必须回答：
+
+1. 当前设备上哪个量化格式最适合？
+2. 它的优势是什么？
+3. 它的风险是什么？
+4. 是否有质量下降？
+5. 如果换成 Jetson，结论是否可能变化？
+
+示例结构：
+
+```text
+在本设备上，暂时推荐使用 ______。
+原因是 ______。
+不推荐 ______，因为 ______。
+如果部署到 Jetson，需要重新验证 ______。
+```
 
 ## 验收结果
 
 | 产物 | 验收标准 |
 | --- | --- |
-| 三个模型日志 | 至少包含 Q8/Q5/Q4 或同等层级的三个量化变体 |
-| 对比表 | 每行都有文件大小、显存、速度和质量备注 |
-| 实验结论 | 能说明当前设备上推荐哪个量化格式，以及为什么 |
+| 模型清单 | 至少两个 GGUF 量化变体，最好包含 Q8/Q5/Q4 |
+| 原始日志 | 每个模型有独立日志 |
+| 资源记录 | Ubuntu 有 `nvidia-smi`，Jetson 有 `tegrastats` |
+| 结果表 | 文件大小、速度、内存、质量备注尽量完整 |
+| 结论 | 能说明推荐格式和不推荐原因 |
 
-## 常见问题
+## 失败排查
 
-- **量化格式和模型尺寸一起变**：比较 Q8/Q4 时应尽量保持同一模型基座。
-- **只看速度不看质量**：低比特模型如果格式错误增多，速度收益不一定可用。
-- **不同上下文长度混用**：ctx 变了，KV Cache 和 prefill 成本也变了。
+### 某个 GGUF 无法加载
+
+检查：
+
+- 文件是否下载完整。
+- 文件名是否写错。
+- llama.cpp 版本是否过旧。
+- 模型是否需要特殊 chat template。
+
+### Q4 输出明显变差
+
+处理：
+
+- 对比 Q5 或 Q8。
+- 固定 prompt 重跑一次。
+- 检查是否采样参数不同。
+- 不要为了速度强行选择不可用输出。
+
+### Q8 无法在 Jetson 上运行
+
+可能原因：
+
+- 模型权重和 KV Cache 超出统一内存预算。
+- `ctx-size` 太大。
+- 系统进程占用内存较多。
+
+处理：
+
+- 降低 `ctx-size`。
+- 使用 Q5 或 Q4。
+- 选择更小模型。
+
+### 速度差异不明显
+
+可能原因：
+
+- 瓶颈不在权重读取。
+- GPU offload 不充分。
+- 低比特 kernel 没有带来计算收益。
+- prompt 太短，测不出差异。
+
+处理：
+
+- 用 [推理加速实验](/docs/lab-inference-acceleration) 做 `-ngl` 和 `ctx-size` 对比。
+- 用 `llama-bench` 补充标准化记录。
+
+## 作业
+
+提交量化对比记录，包含：
+
+1. 模型清单。
+2. 每个模型的原始日志路径。
+3. 结果表。
+4. 一段部署选择结论。
+5. 如果有 Jetson 设备，补充 Jetson 上至少一个量化文件的运行记录。
 
 ## 参考资料
 
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
+- [llama.cpp quantize documentation](https://www.mintlify.com/ggml-org/llama.cpp/tools/quantize)
 - [llama.cpp quantize README](https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md)

@@ -6,86 +6,130 @@ title: 量化基础与 PTQ/QAT
 
 ## 建议学时
 
-4 学时。2 学时讲量化数学和 PTQ/QAT 流程，1 学时讲工具链差异，1 学时结合 Qwen GGUF 和传统模型案例讨论。
+4 学时。
+
+前 2 学时讲量化表示、scale/zero-point、粒度和校准集。
+
+第 3 学时讲 PTQ/QAT 流程、outlier 和工程边界。
+
+第 4 学时结合 Qwen GGUF、Ubuntu Server 和 Jetson 做实验设计。
 
 ## 学习目标
 
-- 掌握权重、激活、KV Cache 等对象为什么可以低精度表示。
-- 理解 FP32、FP16、BF16、INT8、INT4、NF4、FP8 的工程差异。
+- 掌握权重、激活、KV Cache 为什么可以低精度表示，也知道哪些位置不适合盲目低比特。
+- 理解 FP32、FP16、BF16、INT8、INT4、NF4、FP8 在训练、推理、文件大小和硬件支持上的差异。
 - 区分 per-tensor、per-channel、per-group、symmetric、asymmetric、static、dynamic quantization。
-- 判断什么时候优先用 PTQ，什么时候需要 QAT 或后续补偿。
-- 理解量化和推理加速之间的关系：低比特不自动等于更快。
+- 能设计一个可复现的校准集，而不是随便抽几条样本。
+- 能判断什么时候优先 PTQ，什么时候需要 QAT、混合精度、蒸馏或换模型。
+- 能说明量化和推理加速之间的关系：低比特不是自动加速，必须看 runtime 和硬件 kernel。
+
+## 章节定位
+
+本章解决的是“量化到底在改什么”。
+
+后续大模型章节会继续展开 GPTQ、AWQ、SmoothQuant、LLM.int8()、GGUF 和 KV Cache。
+
+精度修复章节会讨论量化后质量下降时如何定位问题。
+
+压缩与蒸馏章节会把量化放进更大的模型压缩体系中。
 
 ## 问题背景
 
-量化的目标不是“把数字变小”，而是在可接受误差内减少存储、内存带宽和计算压力。传统视觉模型、Transformer、LLM 和 VLM 对量化误差的敏感位置不同，所以同一个 bit-width 在不同模型上可能得到完全不同的效果。
+端侧部署最常遇到的约束有三类：
 
-PTQ 适合快速验证和已有模型部署；QAT 在训练过程中模拟量化误差，通常更稳，但需要训练数据、训练资源和更高工程投入。
+- 模型文件太大，无法方便分发或加载。
+- 设备内存、显存或统一内存不够。
+- 推理延迟、功耗、温度不满足业务要求。
+
+量化的目标不是“把数字变小”。
+
+更准确地说，量化是在可接受误差内，用更少 bit 表示模型计算中的数值，从而降低存储、内存带宽和部分计算压力。
+
+但是量化收益不会自动转化为端到端收益。
+
+如果 runtime 没有低比特 kernel，或者设备把低比特权重先反量化到高精度再计算，速度可能没有明显改善。
+
+如果校准集不代表真实输入，模型质量可能快速下降。
+
+如果业务是长上下文对话，权重量化之后 KV Cache 仍可能成为主要内存压力。
 
 ## 图示讲解
 
+量化的基本流程可以抽象为“统计范围、映射、执行、验证”。
+
 ```mermaid
 flowchart LR
-  A[FP 权重/激活] --> B[统计范围]
-  B --> C[计算 scale/zero-point]
-  C --> D[映射到低比特整数]
-  D --> E[量化 kernel 推理]
-  E --> F[反量化或低比特累加]
-  F --> G[输出结果]
+  A["FP 权重/激活"] --> B["统计数值范围"]
+  B --> C["计算 scale / zero-point"]
+  C --> D["映射到低比特整数"]
+  D --> E["低比特或混合精度推理"]
+  E --> F["输出结果"]
+  F --> G["精度与性能验证"]
 ```
+
+PTQ 和 QAT 的选择通常由数据、训练预算和质量要求共同决定。
 
 ```mermaid
 flowchart TD
-  A[项目阶段] --> B{是否有训练数据和训练预算?}
-  B -- 否 --> C[先做 PTQ]
-  B -- 是 --> D{精度要求是否很高?}
-  D -- 否 --> C
-  D -- 是 --> E[考虑 QAT/LoRA/蒸馏补偿]
-  C --> F[真实设备 profiling]
+  A["已有 FP 模型"] --> B{"有训练数据和训练预算?"}
+  B -- "没有" --> C["先做 PTQ"]
+  B -- "有" --> D{"业务质量阈值很高?"}
+  D -- "不是特别高" --> C
+  D -- "很高" --> E["QAT / LoRA / 蒸馏补偿"]
+  C --> F["固定评估集"]
   E --> F
+  F --> G["真实设备 profiling"]
+  G --> H{"收益是否成立?"}
+  H -- "成立" --> I["进入部署链路"]
+  H -- "不成立" --> J["调整量化策略或回退"]
 ```
 
-## 核心概念
+## 数值格式与工程含义
 
-| 概念 | 解释 | 工程关注点 |
+不同精度格式的意义不只是 bit 数不同。
+
+它们还对应不同硬件支持、kernel 实现、累加方式和误差形态。
+
+| 格式 | 常见用途 | 工程关注点 |
 | --- | --- | --- |
-| Weight-only | 只量化权重，激活仍保持较高精度 | LLM 常见，文件和显存下降明显 |
-| W8A8 | 权重和激活都量化到 8 bit | 需要 runtime/kernel 支持，校准质量重要 |
-| Per-channel | 每个输出通道单独 scale | 精度通常更好，metadata 更多 |
-| Per-group | 按 group 量化 | LLM 低比特量化常见，group size 影响精度和速度 |
-| Static PTQ | 预先用校准集估计激活范围 | 对校准数据分布敏感 |
-| Dynamic quantization | 运行时动态估计范围 | 简化校准，但 runtime 开销和支持度要验证 |
+| FP32 | 训练、基准对照、数值敏感计算 | 最稳但资源占用高 |
+| FP16 | GPU 推理和训练常用 | 速度快，动态范围较 FP32 小 |
+| BF16 | 训练和部分推理常用 | 动态范围接近 FP32，精度位更少 |
+| FP8 | 新一代 GPU/推理框架方向 | 依赖硬件和框架支持，迁移成本高 |
+| INT8 | 传统模型和部分 LLM 推理 | 工具链成熟，但激活 outlier 需处理 |
+| INT4 | LLM weight-only 常见 | 文件和显存下降明显，质量风险更高 |
+| NF4 | 训练/微调生态中常见 | 适合特定分布假设和框架路线 |
 
-## 方法路线
+课堂中要避免把这些格式当成单纯的大小排序。
 
-PTQ 和 QAT 可以按项目阶段理解：
+一个 INT4 模型在某个 runtime 上可能比 FP16 慢。
 
-| 阶段 | 推荐动作 | 证据来源 |
-| --- | --- | --- |
-| 快速可行性验证 | 先做 PTQ 或直接使用已有 GGUF/INT8 权重 | 文件大小、首轮质量、基础性能 |
-| 质量风险评估 | 构建固定校准集和评估集 | baseline 对比、失败样例 |
-| 低 bit 深入优化 | 调整 group size、mixed precision、敏感层策略 | per-layer 或 per-case 误差 |
-| 仍不达标 | 考虑 QAT、LoRA、蒸馏或换模型 | 训练预算、数据质量、业务阈值 |
+一个 INT8 模型如果校准失败，可能比 FP16 明显差。
 
-在传统视觉模型中，ONNX Runtime、TensorFlow Lite、TensorRT 等工具链通常会提供 PTQ/QAT 或 INT8 校准流程；在 LLM 中，常见路线更多是 weight-only、AWQ/GPTQ/GGUF 等低比特权重量化，再结合 runtime 支持判断真实收益。
+## 线性量化的基本公式
 
-## 与推理加速的关系
+最常见的线性量化可以用三个量理解：
 
-量化能减少模型文件、权重内存和部分计算成本，但只有 runtime 和硬件支持对应 kernel 时，才可能带来真实加速。课堂中需要反复区分：
+- `scale`：浮点值和整数值之间的比例。
+- `zero_point`：浮点零点映射到整数空间的位置。
+- `qmin/qmax`：低比特整数能表示的范围。
 
-- **压缩收益**：文件变小、显存/内存下降。
-- **计算收益**：低比特 kernel 或 Tensor Core/DLA 能真正执行。
-- **系统收益**：端到端延迟下降，且没有被 fallback、反量化、数据拷贝抵消。
+对称量化常用于权重。
 
-## 代码/命令示例
+它让零点固定在 0 附近，实现简单，很多 kernel 也更友好。
 
-一个最小的线性量化示意，用来理解 scale 和 clipping，不用于生产部署：
+非对称量化常用于激活。
+
+它能更好覆盖偏移分布，但 metadata 和实现复杂度更高。
+
+一个教学用的线性量化示例：
 
 ```python
 import numpy as np
 
 x = np.array([-1.8, -0.2, 0.0, 0.7, 1.4], dtype=np.float32)
 qmin, qmax = -128, 127
+
 scale = max(abs(x.min()), abs(x.max())) / qmax
 qx = np.clip(np.round(x / scale), qmin, qmax).astype(np.int8)
 x_hat = qx.astype(np.float32) * scale
@@ -96,34 +140,279 @@ print("restored:", x_hat)
 print("abs error:", np.abs(x - x_hat))
 ```
 
+这段代码只用于理解概念。
+
+真实部署还要考虑矩阵乘 kernel、累加精度、分组 scale、内存布局和硬件指令。
+
+## 量化粒度
+
+量化粒度决定一个 scale 覆盖多少数值。
+
+覆盖范围越粗，metadata 越少，但误差可能更大。
+
+覆盖范围越细，精度通常更好，但实现和存储开销会上升。
+
+| 粒度 | 含义 | 优点 | 风险 |
+| --- | --- | --- | --- |
+| Per-tensor | 整个 tensor 共用一组 scale | 简单，metadata 少 | 容易被 outlier 拉大范围 |
+| Per-channel | 每个输出通道一组 scale | 常见于卷积/线性层权重量化 | kernel 和格式需支持 |
+| Per-group | 每组权重一组 scale | LLM 低比特权重量化常见 | group size 影响质量和速度 |
+| Per-token | 每个 token 或动态输入局部估计 | 适合部分激活动态量化 | 运行时开销和实现复杂 |
+| Mixed precision | 不同层/模块使用不同精度 | 保护敏感层 | 调参成本高，部署格式更复杂 |
+
+## 静态量化与动态量化
+
+静态量化会在部署前使用校准集统计激活范围。
+
+动态量化会在运行时根据输入计算范围。
+
+| 类型 | 典型对象 | 适合场景 | 注意事项 |
+| --- | --- | --- | --- |
+| Static PTQ | 权重和激活 | 输入分布稳定、可准备校准集 | 校准集质量决定上限 |
+| Dynamic quantization | 激活或部分矩阵乘 | 快速试验、输入变化较大 | 运行时开销需测量 |
+| Weight-only | LLM 权重 | 大模型文件和显存压力 | 激活/KV Cache 仍需单独评估 |
+| QAT | 权重和激活 | 高质量要求或低 bit 场景 | 需要训练数据、训练时间和稳定 pipeline |
+
+## 校准集设计
+
+校准集不是评估集的替代品。
+
+校准集用于估计量化范围。
+
+评估集用于判断模型是否还能完成任务。
+
+两者可以有重叠，但角色不同。
+
+一个合格校准集应满足以下条件：
+
+- 覆盖真实输入长度，例如短问答、长文档、多轮对话。
+- 覆盖真实语言分布，例如中文、英文、代码、表格、术语。
+- 覆盖高风险输入，例如极长数字、特殊符号、JSON、Markdown、工具调用格式。
+- 保持预处理和部署时一致，例如 tokenizer、chat template、图片缩放、归一化。
+- 数量足够稳定，但不追求无限大；重点是代表性和可复现。
+
+校准集记录建议使用 JSONL。
+
+```json
+{"id":"calib_001","type":"short_qa","prompt":"用三句话解释端侧模型量化。"}
+{"id":"calib_002","type":"json_output","prompt":"输出 JSON，字段包括 method、risk、metric。"}
+{"id":"calib_003","type":"long_context","prompt":"阅读以下长文本后总结部署风险：..."}
+```
+
+校准集常见问题：
+
+- 只用随机文本，和真实业务没有关系。
+- 只覆盖短输入，忽略长上下文和多轮对话。
+- 忽略输出格式任务，导致 JSON、表格和工具调用退化。
+- 校准时用一种 prompt 模板，部署时换成另一种模板。
+- 把评估结果不好直接归因于量化算法，没有先检查校准样本。
+
+## PTQ 工作流
+
+PTQ 适合课程中的第一轮端侧验证。
+
+它不需要重新训练模型，能快速判断模型大小、内存占用和初步质量是否可接受。
+
+推荐流程：
+
+1. 建立 FP16 或原始 GGUF baseline。
+2. 固定测试 prompt、采样参数、上下文长度和 runtime 版本。
+3. 准备校准集或选择已有量化模型。
+4. 生成或下载不同量化变体。
+5. 记录文件大小、加载时间、峰值内存、首 token 延迟和 tokens/s。
+6. 用固定评估集记录质量退化。
+7. 根据失败样例决定是否调整量化格式、group size 或回退精度。
+
+llama.cpp 生态中，已有 GGUF 文件通常是最适合教学的入口。
+
+如果从 FP16 GGUF 自己量化，可以使用类似命令：
+
+```bash
+./build/bin/llama-quantize \
+  models/qwen/qwen2.5-1.5b-instruct-f16.gguf \
+  models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  Q4_K_M
+```
+
+量化完成后，不要只看文件是否生成。
+
+还要在同一 prompt、同一上下文长度、同一设备上执行对比。
+
+```bash
+./build/bin/llama-cli \
+  -m models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  -p "用三句话解释 PTQ 和 QAT 的区别。" \
+  -n 128 \
+  --ctx-size 2048 \
+  -ngl 99
+```
+
+## QAT 工作流
+
+QAT 会在训练阶段模拟量化误差。
+
+它通常使用 fake quantization：前向传播中模拟低比特量化，反向传播仍借助浮点梯度更新。
+
+QAT 的价值在于让模型参数提前适应量化噪声。
+
+但它不适合作为所有项目的默认第一步。
+
+适合考虑 QAT 的场景：
+
+- PTQ 后质量下降稳定且明显。
+- 业务有明确的固定任务和高质量阈值。
+- 有足够训练数据、验证数据和训练预算。
+- 目标 runtime 支持对应量化格式。
+- 项目已经完成 baseline、PTQ 和误差定位。
+
+不适合过早使用 QAT 的场景：
+
+- 还没有可靠 FP baseline。
+- 数据管线和评估指标不稳定。
+- 目标设备上的低比特 kernel 不可用。
+- 只是为了追求更低 bit-width，但业务收益不明确。
+
+## Outlier 与 clipping
+
+量化误差经常被 outlier 放大。
+
+如果一个 tensor 中大多数数值集中在很小范围，少数极端值会迫使 scale 覆盖更大区间。
+
+这样大多数普通值被压到更少的整数格点里，误差会增加。
+
+处理 outlier 的常见思路：
+
+- 使用 per-channel 或 per-group 缩小 scale 覆盖范围。
+- 对激活使用 percentile clipping，而不是直接使用最大最小值。
+- 对敏感层保持更高精度。
+- 使用 SmoothQuant 等方法迁移激活 outlier 压力。
+- 在 LLM 中用 LLM.int8()、AWQ、GPTQ 等更专门的方法。
+
+教学时可以用一个简单检查脚本观察分布：
+
+```python
+import numpy as np
+
+x = np.load("activation_sample.npy")
+print("min/max:", x.min(), x.max())
+print("p99:", np.percentile(x, 99))
+print("p99.9:", np.percentile(x, 99.9))
+print("mean/std:", x.mean(), x.std())
+```
+
+如果 `max` 远大于 `p99.9`，就要警惕 outlier 对 scale 的影响。
+
+## 量化与推理加速的关系
+
+量化可能带来三种收益。
+
+但三种收益不能混为一谈。
+
+| 收益类型 | 表现 | 验证方式 |
+| --- | --- | --- |
+| 文件压缩 | 模型文件变小 | `ls -lh` 或模型仓库文件大小 |
+| 内存下降 | 加载后 RAM/VRAM/统一内存下降 | `nvidia-smi`、`tegrastats`、系统监控 |
+| 速度提升 | 首 token 或 tokens/s 改善 | 固定 prompt 和上下文长度的 benchmark |
+
+低比特模型可能只实现第一种收益。
+
+例如某些路径会把 INT4 权重加载后反量化到 FP16 计算。
+
+这时文件变小了，但计算不一定更快。
+
+在 Ubuntu Server 上，需要观察 CUDA offload、GPU kernel 和 VRAM。
+
+在 Jetson 上，还要观察功耗模式、温度、频率和统一内存压力。
+
+## 工程风险清单
+
+| 风险 | 现象 | 排查方法 |
+| --- | --- | --- |
+| Runtime 不支持 | 模型无法加载或自动 fallback | 查看启动日志和编译选项 |
+| Kernel 不匹配 | 文件变小但速度不变 | 对比 CPU/GPU offload 和 tokens/s |
+| 校准集不代表真实输入 | 某些任务质量明显退化 | 重构校准集并复测 |
+| Tokenizer/template 不一致 | 输出风格异常或拒答增多 | 固定 chat template |
+| 低比特过激 | 格式错误、重复、事实性下降 | 回退 Q5/Q8 或 mixed precision |
+| 只测单条 prompt | 结果不可复现 | 使用固定评估集和多轮记录 |
+| Jetson 温度/功耗限制 | 长时间运行变慢 | 记录 `tegrastats` 和功耗模式 |
+
 ## 配套实作
 
-对应实作章节：[Qwen GGUF 量化对比实验](/docs/lab-qwen-quantization)。
-推理加速验证见：[推理加速实验](/docs/lab-inference-acceleration)。
+本章对应以下实作：
 
-实验会把抽象的 bit-width 和 group 策略落到 Qwen GGUF 文件上，观察 Q8、Q5、Q4 等模型变体在文件大小、显存、首 token 和 tokens/s 上的差异。
+- [Qwen 基线推理](/docs/lab-qwen-baseline)
+- [Qwen GGUF 量化对比实验](/docs/lab-qwen-quantization)
+- [推理加速实验](/docs/lab-inference-acceleration)
+- [Jetson 环境与 Qwen 迁移](/docs/lab-jetson-setup)
+- [Profiling 与结果记录](/docs/lab-profiling)
+
+Ubuntu Server 实作重点：
+
+- 使用同一 Qwen 小模型，比较 Q8、Q5、Q4 等 GGUF 变体。
+- 用 `nvidia-smi` 记录 VRAM。
+- 用固定 prompt 记录首 token 延迟、tokens/s 和质量备注。
+
+Jetson 实作重点：
+
+- 确认 JetPack、CUDA、llama.cpp CUDA 编译路径。
+- 用 `tegrastats` 记录 RAM、GPU、温度和功耗状态。
+- 比较同一模型在服务器 GPU 和 Jetson 上的差异。
+
+## 课堂练习
+
+练习 1：校准集审查。
+
+给出一组业务 prompt，让学习者判断它们是否覆盖短问答、长上下文、格式输出和边界输入。
+
+练习 2：PTQ 决策。
+
+给出一个“Q4 速度提升但 JSON 错误率上升”的实验记录，让学习者决定是否回退到 Q5/Q8、修复 prompt、还是进入 QAT/蒸馏。
+
+练习 3：收益拆解。
+
+让学习者把一次量化实验拆成文件大小收益、内存收益、速度收益和质量风险四部分，不允许只写“变快”或“变小”。
 
 ## 验收结果
 
 | 产物 | 验收标准 |
 | --- | --- |
-| 量化术语表 | 能解释权重、激活、KV Cache 的量化差异 |
-| PTQ/QAT 判断表 | 能说明为什么当前实作优先 PTQ |
-| Qwen 量化对比表 | 至少记录 3 个 GGUF 变体的文件大小和运行结果 |
+| 量化术语表 | 能解释权重、激活、KV Cache、scale、zero-point、group size |
+| PTQ/QAT 判断表 | 能说明为什么当前实作优先 PTQ，何时才进入 QAT |
+| 校准集草案 | 至少覆盖短问答、格式输出、长上下文和领域输入 |
+| Qwen 量化对比表 | 至少记录 3 个 GGUF 变体的文件大小、内存、速度和质量备注 |
+| Jetson 记录 | 至少包含 `tegrastats` 输出或等价的设备状态记录 |
 
 ## 常见问题
 
-- **把 bit-width 当成唯一变量**：group size、校准集、kernel 和上下文长度都会影响结果。
-- **忽略反量化成本**：量化模型如果在 runtime 内频繁反量化，速度收益可能消失。
-- **校准集太随意**：PTQ 的统计范围来自数据，校准样本不代表真实输入时精度风险会放大。
-- **QAT 过早介入**：如果还没有稳定 baseline，先做 QAT 往往会掩盖真实问题来源。
+**是不是 bit 越低越好？**
+
+不是。低 bit 会降低文件和内存压力，但也可能损害质量，甚至因为 kernel 不支持而没有速度收益。
+
+**PTQ 是不是总比 QAT 差？**
+
+不是。很多部署项目中，PTQ 已经足够。QAT 的优势要用额外训练成本换来，必须有明确质量目标。
+
+**校准集越大越好吗？**
+
+不是。校准集的代表性和可复现性更重要。大量无关文本可能不能改善真实任务表现。
+
+**为什么同一个 Q4 模型在不同机器上速度差很多？**
+
+因为 CPU、GPU、内存带宽、CUDA offload、线程数、功耗模式和 runtime 编译选项都会影响结果。
+
+**量化后质量下降，应该马上蒸馏吗？**
+
+不应该。先确认 baseline、prompt/template、评估集、runtime 和量化格式，再考虑训练式补偿。
 
 ## 参考资料
 
 - [PyTorch Quantization](https://pytorch.org/docs/stable/quantization.html)
 - [ONNX Runtime Quantization](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 - [TensorFlow Lite post-training quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)
+- [NVIDIA TensorRT Developer Guide](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html)
 - [Hugging Face Transformers quantization](https://huggingface.co/docs/transformers/quantization/overview)
+- [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
+- [llama.cpp quantize README](https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md)
 - [GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323)
 - [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438)
 - [LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale](https://arxiv.org/abs/2208.07339)
