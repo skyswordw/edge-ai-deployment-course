@@ -214,6 +214,21 @@ while true; do
 done
 ```
 
+### 读懂 `nvidia-smi` 字段
+
+| 字段 | 含义 | 部署中怎么用 |
+| --- | --- | --- |
+| `memory.used` / `memory.total` | 显存占用与上限 | 对照模型大小和 KV Cache 估算, 判断还能加多大上下文 |
+| `utilization.gpu` | 采样窗口内有 kernel 执行的时间占比 | 持续接近 0 说明计算没上 GPU |
+| `temperature.gpu` | 核心温度 | 持续高温会触发降频, 长稳测试必记 |
+| `power.draw` | 实时功耗 | 结合 tokens/s 可以算每 token 能耗, 与 Jetson 对比 |
+| `pstate` | 性能状态 P0-P12 | 推理时长期处于高 P 值说明 GPU 停在低功耗档 |
+
+两个常见误读:
+
+- `utilization.gpu` 是“有 kernel 在跑”的时间占比, 不是算力利用率。LLM decode 阶段是 memory-bound, 这个数字可以很高, 同时大量算力在等数据。
+- 显存占用包含 runtime 预分配的 buffer, 不等于“模型权重 + KV Cache”的精确求和。
+
 ## Jetson 环境检查
 
 ### 最小检查命令
@@ -448,6 +463,22 @@ llama.cpp, Qwen 文档和低比特格式支持都在持续更新。没有 commit
 ### 可以把模型文件放进 Git 仓库吗?
 
 不可以。模型权重, 构建产物, 下载仓库和实验日志通常都应放在本地实验目录或外部存储, 不进入课程源码仓库。
+
+## 作业
+
+### 阅读题
+
+1. 阅读 NVIDIA CUDA Installation Guide 的版本兼容性部分, 说明 driver 版本和 CUDA toolkit 版本的兼容方向（谁可以比谁新）。
+
+### 检查题
+
+1. `nvidia-smi` 显示 `utilization.gpu` 为 95%, 能否得出“GPU 算力已经打满”的结论? 为什么?
+2. 机器上没有安装 CUDA toolkit 但 `nvidia-smi` 正常, llama.cpp 的 CUDA 构建会在哪一步失败? 运行已构建好的二进制呢?
+
+### 实验题
+
+1. 完成实作 1 或实作 2, 提交完整环境报告。
+2. 在一次 Qwen 推理过程中后台运行周期观察脚本, 在保存的 GPU 指标记录上标注模型加载, prefill, decode 三个阶段的位置。
 
 ## 参考资料
 

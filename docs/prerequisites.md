@@ -241,6 +241,18 @@ print(f"elapsed={elapsed:.6f}s")
 
 端侧部署的很多问题只在特定硬件, 驱动版本, runtime commit 和模型格式组合下出现。没有日志, 就无法复盘“为什么这次实验快了或慢了”。
 
+## 作业
+
+### 自测题
+
+1. 不查资料, 用一句话分别定义 latency, throughput, 首 token 延迟和 tokens/s, 再对照[机器学习推理基础](/docs/ml-inference-basics)检查。
+2. 解释模型文件大小和运行内存占用为什么不相等, 至少列出两个额外的内存来源。
+3. 判断自己属于路径 A/B/C 中哪一类, 列出对应路径中自己最需要补强的前两项。
+
+### 预习实验
+
+1. 完成预习任务 1-3, 保留实验目录结构, 环境快照和端到端计时三个产物, 它们会在后续每个实验中被复用。
+
 ## 参考资料
 
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
