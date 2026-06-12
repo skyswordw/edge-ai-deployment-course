@@ -277,7 +277,7 @@ sudo jetson_clocks --show
 
 ## 参考资料
 
-- [40/52 学时教学安排](/docs/course-hours)
+- [40/60 学时教学安排](/docs/course-hours)
 - [资料对比与课程取舍](/docs/source-comparison)
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)

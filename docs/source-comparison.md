@@ -55,7 +55,7 @@ flowchart TD
 | --- | --- | --- |
 | MIT 6.5940 / EfficientML | 高效模型、量化、剪枝、硬件感知优化的课程骨架 | TinyML 电路级和硬件设计细节不作为主线 |
 | The Machine Learning Systems Book | 指标、部署、可靠性、性能评估、系统边界 | 泛 MLOps、组织流程、平台治理不展开 |
-| Hugging Face LLM Course | tokenizer、Transformer、生成、chat template 基础 | 训练/微调长线内容只保留必要背景 |
+| Hugging Face LLM Course / Transformers / TRL | tokenizer、Transformer、生成、chat template、SFT 数据和微调入口 | 不把课程变成完整 LLM 训练课 |
 | PyTorch / ONNX / TFLite / OpenVINO | PTQ/QAT、校准、静态/动态量化、误差分析 | 不做逐 API 讲解，避免成为工具手册 |
 | GPTQ / AWQ / SmoothQuant / LLM.int8 | LLM 量化方法动机、误差来源、outlier 处理 | 复杂证明和榜单复述不作为课堂重点 |
 | llama.cpp / Qwen | GGUF、本地 LLM、server、benchmark、低比特实作 | 不追逐全部模型格式和参数枚举 |
@@ -68,13 +68,14 @@ flowchart TD
 
 | 课程部分 | 主要吸收来源 | 课程化处理 |
 | --- | --- | --- |
-| 前置知识 | Hugging Face、ML Systems Book | 用 tokenizer、prefill/decode、latency/memory 建立共同语言 |
-| 端侧部署框架 | ML Systems Book、EfficientML、Jetson docs | 把质量、延迟、内存、功耗、维护成本放到同一决策表 |
-| 量化压缩 | PyTorch、ONNX、TFLite、OpenVINO、GPTQ/AWQ/SmoothQuant | 用方法路线和失败模式组织，不按 API 罗列 |
-| 推理加速 | TensorRT、TensorRT-LLM、vLLM、llama.cpp、MLC LLM | 从图、kernel、memory、runtime、hardware 五层讲 |
-| Ubuntu / Jetson 实作 | Qwen、llama.cpp、Jetson、NVIDIA 文档 | 统一落到 Qwen 小模型部署评估报告 |
+| Part I 前置知识与工具链 | Hugging Face、ML Systems Book | 用 tokenizer、chat template、prefill/decode、latency/memory 建立共同语言 |
+| Part II 端侧部署问题框架 | ML Systems Book、EfficientML、Jetson docs | 把质量、延迟、内存、功耗、维护成本放到同一决策表 |
+| Part III 量化与压缩 | PyTorch、ONNX、TFLite、OpenVINO、GPTQ/AWQ/SmoothQuant | 用方法路线和失败模式组织，不按 API 罗列 |
+| Part IV 模型微调与数据适配 | Hugging Face、TRL、PEFT、Qwen、LLaMA-Factory | 从是否微调、数据、template、adapter、再量化和部署回归组织 |
+| Part V Runtime 与推理加速 | TensorRT、TensorRT-LLM、vLLM、llama.cpp、MLC LLM | 从图、kernel、memory、runtime、hardware 五层讲 |
+| Part VI Ubuntu / Jetson / 移动端实作 | Qwen、llama.cpp、Jetson、NVIDIA 文档、移动端 on-device 资料 | 统一落到 Qwen 小模型部署评估报告，并保留移动端路线图 |
 | Profiling | MLPerf、Nsight、llama-bench、`nvidia-smi`、`tegrastats` | 建立课堂可操作的实验记录模板 |
-| VLM / Agent | HF 多模态、OpenAI tool/agent 文档、系统资料 | 讲系统设计、权限和端云协同，不做完整平台课 |
+| Part VII VLM、Agent 与最终复盘 | HF 多模态、OpenAI tool/agent 文档、系统资料 | 讲系统设计、权限、端云协同和最终报告，不做完整平台课 |
 
 ## 课程主线的形成
 
@@ -84,12 +85,11 @@ flowchart TD
 flowchart LR
   A["前置知识"] --> B["端侧部署决策"]
   B --> C["量化与压缩"]
-  C --> D["推理加速与 Runtime"]
-  D --> E["Ubuntu Baseline"]
-  E --> F["Jetson 迁移"]
-  F --> G["服务化与端云协同"]
-  G --> H["案例复盘"]
-  H --> I["最终项目报告"]
+  C --> D["模型微调与数据适配"]
+  D --> E["Runtime 与推理加速"]
+  E --> F["Ubuntu / Jetson / 移动端实作"]
+  F --> G["VLM / Agent 与复盘"]
+  G --> H["最终项目报告"]
 ```
 
 这条主线的好处是每个知识点都有落点：
@@ -97,25 +97,29 @@ flowchart LR
 - 学 tokenizer，是为了理解本地模型输入格式和上下文。
 - 学 KV Cache，是为了解释内存和首 token/tokens/s。
 - 学 PTQ/QAT，是为了理解模型质量和部署格式。
+- 学微调，是为了判断数据、输出格式和领域适配问题是否应该进入训练闭环。
 - 学 runtime，是为了理解模型为什么“能跑但不快”。
 - 学 Jetson，是为了看到功耗、温度和边缘硬件限制。
 - 学 VLM/Agent，是为了从单模型走向系统设计。
 
-## 为什么保留 7 部分结构
+## 为什么采用 Part I-VII 结构
 
-7 部分结构能把课程从“大纲列表”变成“完整学习路径”。
+导读 + Part I-VII 的结构能把课程从“大纲列表”变成“完整学习路径”，并把模型微调从量化压缩中拆出来，形成独立的数据适配和部署回归闭环。
 
 | 部分 | 功能 | 如果删除会怎样 |
 | --- | --- | --- |
 | 导读 | 说明课程定位、资料取舍和学时 | 学生不知道课程边界 |
-| Part I 前置知识 | 补齐 LLM、系统、Linux/GPU 基础 | 实作时只会复制命令 |
+| Part I 前置知识与工具链 | 补齐 LLM、系统、Linux/GPU 基础 | 实作时只会复制命令 |
 | Part II 端侧部署框架 | 建立决策矩阵和端云协同视角 | 量化和 runtime 会变成零散技巧 |
 | Part III 量化与压缩 | 讲模型侧优化 | 无法解释低比特、PTQ/QAT 和精度风险 |
-| Part IV 推理加速与 Runtime | 讲执行侧优化 | 无法解释速度瓶颈和硬件后端 |
-| Part V Ubuntu / Jetson 实作 | 建立可验证经验 | 课程会停留在理论 |
-| Part VI 案例复盘 | 形成项目报告和评审能力 | 学生缺少收束和迁移能力 |
+| Part IV 模型微调与数据适配 | 讲数据、template、adapter 和部署回归 | 会把所有质量问题都粗暴塞回量化或 prompt |
+| Part V Runtime 与推理加速 | 讲执行侧优化 | 无法解释速度瓶颈和硬件后端 |
+| Part VI Ubuntu / Jetson / 移动端实作 | 建立可验证经验 | 课程会停留在理论 |
+| Part VII VLM、Agent 与最终复盘 | 形成系统设计、项目报告和评审能力 | 学生缺少收束和迁移能力 |
 
-## 为什么体量要做到 40+ 学时
+每个 Part 都必须同时写清两条线：技术点如何循序渐进，工程实作如何落到命令、日志、记录表和最终报告。否则课程会重新退化成资料列表或命令合集。
+
+## 为什么体量要做到 40+/60 学时
 
 如果只讲量化概念和几个命令，8 到 12 学时也能完成。但那样学生通常只能获得“跑过一次 demo”的经验。
 
@@ -125,13 +129,26 @@ flowchart LR
 | --- | --- | --- |
 | 理解模型输入输出 | tokenizer、chat template、prefill/decode | 本地模型答非所问，不知道原因 |
 | 选择量化方案 | PTQ/QAT、GGUF、GPTQ/AWQ、质量风险 | 只会选最小文件 |
+| 判断是否微调 | 数据格式、LoRA/QLoRA、训练日志、输出对比 | 把所有质量问题都误判成“要训练” |
 | 判断速度瓶颈 | runtime、kernel、KV Cache、GPU offload | 模型慢时只会换模型 |
 | 处理硬件差异 | Ubuntu Server、Jetson、功耗、温度 | 服务器结果无法迁移 |
 | 服务化 | 本地 API、日志、失败恢复 | 命令行 demo 无法集成 |
 | 系统设计 | VLM/Agent、端云协同、权限 | 不知道真实产品如何落地 |
 | 项目复盘 | 指标、表格、失败样例、结论 | 只有结果，没有判断 |
 
-因此本课程设计为 52 学时完整版，并可裁剪为 40 学时。40 学时版本应保留主线，减少论文精读和多 runtime 展开。
+因此本课程设计为 60 学时完整版，并可裁剪为 40 学时。40 学时版本应保留主线，减少论文精读、多 runtime 展开和微调长训练，但仍保留 LoRA smoke test、数据检查和输出对比。
+
+## 借鉴后的章节粒度
+
+对照公开教材和官方教程后，本课程每个核心章节都要写到自学可执行粒度，而不是只列概念。
+
+| 外部资料做法 | 本课程转化 |
+| --- | --- |
+| Hugging Face 文档把 chat template 写到 `messages`、role、`apply_chat_template` 和生成提示 | 微调章节明确训练和部署 prompt 必须使用同一 template |
+| TRL/PEFT 文档把 SFTTrainer、adapter 和训练参数写成最小入口 | 微调实验提供 5-step Qwen LoRA smoke test |
+| Qwen/LLaMA-Factory 教程把模型、数据、配置和训练命令串成流程 | 本课程把数据检查、训练日志、adapter 保存和输出对比连成闭环 |
+| MIT EfficientML 课程有 lecture、lab、final project | 本课程把理论章、实验章和部署评估报告贯通 |
+| ML systems 资料强调指标、可靠性和报告 | 本课程每个实验都要求日志路径、失败原因和工程结论 |
 
 ## 量化压缩与推理加速的边界
 
@@ -213,7 +230,8 @@ VLM/Agent 很容易让课程发散。这里的取舍是：
 ```markdown
 ## 备课检查
 
-- 本章是否对应 7 部分结构中的明确位置：
+- 本章是否对应 Part I-VII 结构中的明确位置：
+- 本章所在 Part 是否写清技术递进和工程闭环：
 - 本章是否有可执行实验或案例：
 - 本章是否说明了方法适用条件：
 - 本章是否避免编造性能数字：

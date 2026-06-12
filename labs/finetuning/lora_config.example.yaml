@@ -1,0 +1,27 @@
+model: Qwen/Qwen2.5-0.5B-Instruct
+dataset: ~/edge-ai-lab/finetune/data/sample_sft_data.jsonl
+output_dir: ~/edge-ai-lab/finetune/outputs/qwen-lora-smoke
+
+training:
+  max_steps: 5
+  max_seq_length: 512
+  learning_rate: 0.0002
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 1
+  logging_steps: 1
+  save_steps: 5
+
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+
+notes:
+  - This is a smoke-test template, not a production training recipe.
+  - Do not commit model weights, adapters, checkpoints, logs, or caches.
+  - Record real metrics in labs/finetuning/finetuning-results-template.md.

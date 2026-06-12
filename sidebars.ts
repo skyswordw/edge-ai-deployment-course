@@ -9,12 +9,14 @@ const sidebars: SidebarsConfig = {
       items: [
         'intro',
         'course-hours',
+        'part-technical-outline',
+        'self-study-granularity',
         'source-comparison',
       ],
     },
     {
       type: 'category',
-      label: 'Part I 前置知识',
+      label: 'Part I 前置知识与工具链',
       collapsed: false,
       items: [
         'prerequisites',
@@ -35,7 +37,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Part III 量化与压缩方法',
+      label: 'Part III 量化与压缩',
       collapsed: false,
       items: [
         'ptq-qat',
@@ -46,7 +48,16 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Part IV 推理加速与 Runtime',
+      label: 'Part IV 模型微调与数据适配',
+      collapsed: false,
+      items: [
+        'finetuning-lora',
+        'lab-qwen-lora-finetuning',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Part V Runtime 与推理加速',
       collapsed: false,
       items: [
         'inference-acceleration',
@@ -56,7 +67,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Part V Ubuntu / Jetson 实作',
+      label: 'Part VI Ubuntu / Jetson / 移动端实作',
       collapsed: false,
       items: [
         'lab-ubuntu-nvidia',
@@ -69,7 +80,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Part VI 案例复盘与扩展路线',
+      label: 'Part VII VLM、Agent 与最终复盘',
       collapsed: false,
       items: [
         'vlm-agent',

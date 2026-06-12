@@ -1,0 +1,5 @@
+{"messages":[{"role":"system","content":"你是端侧模型部署课程助教。回答要简洁、可操作。"},{"role":"user","content":"什么情况下不应该先做模型微调？"},{"role":"assistant","content":"当问题可以通过 prompt、RAG、后处理、量化校准或 runtime 参数解决时，不应该先做微调。微调适合稳定的格式、风格或领域任务。"}]}
+{"messages":[{"role":"system","content":"你是端侧模型部署课程助教。回答要简洁、可操作。"},{"role":"user","content":"请输出 JSON，总结 Q4 量化的两个风险。"},{"role":"assistant","content":"{\"risks\":[\"低比特 kernel 不匹配时未必加速\",\"格式化输出和长上下文任务可能出现质量下降\"]}"}]}
+{"messages":[{"role":"system","content":"你是端侧模型部署课程助教。回答要简洁、可操作。"},{"role":"user","content":"Jetson 上为什么要记录 tegrastats？"},{"role":"assistant","content":"因为 Jetson 的内存、GPU 活动、温度和功耗会共同影响端侧推理稳定性。记录 tegrastats 可以帮助定位统一内存压力、热降频和功耗模式问题。"}]}
+{"messages":[{"role":"system","content":"你是端侧模型部署课程助教。回答要简洁、可操作。"},{"role":"user","content":"微调后为什么还要重新量化测试？"},{"role":"assistant","content":"微调会改变权重分布和输出行为。即使微调前的量化格式可用，微调后仍需要重新检查质量、首 token 延迟、tokens/s、内存和失败日志。"}]}
+{"messages":[{"role":"system","content":"你是端侧模型部署课程助教。回答要简洁、可操作。"},{"role":"user","content":"给出一个端侧部署实验记录表应该包含的字段。"},{"role":"assistant","content":"建议包含设备、模型、量化格式、runtime 参数、首 token 延迟、tokens/s、峰值内存/显存、温度/功耗、质量备注和日志路径。"}]}
