@@ -116,6 +116,43 @@ flowchart TD
 - 与 Qwen、Transformers、PEFT、TRL、LLaMA-Factory 等生态对应。
 - 训练后可以继续做量化、GGUF 转换和本地部署验证。
 
+## LoRA 与 QLoRA 的数学形式
+
+LoRA 的核心假设是：微调引起的权重变化是低秩的。
+
+对一个被注入的线性层（例如 attention 的 q_proj），冻结原始权重 $W_0 \in \mathbb{R}^{d \times k}$，只训练两个低秩矩阵：
+
+$$
+h = W_0 x + \frac{\alpha}{r}\,BAx, \qquad B \in \mathbb{R}^{d \times r},\; A \in \mathbb{R}^{r \times k},\; r \ll \min(d, k)
+$$
+
+其中 $r$ 是秩（配置里的 `r`），$\alpha$ 是缩放系数（配置里的 `lora_alpha`），$\alpha/r$ 决定增量项的整体强度。初始化时 $A$ 用高斯随机、$B$ 置零，因此训练开始时增量 $BA = 0$，模型行为和基座完全一致。
+
+可训练参数只有 $r(d + k)$ 个，相对该层全参数 $dk$ 的比例是：
+
+$$
+\frac{r(d+k)}{dk} = r\left(\frac{1}{k} + \frac{1}{d}\right)
+$$
+
+以 Qwen2.5-0.5B 的 q_proj 为例（$d = k = 896$、$r = 8$）：可训练参数 $8 \times 1792 = 14336$ 个，约占该层全参的 1.8%。LoRA 显存便宜的来源就在这里：梯度和优化器状态只为这一小部分参数维护。
+
+部署时有两种用法：
+
+- 不合并：runtime 同时加载 $W_0$ 和 $B$、$A$，推理时多一次低秩乘法。
+- 合并：$W = W_0 + \frac{\alpha}{r}BA$，得到一个普通权重矩阵，对 runtime 完全透明，也是后续转 GGUF 的前提。
+
+QLoRA 在此基础上把冻结的基座用 NF4（4-bit NormalFloat）量化加载。NF4 的 16 个格点按标准正态分布的分位数排布，对近似正态的权重分布，舍入误差比均匀 INT4 更小；double quantization 把每组的量化常数再量化一次，平均每参数再省约 0.4 bit。训练时前向用反量化的基座计算，梯度只流向 $A$、$B$。
+
+三条路线的显存可以用计算式粗估（只算权重、梯度、Adam 优化器状态三项，$N$ 是基座参数量，$N_{lora}$ 是 LoRA 参数量）：
+
+| 占用项 | 全参 FP16 | LoRA（FP16 基座） | QLoRA（NF4 基座） |
+| --- | --- | --- | --- |
+| 权重 | $2N$ | $2N$ | $\approx 0.5N$ |
+| 梯度 | $2N$ | $2N_{lora}$ | $2N_{lora}$ |
+| Adam 状态 | $8N$ | $8N_{lora}$ | $8N_{lora}$ |
+
+全参训练光这三项就约 $12N$（0.5B 模型约 6 GB），LoRA 把后两项几乎抹掉，QLoRA 再把第一项压到约四分之一。激活占用另算，随 batch 和序列长度增长，这也是 smoke test 用 `max_seq_length 512`、`batch 1` 的原因。
+
 ## 数据格式
 
 微调数据不是普通文本堆叠。
@@ -242,6 +279,26 @@ PY
 | target modules | `q_proj/k_proj/v_proj/o_proj` | 常见注意力投影模块 |
 | output path | 仓库外路径 | 避免提交 adapter 和 checkpoint |
 
+这些字段在 PEFT 里逐项对应，可以和数学小节的公式互相印证：
+
+```python
+from peft import LoraConfig, get_peft_model
+from transformers import AutoModelForCausalLM
+
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
+lora_config = LoraConfig(
+    r=8,                       # 公式里的 r
+    lora_alpha=16,             # 公式里的 alpha，增量强度 alpha/r = 2
+    lora_dropout=0.05,
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+    task_type="CAUSAL_LM",
+)
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+```
+
+`print_trainable_parameters()` 输出的可训练参数比例，应该和用 $r(d+k)$ 手算的结果一致。对不上时先检查 target modules 是否真的匹配到了模块。
+
 ## 显存和训练成本
 
 微调比推理更耗显存。
@@ -338,6 +395,39 @@ flowchart TD
 - 微调是否导致 tokens/s、内存、首 token 延迟变化？
 - Jetson 上是否仍能加载和稳定运行？
 
+合并路线的最小命令链。先在 Transformers 生态合并：
+
+```python
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+base_id = "Qwen/Qwen2.5-0.5B-Instruct"
+base = AutoModelForCausalLM.from_pretrained(base_id, torch_dtype="bfloat16")
+merged = PeftModel.from_pretrained(base, "outputs/qwen-lora-smoke/adapter").merge_and_unload()
+merged.save_pretrained("outputs/qwen-merged")
+AutoTokenizer.from_pretrained(base_id).save_pretrained("outputs/qwen-merged")
+```
+
+`merge_and_unload()` 执行的就是数学小节的合并式 $W = W_0 + \frac{\alpha}{r}BA$。合并后回到[大模型量化](/docs/llm-quantization)的标准 GGUF 链路：
+
+```bash
+mkdir -p ~/edge-ai-lab/finetune/logs
+
+python llama.cpp/convert_hf_to_gguf.py \
+  ~/edge-ai-lab/finetune/outputs/qwen-merged \
+  --outfile models/qwen/qwen2.5-0.5b-merged-f16.gguf \
+  --outtype f16 \
+  2>&1 | tee ~/edge-ai-lab/finetune/logs/convert-merged.log
+
+./build/bin/llama-quantize \
+  models/qwen/qwen2.5-0.5b-merged-f16.gguf \
+  models/qwen/qwen2.5-0.5b-merged-q4_k_m.gguf \
+  Q4_K_M \
+  2>&1 | tee ~/edge-ai-lab/finetune/logs/quantize-merged.log
+```
+
+不合并的路线也存在：llama.cpp 的 `convert_lora_to_gguf.py` 可以把 adapter 单独转成 GGUF LoRA，推理时用 `--lora` 挂载到基座 GGUF 上。边界条件是：基座 GGUF 和 adapter 必须来自完全相同的模型版本，在量化基座上挂 adapter 的质量也要单独验证。课程推荐先走合并路线，因为它的部署语义最简单、和量化实验的衔接最直接。
+
 部署回归的最低检查表：
 
 | 检查项 | 通过标准 |
@@ -417,6 +507,28 @@ flowchart TD
 
 知识更新优先 RAG，固定格式和风格优先微调。很多产品会同时使用：RAG 提供知识，微调改善回答格式和交互习惯。
 
+## 作业
+
+### 阅读题
+
+1. 阅读 QLoRA 论文（arXiv 2305.14314）第 3 节，说明 NF4 的格点为什么按正态分位数排布，double quantization 节省了什么。
+2. 阅读 PEFT 文档的 LoRA 页面，列出除注意力投影外还可以注入 LoRA 的模块，以及扩大 target modules 的代价。
+
+### 检查题
+
+1. 手算：Qwen2.5-0.5B 的一个 $896 \times 896$ 投影层注入 $r = 8$ 的 LoRA，可训练参数是多少个？占该层全参的百分比是多少？
+2. `lora_alpha=32, r=8` 与 `lora_alpha=16, r=8` 的区别是什么？哪个等效于更强的增量？
+3. 判断并说明理由：QLoRA 用 NF4 加载训练成功，说明这个模型用 GGUF Q4 部署的质量也没有问题。
+
+### 实验题
+
+1. 运行 `labs/finetuning/train_lora_smoke.py`，在日志中找到可训练参数信息，与检查题 1 的手算结果对照。
+2. 把 smoke test 得到的 adapter 合并并量化为 Q4_K_M GGUF，用固定 3 个 prompt 对比“基座 Q4”和“合并后 Q4”的输出，把结论填入 `labs/finetuning/finetuning-results-template.md`。
+
+### 讨论题
+
+1. “先微调再量化”和“先量化再 LoRA 补偿”两条路线，分别在什么证据下应该优先选择？
+
 ## 参考资料
 
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course/chapter1/1)
@@ -426,4 +538,5 @@ flowchart TD
 - [Qwen LLaMA-Factory fine-tuning guide](https://qwen.readthedocs.io/en/v3.0/training/llama_factory.html)
 - [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)
 - [Unsloth documentation](https://docs.unsloth.ai/)
+- [LoRA paper](https://arxiv.org/abs/2106.09685)
 - [QLoRA paper](https://arxiv.org/abs/2305.14314)
