@@ -110,6 +110,43 @@ sequenceDiagram
 | 内存 | KV Cache 管理、减少 CPU/GPU 拷贝、pinned memory | 是否被内存带宽、碎片或 OOM 限制 |
 | Runtime/硬件 | batching、GPU offload、线程、功耗模式、散热 | 延迟、吞吐、温度和稳定性是否达标 |
 
+### 算术强度与 Roofline 判断
+
+判断“瓶颈是计算还是内存带宽”有一个简单的数学工具：算术强度（arithmetic intensity）。
+
+$$
+AI = \frac{\text{FLOPs}}{\text{访存字节数}}
+$$
+
+设备有两个上限：峰值算力 $P$（FLOP/s）和内存带宽 $BW$（B/s）。Roofline 模型指出，实际性能不会超过：
+
+$$
+\text{性能} \le \min\big(P,\; AI \times BW\big)
+$$
+
+算术强度低于拐点 $P/BW$ 的计算是 memory-bound：算力再强也要等数据到达。
+
+把它套到 LLM 的两个阶段：
+
+- prefill 一次处理整个 prompt，矩阵乘是“矩阵 × 矩阵”，每读一份权重做很多次乘加，算术强度高，更接近 compute-bound。
+- decode 每步只生成一个 token，矩阵乘退化为“矩阵 × 向量”（GEMV），每个权重读进来只用一次，算术强度约为 1，几乎总是 memory-bound。
+
+由此可以直接估算 decode 速度上限：
+
+$$
+\text{tokens/s} \lesssim \frac{BW}{\text{每 token 读取字节数}} \approx \frac{BW}{\text{模型权重字节数}}
+$$
+
+以 Qwen2.5-1.5B 的 Q4_K_M 为例（文件约 1 GB）：内存带宽约 100 GB/s 的设备上，decode 上限是 100 tokens/s 量级；带宽约 1 TB/s 的桌面 GPU 上是 1000 tokens/s 量级。这是数量级估算，不是性能承诺——实际还有 KV Cache 读取、激活计算和调度开销。但它已经足够解释“为什么 Q4 比 F16 明显快”：decode 是 memory-bound，每 token 要搬的权重字节数降到了约四分之一。
+
+端到端延迟可以拆成：
+
+$$
+T_{total} = T_{prefill} + \frac{n_{gen}}{v_{decode}}
+$$
+
+$T_{prefill}$ 随 prompt 长度增长，决定首 token 延迟；$v_{decode}$ 是稳定生成速度，决定长输出的总耗时。两段的瓶颈类型不同，优化手段也不同。
+
 ### Prefill 与 Decode
 
 LLM 的一次生成通常分成：
@@ -127,7 +164,9 @@ LLM 的一次生成通常分成：
 
 KV Cache 保存 attention 的历史 key/value，使模型不需要每生成一个 token 都重新计算全部历史。
 
-它带来速度收益，也带来内存压力。
+它带来速度收益，也带来内存压力。占用估算公式和 Qwen 数值算例见[大模型量化与 KV Cache](/docs/llm-quantization)。
+
+decode 每生成一个 token 都要完整读一遍历史 cache，所以长上下文不只吃内存：cache 字节数会进入 roofline 估算的“每 token 读取字节数”，直接拉低 tokens/s。
 
 需要观察：
 
@@ -229,6 +268,45 @@ done
   2>&1 | tee ~/edge-ai-lab/logs/llama-bench-q4.txt
 ```
 
+### KV Cache 量化与 flash attention
+
+```bash
+./build/bin/llama-cli \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  -p "解释 KV Cache 量化的收益和风险。" \
+  -n 128 \
+  --ctx-size 8192 \
+  -ngl 99 \
+  -fa \
+  --cache-type-k q8_0 \
+  --cache-type-v q8_0 \
+  2>&1 | tee ~/edge-ai-lab/logs/kv-q8.txt
+```
+
+V cache 量化需要启用 flash attention（`-fa`），flag 细节以当前版本 `--help` 为准。对比启动日志中的 KV buffer size 行和长上下文下的 tokens/s。
+
+### 并发吞吐基准
+
+```bash
+./build/bin/llama-batched-bench \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  -ngl 99 \
+  -npp 512 -ntg 128 -npl 1,2,4,8 \
+  2>&1 | tee ~/edge-ai-lab/logs/batched-bench.txt
+```
+
+`-npl` 控制并发数。观察单流 tokens/s 和总吞吐的变化方向：decode 是 memory-bound，batching 把“每读一份权重服务一个 token”变成“服务多个 token”，总吞吐上升，但单流速度未必。
+
+### 带宽与设备观测
+
+```bash
+# Ubuntu Server：逐秒观测 GPU 利用率、显存、功耗和频率
+nvidia-smi dmon -s pucm -d 1 -c 60 2>&1 | tee ~/edge-ai-lab/logs/dmon.txt
+
+# Jetson
+tegrastats --interval 1000 --logfile ~/edge-ai-lab/logs/tegrastats-accel.log
+```
+
 ## 教学实验设计
 
 本章不追求一次调到最快，而是训练实验设计能力。
@@ -326,6 +404,8 @@ done
 3. 比较 Q8、Q5、Q4 中至少两个量化格式。
 4. 选择一组结果，解释瓶颈最可能来自哪里。
 5. 如果设备是 Jetson，补充功耗模式、温度和 `tegrastats` 日志。
+6. 用 roofline 框架解释你的 `-ngl` 对比结果：哪个配置更接近 memory-bound？依据是什么？
+7. 用 $\text{tokens/s} \lesssim BW / \text{模型字节数}$ 估算你设备上 Q4 模型的 decode 上限，与实测值对比并解释差距来源。
 
 ## 参考资料
 
@@ -336,3 +416,4 @@ done
 - [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)
 - [vLLM documentation](https://docs.vllm.ai/)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [Roofline: An Insightful Visual Performance Model](https://dl.acm.org/doi/10.1145/1498765.1498785)

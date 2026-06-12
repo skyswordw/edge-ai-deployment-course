@@ -154,6 +154,22 @@ flowchart LR
 | 服务化 | 暴露 API | server 日志和 smoke test |
 | 复盘 | 解释瓶颈与取舍 | 实验结论 |
 
+### 服务指标的口径
+
+服务化之后，指标从“单次推理”变成“请求流”。至少要分清三个量：
+
+- 单请求延迟 $T$：拆解见[推理加速基础](/docs/inference-acceleration)的 $T_{total}$ 公式。
+- 吞吐 $X$：单位时间完成的请求数或 token 数。
+- 并发 $N$：同时停留在系统里的请求数。
+
+三者满足 Little's law：
+
+$$
+N = X \times T
+$$
+
+它给出一个常用的工程判断：并发提高后，如果吞吐没有同比增长，单请求延迟必然被拉长。continuous batching 能提高吞吐，是因为 decode 阶段 memory-bound，把多个请求拼进同一次权重读取里；但每个请求的单流延迟通常变差。压测时延迟和吞吐都要记录，不能只报一个。
+
 ## 代码/命令示例
 
 ### 目录约定
@@ -230,6 +246,49 @@ curl http://localhost:8080/v1/chat/completions \
     "max_tokens": 128
   }'
 ```
+
+需要多并发服务时，加并行参数：
+
+```bash
+./build/bin/llama-server \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  -ngl 99 \
+  --ctx-size 8192 \
+  --parallel 4 \
+  -fa \
+  --host 127.0.0.1 \
+  --port 8080 \
+  2>&1 | tee ~/edge-ai-lab/logs/llama-server-parallel.txt
+```
+
+`--parallel` 是同时处理的请求槽位。注意 `--ctx-size` 是总预算，会被槽位平分：4 个槽位、8192 总上下文意味着每个请求最多约 2048。continuous batching 在较新版本默认开启，flag 细节以 `--help` 为准。
+
+### 其他 runtime 的最小入口
+
+课程主线是 llama.cpp，但选型地图里的两条路线值得各跑一条最小命令，知道“入口长什么样”。
+
+ONNX Runtime 的后端选择发生在 provider 列表里：
+
+```python
+import onnxruntime as ort
+
+sess = ort.InferenceSession(
+    "model-int8.onnx",
+    providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+)
+print(sess.get_providers())
+```
+
+打印结果必须检查：CUDA provider 加载失败时 ONNX Runtime 会静默回落 CPU，这是“文件变小但不变快”的典型来源之一。
+
+TensorRT 的标准入口是把 ONNX 构建成 engine 并自带基准测试：
+
+```bash
+trtexec --onnx=model-fp32.onnx --saveEngine=model.engine --fp16 \
+  2>&1 | tee ~/edge-ai-lab/logs/trtexec-build.txt
+```
+
+构建日志会列出哪些层被融合、哪些层 fallback——这正是图优化层和 kernel 层最直接的可观察证据。
 
 ## 配套实作
 
@@ -360,6 +419,22 @@ curl http://localhost:8080/v1/chat/completions \
 2. 如果 Q8 质量最好但 Jetson 内存不足，应该先换模型、换量化格式还是换 runtime？
 3. 如果 `-ngl 99` 比 `-ngl 0` 只快一点，可能有哪些原因？
 4. 如果 server API 的响应慢于 CLI，应该如何设计实验定位问题？
+
+## 作业
+
+### 阅读题
+
+1. 阅读 llama.cpp server 文档，整理 `--parallel`、continuous batching 和上下文总预算三者的关系。
+
+### 检查题
+
+1. 用 Little's law 解释：并发从 1 提到 4，总吞吐只从 20 提到 35 token/s，单请求延迟发生了什么？
+2. 模型格式、runtime、backend、服务接口四层中，“用 Ollama 包装 llama.cpp”动了哪一层？预期性能变化是什么？
+
+### 实验题
+
+1. 分别用 `--parallel 1` 和 `--parallel 4` 启动本地 server，用 4 个并发 `curl` 压同一 prompt，记录单请求延迟和总吞吐，验证 Little's law 的方向性结论。
+2. 在自己的环境里运行 ONNX Runtime provider 检查脚本，记录实际可用的 provider 列表和回落行为。
 
 ## 参考资料
 
