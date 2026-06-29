@@ -255,6 +255,20 @@ tools:
     reason: requires explicit human approval
 ```
 
+实跑记录：
+
+- [final agent review run](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-final-agent-review)
+
+本地小模型可以生成工具策略草案，但不能直接执行。实跑中模型两次返回了合法 JSON，却把同一个工具同时放进 `allowed_tools` 和 `blocked_tools`。因此 Agent 输出至少要经过结构和权限校验。
+
+课程提供一个最小校验脚本：
+
+```bash
+python3 labs/scripts/validate_agent_policy.py agent-policy.json
+```
+
+它只检查三件事：必需字段存在、三个工具集合互斥、高风险工具不能直接允许。更复杂的业务权限应在应用层继续加规则。
+
 ## 配套实作
 
 对应实作章节：[本地 OpenAI-compatible 服务](/docs/lab-local-service)。
@@ -342,6 +356,7 @@ tools:
 
 - **只压缩 LLM**：VLM 的图像侧、projector 和输入管线也可能是瓶颈。
 - **忽略工具权限**：Agent 端侧运行更接近真实系统操作，权限边界必须先定义。
+- **只检查 JSON 合法**：合法 JSON 不代表权限策略安全，仍需检查集合冲突和高风险工具。
 - **把端侧当成全离线**：很多产品更适合端云协同，而不是强行全端侧。
 - **没有失败恢复**：工具调用失败、网络失败、输出格式错误都需要恢复策略。
 - **把 demo 当产品**：一次成功调用不能证明权限、状态和日志策略可用。

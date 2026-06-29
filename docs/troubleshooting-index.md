@@ -32,6 +32,7 @@ title: 排障索引
 | API 成功但很慢或超时 | server 日志、请求耗时、模型加载 | 冷启动、请求排队、上下文过长 | 第 6 节服务记录；第 7 节写并发/超时风险 | [本地 API](/docs/lab-local-service) |
 | timing 解析结果全空 | stdout/stderr 是否分开保存、日志里是否有 `eval time` | llama.cpp timing 可能写到 stderr；或版本字段不同 | 第 5 节写解析限制；改用 `2>&1 | tee` 或解析 stderr 日志 | [Profiling](/docs/lab-profiling) |
 | `nvidia-smi` 显示 GPU 利用率 0% | 采样间隔、推理持续时间、显存/功耗变化 | 运行太短，采样错过峰值 | 第 5 节写监控限制；用更长生成或 `llama-bench` 重测 | [Profiling](/docs/lab-profiling) |
+| Agent policy JSON 合法但权限冲突 | `allowed_tools`、`confirm_required`、`blocked_tools` 是否重叠 | 小模型只满足格式，没满足权限约束 | 第 7 节写安全风险；先跑 policy validator，不执行工具 | [VLM/Agent](/docs/vlm-agent) |
 | Jetson 速度越跑越慢 | `tegrastats`、温度、功耗模式 | 热降频、电源或散热不足 | 第 7 节写温度/功耗风险；RAM 接近上限时补内存风险 | [Jetson 环境](/docs/lab-jetson-setup) |
 | 模型许可证未记录 | 模型卡、教师说明、下载来源 | 来源不清或离线包缺说明 | 第 2 节写未记录；第 7 节写许可证风险 | [Qwen 基线推理](/docs/lab-qwen-baseline) |
 | 服务端口暴露到公网 | host、端口、防火墙 | 绑定 `0.0.0.0` 且无鉴权 | 第 7 节写安全和日志风险 | [本地 API](/docs/lab-local-service) |
