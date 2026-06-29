@@ -24,6 +24,8 @@ title: 排障索引
 | 量化后质量下降、重复或不满足固定 prompt | 固定 prompt、Q8/Q5/Q4 输出对比 | 低比特误差、采样参数、模型不匹配 | 第 4 节质量观察；第 7 节写输出质量风险 | [Qwen 量化对比](/docs/lab-qwen-quantization) |
 | 显存或内存爆 | `ctx-size`、KV Cache、资源监控 | 上下文过长、模型过大、系统进程占用 | 第 7 节写内存/显存 + 长上下文风险 | [大模型量化与 KV Cache](/docs/llm-quantization) |
 | 输出乱码或风格异常 | tokenizer、chat template | 模型不是 instruct 版或模板不一致 | 第 7 节写输出质量风险 | [Transformer 与 LLM 基础](/docs/transformer-llm-basics) |
+| `nvidia-smi` 可见 GPU 但 PyTorch CUDA 不可用 | `torch.__version__`、`torch.version.cuda`、driver CUDA | PyTorch CUDA 构建版本高于驱动支持版本 | 第 2 节写环境限制；换兼容环境或重装匹配 PyTorch | [Qwen LoRA 微调](/docs/lab-qwen-lora-finetuning) |
+| `SFTTrainer` 不接受 `dataset_text_field` | TRL 版本、报错栈 | TRL API 变更，旧参数应放到 `SFTConfig` | 第 9 节附失败日志；更新脚本后重跑 smoke test | [Qwen LoRA 微调](/docs/lab-qwen-lora-finetuning) |
 | API 无响应 | server 日志、端口、host | 服务未启动、端口不一致、防火墙 | 第 6 节服务失败；第 7 节写并发/超时或安全风险 | [本地 API](/docs/lab-local-service) |
 | API 返回非 200 或非 JSON | `api-curl-meta.txt`、`api-curl-response.json`、server 日志 | endpoint 路径、请求 JSON、模型未加载、服务端异常 | 第 6 节写失败；附 HTTP 状态、响应 JSON/原始响应和 server 日志 | [本地 API](/docs/lab-local-service) |
 | API 返回 200 但答案明显错误 | 固定 prompt、响应正文、server timing | 服务可用不代表模型质量合格，可能是模型太小、量化损失或 prompt 不适合 | 第 6 节写服务成功；第 4/7 节写质量风险 | [本地 API](/docs/lab-local-service) |

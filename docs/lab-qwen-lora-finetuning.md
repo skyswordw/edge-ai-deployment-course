@@ -72,6 +72,10 @@ Jetson 更适合做部署验证，而不是作为本课程第一训练设备。
 
 原因是训练显存、温度、功耗和包兼容问题会显著增加学习成本。
 
+实跑记录：
+
+- [Qwen LoRA smoke run](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-qwen-lora-smoke)
+
 ## 目录结构
 
 建议训练相关文件放在课程仓库外部：
@@ -104,6 +108,13 @@ test -f labs/finetuning/sample_sft_data.jsonl
 
 如果不在课程仓库根目录，先进入仓库再继续。
 
+如果课程仓库在 Mac，本地复制到服务器时建议避免带入 AppleDouble 元数据文件：
+
+```bash
+COPYFILE_DISABLE=1 tar -C <course-repo> -czf - labs/finetuning \
+  | ssh <server> 'mkdir -p ~/edge-ai-lab/course && tar -C ~/edge-ai-lab/course -xzf -'
+```
+
 ## Step 1：准备 Python 环境
 
 以下命令是教学示例。具体版本以课堂环境和目标 GPU 为准。
@@ -123,6 +134,8 @@ pip install "torch" "transformers" "datasets" "accelerate" "peft" "trl" "bitsand
 
 如果 `bitsandbytes` 在本机不可用，可以先使用非 QLoRA 的 LoRA smoke test，或换云 GPU/Ubuntu CUDA 环境。
 
+如果服务器已经有 CUDA 可用的 Python 环境，优先复用它，不要盲目新建环境后安装到不兼容的 PyTorch。实跑中出现过 `nvidia-smi` 可见 GPU，但 PyTorch 是 CUDA 13.0 构建、服务器驱动只支持 CUDA 12.8，导致 `torch.cuda.is_available()` 为 `False`。
+
 ## Step 2：检查环境
 
 ```bash
@@ -132,6 +145,7 @@ import torch
 
 print("python:", platform.python_version())
 print("torch:", torch.__version__)
+print("torch cuda:", torch.version.cuda)
 print("cuda available:", torch.cuda.is_available())
 if torch.cuda.is_available():
     print("gpu:", torch.cuda.get_device_name(0))
@@ -255,6 +269,8 @@ tail -n 20 ~/edge-ai-lab/finetune/logs/qwen-lora-smoke.log
 | 字段 | 值 |
 | --- | --- |
 | base model | 待填 |
+| torch / CUDA build | 待填 |
+| driver CUDA | 待填 |
 | dataset path | 待填 |
 | sample count | 待填 |
 | max steps | 待填 |
@@ -399,13 +415,25 @@ flowchart LR
 - 检查网络和 Hugging Face 访问。
 - 检查模型名称是否正确。
 - 如果模型需要授权，按模型页面要求处理。
+- 第一次下载模型时，训练命令可能长时间没有输出；另开终端看 Hugging Face cache 或网络状态，不要直接中断。
 
 ### CUDA 或 bitsandbytes 不可用
 
 - 检查 `nvidia-smi`。
 - 检查 PyTorch CUDA 版本。
+- 检查 `torch.version.cuda` 是否高于驱动支持的 CUDA 版本。
 - 先运行非 QLoRA LoRA smoke test。
 - 换 Ubuntu CUDA 环境或云 GPU。
+
+### TRL API 不兼容
+
+如果报错：
+
+```text
+TypeError: SFTTrainer.__init__() got an unexpected keyword argument 'dataset_text_field'
+```
+
+说明脚本使用了旧版 TRL 参数。当前课程脚本已把 `dataset_text_field` 和 `max_length` 放入 `SFTConfig`，并把 tokenizer 作为 `processing_class` 传给 `SFTTrainer`。
 
 ### OOM
 
@@ -421,6 +449,8 @@ flowchart LR
 - prompt 与部署 prompt 不一致。
 - 输出格式样例不稳定。
 - 评估 prompt 太少。
+
+5-step LoRA 的最低目标是验证 pipeline，不是证明任务质量提升。如果 base vs adapter 对比更差，应停止在“需要改数据和评估”这个结论，不要继续合并、量化和部署。
 
 ### 微调后 JSON 更差
 

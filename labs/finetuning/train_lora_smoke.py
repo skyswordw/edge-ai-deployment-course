@@ -64,8 +64,8 @@ def main() -> None:
 
     from datasets import Dataset
     from peft import LoraConfig
-    from transformers import AutoModelForCausalLM, TrainingArguments
-    from trl import SFTTrainer
+    from transformers import AutoModelForCausalLM
+    from trl import SFTConfig, SFTTrainer
 
     dataset = Dataset.from_list(texts)
 
@@ -84,9 +84,11 @@ def main() -> None:
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
     )
 
-    training_args = TrainingArguments(
+    training_args = SFTConfig(
         output_dir=str(output_dir),
         max_steps=args.max_steps,
+        max_length=args.max_seq_length,
+        dataset_text_field="text",
         per_device_train_batch_size=1,
         gradient_accumulation_steps=1,
         learning_rate=args.learning_rate,
@@ -100,8 +102,7 @@ def main() -> None:
         args=training_args,
         train_dataset=dataset,
         peft_config=peft_config,
-        dataset_text_field="text",
-        max_seq_length=args.max_seq_length,
+        processing_class=tokenizer,
     )
     trainer.train()
     trainer.save_model(str(output_dir / "adapter"))
