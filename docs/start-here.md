@@ -27,6 +27,7 @@ Qwen 小模型 -> GGUF -> llama.cpp -> Q8/Q5/Q4 -> profiling -> local API -> 部
 | 你要做什么 | 先看 |
 | --- | --- |
 | 开始写最终报告 | [最终报告模板](/docs/report-template) |
+| 查看真实运行证据 | [学生实跑覆盖索引](/docs/student-run-coverage) |
 | 看一份完成版格式 | [完成版报告样例](/docs/example-final-report) |
 | 不知道日志字段填哪 | [样例日志与结果表](/docs/sample-logs) |
 | 命令失败或结果异常 | [排障索引](/docs/troubleshooting-index) |

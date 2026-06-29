@@ -9,6 +9,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'intro',
         'start-here',
+        'student-run-coverage',
         'course-hours',
         'environment-matrix',
         'glossary',
