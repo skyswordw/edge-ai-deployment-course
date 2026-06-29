@@ -102,7 +102,11 @@ flowchart LR
 | 散热 | 能持续运行实验 | 观察温度 |
 | 电源 | 满足设备要求 | 按板卡说明确认 |
 
-一份登录预检实跑记录见：[edge-ai-deployment-course-runs](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-login-check)。
+实跑记录：
+
+- [Jetson 登录预检](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-login-check)
+- [Jetson 环境与构建预检](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-env-build-preflight)
+- [Jetson Qwen baseline](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-qwen-baseline)
 
 ## Step 0：确认能登录 Jetson
 
@@ -256,6 +260,8 @@ cmake --build build-jetson --config Release --target llama-cli llama-bench llama
 
 `CMAKE_CUDA_ARCHITECTURES=87` 面向 Jetson Orin。不要在 Orin NX 上默认编译多套 CUDA 架构，否则首次构建会明显变慢。
 
+即使只构建 `llama-cli`、`llama-bench` 和 `llama-completion`，当前上游构建也可能编译 `server-context`、`mtmd` 和大量模型适配器。看到这些输出不代表走错了。
+
 如果 Jetson 不能直接访问 GitHub，可以使用教师提供的源码包或内网镜像。不要把第三方源码提交进课程仓库。
 
 如果内存紧张或温度较高，可以降低并行度：
@@ -357,6 +363,18 @@ cd ~/edge-ai-lab/src/llama.cpp
   2>&1 | tee ~/edge-ai-lab/logs/jetson-qwen-cpu.txt
 ```
 
+可再补一个短 benchmark。Jetson smoke test 可以先用较小的 `p/n`，避免把首次验证拖太久：
+
+```bash
+./build-jetson/bin/llama-bench \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  -ngl 99 \
+  -p 64 \
+  -n 64 \
+  -r 2 \
+  2>&1 | tee ~/edge-ai-lab/logs/jetson-qwen-bench.txt
+```
+
 ## Step 9：填写 Ubuntu vs Jetson 对比
 
 | 项目 | Ubuntu Server | Jetson |
@@ -376,6 +394,21 @@ cd ~/edge-ai-lab/src/llama.cpp
 | 功耗模式 | 不适用/待填 | 待填 |
 | 质量备注 | 待填 | 待填 |
 | 原始日志 | 待填 | 待填 |
+
+Qwen2.5 0.5B Q4_K_M 在一台 Orin NX Super 类设备上的实测参考：
+
+| 指标 | 结果 |
+| --- | --- |
+| `ctx-size` | 1024 |
+| `-ngl` | 99 |
+| prompt eval | 57.06 ms / 24 tokens，420.64 tokens/s |
+| eval | 753.86 ms / 75 runs，99.49 tokens/s |
+| `llama-bench pp64` | 2231.94 +/- 714.71 tokens/s |
+| `llama-bench tg64` | 115.88 +/- 9.03 tokens/s |
+| `tegrastats` | GR3D 最高约 97%，GPU 温度约 57-61 C，VDD_IN 峰值样本约 15 W |
+| 输出质量 | 相关但偏泛，建议记为“部分满足” |
+
+这张表是参考样例，不是评分标准。不同功耗模式、散热、模型文件和 runtime commit 都会改变结果。
 
 ## 验收结果
 
