@@ -30,6 +30,15 @@ title: Ubuntu Server 与 NVIDIA GPU 环境
 - 解释为什么环境检查是端侧部署实验的第一步。
 - 生成一份可放入实验报告的 `env-check.txt`。
 
+## 本章定位
+
+| 项目 | 内容 |
+| --- | --- |
+| 本章解决的问题 | 目标 Ubuntu/NVIDIA GPU 环境是否足够支撑后续 Qwen、量化、profiling 和 API 实验。 |
+| 你需要先知道 | 基础 Linux 命令、路径、Git 边界和日志保存习惯。 |
+| 你会产出 | `env-check.txt`、`nvidia-smi-before.txt`、实验目录和环境记录表。 |
+| 最终报告位置 | 第 2 节实验环境。 |
+
 ## 问题背景
 
 很多部署失败不是模型问题，而是环境问题。
@@ -281,7 +290,29 @@ mv 路径/模型文件.gguf ~/edge-ai-lab/models/qwen/
 | 可用磁盘空间 | 待填 |
 | 实验目录 | `~/edge-ai-lab` |
 
+回填报告第 2 节时，本章负责硬件和工具链字段；模型字段在 [Qwen 基线推理](/docs/lab-qwen-baseline) 中补齐。
+
+| 报告第 2 节字段 | 本章来源 |
+| --- | --- |
+| OS | Ubuntu 版本、内核版本 |
+| CPU | CPU 型号和核心数 |
+| RAM | 内存 |
+| GPU / Jetson | GPU；未使用 Jetson 时写“不适用（未测）” |
+| Driver / CUDA / JetPack | NVIDIA Driver、`nvidia-smi` CUDA、`nvcc` 是否存在 |
+| Python | Python 版本 |
+| 环境日志路径 | `~/edge-ai-lab/results/env-check.txt` |
+
 ## 验收结果
+
+本章最低通过标准：
+
+```text
+[ ] `~/edge-ai-lab` 工作区已建立
+[ ] 环境快照保存到 env 或 results 目录
+[ ] GPU/驱动/CUDA 状态已记录，或限制已说明
+[ ] 课程仓库没有混入模型权重和构建产物
+[ ] 能说明后续实验要用哪台机器和哪些版本
+```
 
 | 产物 | 验收标准 |
 | --- | --- |

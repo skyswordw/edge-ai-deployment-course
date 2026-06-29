@@ -65,6 +65,25 @@ flowchart TD
 | Linux/GPU | driver, CUDA runtime, CMake, llama.cpp 构建, 日志检查 | CUDA kernel 编写 | 让 GPU 真正参与推理, 定位构建和运行问题 |
 | Jetson | JetPack, shared memory, power mode, tegrastats | Jetson BSP 深度定制 | 把服务器实验迁移到边缘设备 |
 
+## 你不需要先掌握什么
+
+- 不需要从零训练 LLM。
+- 不需要手写 CUDA kernel。
+- 不需要完整推导 Transformer。
+- 不需要熟悉所有移动端 runtime。
+
+需要做到的是：每个概念都能回到日志、参数、表格或部署判断。
+
+## 10 分钟自测
+
+| 问题 | 简短答案 |
+| --- | --- |
+| TTFT 和 tokens/s 有什么区别？ | TTFT 看第一个 token 多久返回，tokens/s 看 decode 阶段稳定生成速度。 |
+| 为什么 Q4 不一定比 Q8 快？ | Q4 更小，但速度还取决于 kernel、offload、反量化开销和内存带宽。 |
+| KV Cache 为什么会占显存？ | 它保存历史 token 的 key/value，随上下文、batch 和并发增长。 |
+| `nvidia-smi` 显示 GPU 利用率低一定是坏事吗？ | 不一定。短 prompt、decode memory-bound、CPU sampling 或监控采样间隔都会影响观察。 |
+| chat template 为什么会影响质量？ | Instruct 模型依赖训练时的角色格式，模板错了会让同一模型收到不同输入。 |
+
 ## 学习路径
 
 ### 路径 A: 有深度学习基础的学员

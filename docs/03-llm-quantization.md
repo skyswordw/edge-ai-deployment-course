@@ -109,7 +109,7 @@ LLM 的量化困难来自多个方面。
 
 ### 形式化记号
 
-本章用统一记号描述量化，详细推导见[量化数学基础](/docs/quantization-math-basics)：
+本章用统一记号描述量化，详细推导见[量化数学基础](/docs/quantization-math-basics)和[公式与符号约定](/docs/math-conventions)：
 
 $$
 q = \mathrm{clamp}\left(\mathrm{round}\left(\frac{x}{s}\right) + z,\; q_{\min},\; q_{\max}\right), \qquad \hat{x} = s\,(q - z)

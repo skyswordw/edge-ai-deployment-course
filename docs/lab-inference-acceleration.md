@@ -32,6 +32,15 @@ title: 推理加速实验
 - 在 Ubuntu Server 与 Jetson 上分别记录推理加速相关指标。
 - 建立“不凭感觉调参”的实验记录方式。
 
+## 本章定位
+
+| 项目 | 内容 |
+| --- | --- |
+| 本章解决的问题 | GPU offload、ctx-size、threads 和 benchmark 参数是否真的改善目标瓶颈。 |
+| 你需要先知道 | 已完成 baseline 或量化对比，能区分 prefill、decode、tokens/s 和内存。 |
+| 你会产出 | offload/ctx/thread/llama-bench 日志、综合结果表、优化判断结论。 |
+| 最终报告位置 | 第 5 节 Runtime 参数与加速实验。 |
+
 ## 问题背景
 
 推理加速不是把参数随便调大或调小。
@@ -337,6 +346,17 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-acceleration-tegrasta
 | CPU 线程 | 待填 | `-t` | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 | 待填 |
 | llama-bench | 待填 | `-p/-n/-ngl` | 待填 | 待填 | 待填 | 待填 | 待填 | 不适用 | 待填 | 待填 |
 
+只有同模型、同 prompt、同生成长度、同采样参数的行才能直接比较。变量一次只改一个；如果同时改了模型、量化格式和 runtime 参数，只能作为现象记录，不能作为单变量结论。
+
+回填报告第 5 节时按下面整理：
+
+| 报告行 | 来自本实验哪类结果 | 未做时怎么写 |
+| --- | --- | --- |
+| `-ngl` | GPU offload 对比 | 写“未记录”，说明是否因无 GPU 或构建限制。 |
+| `ctx-size` | 上下文长度对比 | 写“未记录”，说明下一轮补 1024/2048/4096 哪组。 |
+| threads | CPU 线程对比 | 写“不适用”或“未记录”，说明是否主要走 GPU/Jetson。 |
+| llama-bench | 标准 benchmark 输出 | 写“失败”，附日志路径和失败原因。 |
+
 ## 如何写实验结论
 
 结论建议按下面结构写：
@@ -355,6 +375,19 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-acceleration-tegrasta
 要写“在什么条件下、快在哪里、代价是什么”。
 
 ## 验收结果
+
+本章完整实验通过标准：
+
+```text
+[ ] 至少完成一组 GPU offload 对比
+[ ] 至少完成一组 ctx-size 对比
+[ ] 至少有一份 llama-bench 或等价 benchmark 日志
+[ ] 资源监控记录已保存
+[ ] 能说明瓶颈更像计算、内存、runtime、服务化还是功耗
+```
+
+本章产出写入最终报告第 5 节，不能替代第 4 节的三组量化/模型变体对比。
+最终报告最低要求至少保留一类可解释的 runtime/profiling 对比；未完成的实验项写“未记录”并说明原因。
 
 | 产物 | 验收标准 |
 | --- | --- |
@@ -412,6 +445,14 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-acceleration-tegrasta
 3. `llama-bench` 结果。
 4. 至少一段失败或无提升案例分析。
 5. Ubuntu Server 与 Jetson 的差异说明，若没有 Jetson，则写预期差异。
+
+三句话复盘：
+
+```text
+本次实验中最明显影响速度的变量是 ______。
+证据是 ______，代价是 ______。
+下一步应该验证 ______，再进入 API 服务化。
+```
 
 ## 参考资料
 

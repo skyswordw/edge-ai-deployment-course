@@ -124,6 +124,14 @@ $$
 \text{性能} \le \min\big(P,\; AI \times BW\big)
 $$
 
+单位检查：
+
+```text
+AI 的单位是 FLOPs/Byte。
+MemoryBandwidth 的单位是 Byte/s。
+AI x MemoryBandwidth 的单位是 FLOPs/s。
+```
+
 算术强度低于拐点 $P/BW$ 的计算是 memory-bound：算力再强也要等数据到达。
 
 把它套到 LLM 的两个阶段：
@@ -137,7 +145,7 @@ $$
 \text{tokens/s} \lesssim \frac{BW}{\text{每 token 读取字节数}} \approx \frac{BW}{\text{模型权重字节数}}
 $$
 
-以 Qwen2.5-1.5B 的 Q4_K_M 为例（文件约 1 GB）：内存带宽约 100 GB/s 的设备上，decode 上限是 100 tokens/s 量级；带宽约 1 TB/s 的桌面 GPU 上是 1000 tokens/s 量级。这是数量级估算，不是性能承诺——实际还有 KV Cache 读取、激活计算和调度开销。但它已经足够解释“为什么 Q4 比 F16 明显快”：decode 是 memory-bound，每 token 要搬的权重字节数降到了约四分之一。
+以 Qwen2.5-1.5B 的 Q4_K_M 为例（文件约 1 GB）：内存带宽约 100 GB/s 的设备上，decode 上限是 100 tokens/s 量级；带宽约 1 TB/s 的桌面 GPU 上是 1000 tokens/s 量级。这是数量级估算，不是性能承诺——实际还有 KV Cache 读取、激活计算和调度开销。它只能说明：当 decode 主要受权重读取限制且 low-bit kernel 生效时，低比特格式更可能带来速度收益。
 
 端到端延迟可以拆成：
 
@@ -159,6 +167,17 @@ LLM 的一次生成通常分成：
 当 prompt 很长时，prefill 会变重。
 
 当生成很长时，decode 和 KV Cache 读写会成为主要成本。
+
+## 瓶颈定位表
+
+| 现象 | 可能瓶颈 | 该看什么 | 可能动作 |
+| --- | --- | --- | --- |
+| TTFT 很高 | prefill 慢、prompt 太长、冷启动 | `prompt eval time`、prompt token 数 | 缩短 prompt、预热、检查 GPU offload |
+| tokens/s 低 | decode 慢、内存带宽瓶颈、kernel 不匹配 | `eval time`、GPU/CPU 监控、启动日志 | 换量化格式、检查 offload、换 runtime |
+| 显存爆 | KV Cache 或权重过大 | peak VRAM、`ctx-size`、模型文件 | 降 ctx、换 Q5/Q4、换小模型 |
+| GPU 利用率低 | CPU sampling、数据搬运、fallback | `nvidia-smi`、runtime 日志 | 调 threads、确认 CUDA 构建、检查参数 |
+| Jetson 发热降频 | 功耗或温度限制 | `tegrastats`、`nvpmodel` | 调功耗模式、改善散热、降低负载 |
+| API 慢于 CLI | HTTP、JSON、队列或客户端等待 | e2e latency、server log | 比较首次/二次请求、控制 `max_tokens` |
 
 ### KV Cache
 

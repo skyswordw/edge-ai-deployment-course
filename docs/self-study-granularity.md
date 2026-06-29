@@ -34,6 +34,39 @@ title: 自学与实作粒度标准
 - 失败时先查哪个信号。
 - 结果如何填进最终报告。
 
+## 统一项目工作区
+
+课程建议所有实验都放在用户主目录下的工作区，不放进课程仓库：
+
+```text
+~/edge-ai-lab/
+├── env/
+│   └── system_info.md
+├── models/
+│   └── README.md
+├── repos/
+│   └── llama.cpp/
+├── scripts/
+├── logs/
+│   ├── baseline.log
+│   ├── q8.log
+│   ├── q5.log
+│   └── q4.log
+├── results/
+│   ├── baseline.csv
+│   ├── quant_compare.csv
+│   └── acceleration_compare.csv
+└── report/
+    └── final_report.md
+```
+
+规则：
+
+- `models/` 放大模型文件，不提交 Git。
+- `logs/` 保存原始日志，不改写。
+- `results/` 放整理后的表格。
+- `report/final_report.md` 按 [最终报告模板](/docs/report-template) 逐章填写。
+
 ## 每章最低结构
 
 核心理论章节至少包含：
@@ -147,6 +180,16 @@ tail -n 20 ~/edge-ai-lab/finetune/logs/qwen-lora-smoke.log
 - 这次结果是否进入最终项目报告：
 - 下一步应该做什么：
 ```
+
+## 学生页和教师页分工
+
+| 页面类型 | 写法 |
+| --- | --- |
+| 学生版 | 怎么学、怎么做实验、怎么交报告 |
+| 教师版 | 为什么这样设计、如何裁剪 40h/60h、如何评分 |
+| 参考资料页 | 每章给必读 1 个、选读 2 个，不把资料堆给学生 |
+
+[教师使用指南](/docs/instructor-guide) 专门放教学裁剪和评分建议，避免学生第一次学习时被设计说明打断。
 
 ## 教师扩写检查表
 

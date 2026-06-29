@@ -31,6 +31,15 @@ title: Jetson 环境与 Qwen 迁移
 - 解释 Jetson 与普通 Ubuntu Server 在内存、功耗、散热和监控方式上的差异。
 - 判断同一 Qwen GGUF 在 Jetson 上是否适合作为后续实验模型。
 
+## 本章定位
+
+| 项目 | 内容 |
+| --- | --- |
+| 本章解决的问题 | Ubuntu 上的 Qwen/llama.cpp 路线迁移到 Jetson 后，内存、功耗、温度和速度会怎样变化。 |
+| 你需要先知道 | 已完成 Ubuntu baseline，知道 `tegrastats`、功耗模式和统一内存的含义。 |
+| 你会产出 | Jetson 环境日志、`tegrastats` 日志、Ubuntu vs Jetson 对比表。 |
+| 最终报告位置 | 第 2 节实验环境、第 7 节端侧部署风险。 |
+
 ## 问题背景
 
 Jetson 不是一台“小号服务器”。
@@ -178,10 +187,13 @@ sudo jetson_clocks
 
 ## Step 5：启动 `tegrastats`
 
-另开一个终端运行：
+另开一个终端运行，并按本次 baseline 命名日志：
 
 ```bash
-tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-tegrastats.txt
+{
+  date
+  tegrastats --interval 1000
+} | tee ~/edge-ai-lab/logs/jetson-tegrastats-baseline.txt
 ```
 
 运行实验结束后，用 `Ctrl+C` 停止。
@@ -195,6 +207,12 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-tegrastats.txt
 | GPU/GR3D | GPU 使用情况 |
 | 温度 | 是否接近热限制 |
 | 功耗 | 如果设备输出功耗字段，记录变化 |
+
+为了和 Qwen 运行日志对齐，开始推理前后各记录一次时间：
+
+```bash
+date | tee -a ~/edge-ai-lab/logs/jetson-qwen-baseline.txt
+```
 
 ## Step 6：构建 llama.cpp
 
@@ -244,8 +262,10 @@ ls -lh ~/edge-ai-lab/models/qwen/*.gguf
 
 | 字段 | 示例 |
 | --- | --- |
-| 模型来源 | 待填 |
+| 模型来源（报告第 2 节） | 待填 |
+| 模型许可证（报告第 2 节） | 待填，查不到写“未记录” |
 | 文件名 | 待填 |
+| SHA256（报告第 2 节） | `sha256sum *.gguf` |
 | 量化格式 | Q4/Q5/Q8 等 |
 | 文件大小 | 待填 |
 | 下载日期 | 待填 |
@@ -310,6 +330,19 @@ cd ~/edge-ai-lab/src/llama.cpp
 
 ## 验收结果
 
+选择 Jetson 作为目标设备时的通过标准：
+
+```text
+[ ] Jetson 环境日志已保存
+[ ] 功耗模式已记录，或说明无权限
+[ ] 至少一次 Qwen 推理过程有 `tegrastats` 记录
+[ ] 能填出 Ubuntu vs Jetson 的关键差异
+[ ] 能写出 Jetson 上下一步该降模型、降 ctx 还是改善散热
+```
+
+40 学时如果选择 Ubuntu Server + NVIDIA GPU 作为目标设备，本章可以作为路线阅读；最终报告写“Jetson 不适用（未测）”并说明未测原因。60 学时或教师明确布置 Jetson 对照时，再按本章标准验收。
+本章只适用于选择 Jetson 路线或做扩展对照的学生；Ubuntu-only 最终项目可跳过本章。
+
 | 产物 | 验收标准 |
 | --- | --- |
 | Jetson 环境日志 | 包含 JetPack/Jetson Linux、OS、内存、磁盘 |
@@ -317,7 +350,7 @@ cd ~/edge-ai-lab/src/llama.cpp
 | `tegrastats` 日志 | 覆盖一次 Qwen 推理过程 |
 | llama.cpp 构建记录 | 能说明是否启用 CUDA |
 | Qwen baseline 输出 | 固定 prompt 能生成文本 |
-| Ubuntu vs Jetson 表 | 至少填写模型、参数、内存/温度、速度和质量备注 |
+| Ubuntu vs Jetson 表 | 60 学时或已有 Ubuntu baseline 时填写；40 学时 Jetson-only 路线至少写 Jetson 环境、`tegrastats`、Qwen baseline 和下一步判断 |
 
 ## 失败排查
 

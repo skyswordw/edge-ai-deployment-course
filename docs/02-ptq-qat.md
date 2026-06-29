@@ -108,6 +108,8 @@ flowchart TD
 
 ## 线性量化的基本公式
 
+本课程统一采用 `scale = real_range / integer_range`，与 [公式与符号约定](/docs/math-conventions) 保持一致。
+
 最常见的线性量化可以用三个量理解：
 
 - `scale`：浮点值和整数值之间的比例。
@@ -198,6 +200,32 @@ print("abs error:", np.abs(x - x_hat))
 | Dynamic quantization | 激活或部分矩阵乘 | 快速试验、输入变化较大 | 运行时开销需测量 |
 | Weight-only | LLM 权重 | 大模型文件和显存压力 | 激活/KV Cache 仍需单独评估 |
 | QAT | 权重和激活 | 高质量要求或低 bit 场景 | 需要训练数据、训练时间和稳定 pipeline |
+
+## 方法选择决策树
+
+```text
+只是想快速部署？
+-> 优先使用现成 GGUF Q8/Q5/Q4。
+
+有校准数据，想做权重量化？
+-> 考虑 GPTQ/AWQ。
+
+激活 outlier 明显？
+-> 理解 SmoothQuant / LLM.int8。
+
+任务精度下降明显，而且有训练资源？
+-> 考虑 QAT 或微调后再量化。
+
+端侧设备内存极小？
+-> 先考虑更小模型，不要盲目压到 Q2/Q3。
+```
+
+不要做：
+
+- 不要只比较模型文件大小。
+- 不要只跑一个 prompt 就判断质量。
+- 不要把论文 benchmark 当成自己设备上的结论。
+- 不要默认低比特一定更快。
 
 ## 校准集设计
 

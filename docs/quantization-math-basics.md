@@ -16,6 +16,18 @@ title: 量化数学基础
 本章只讲部署课程需要的量化数学。重点不是推导复杂证明, 而是让学员能解释“为什么低比特会省内存, 为什么会损失精度, 为什么不一定提速”。
 :::
 
+本课程统一采用 `scale = real_range / integer_range`。如果其他资料用 `s` 表示 inverse scale, 不要和本课程符号混用。完整约定见[公式与符号约定](/docs/math-conventions)。
+
+## 本章三层目标
+
+| 层级 | 需要掌握 |
+| --- | --- |
+| 必须懂 | 量化用更少 bit 表示权重或激活；好处是更小、更省内存、可能更快；风险是精度下降、outlier 敏感、未必加速。 |
+| 必须会算 | 能对 5 个数的小数组手算一次对称 INT8 scale、整数值和反量化值。 |
+| 部署判断 | 能解释为什么 Q4 可能质量下降、Q8 更稳、GGUF 的 Q4/Q5/Q8 不是普通全模型 INT4/INT5/INT8。 |
+
+零基础第一次阅读时，先掌握 `scale`、`zero-point`、对称 INT8 示例和“INT4 为什么更难”。SQNR、GPTQ/AWQ 目标函数和更细的误差分析可以在跑完 baseline 和量化对比后再回看。
+
 ## 问题背景
 
 神经网络训练和原始模型发布通常使用 FP32, FP16 或 BF16 等浮点格式。端侧部署时, 模型要运行在显存, 内存, 带宽, 功耗和延迟都受限的设备上。量化把高精度数值近似为低比特整数或低比特块格式, 目标通常包括:
@@ -99,7 +111,7 @@ GGUF 中的 Q4_K_M, Q5_K_M, Q8_0 等格式不是简单的“整个模型统一 i
 Scale 是浮点值和整数值之间的缩放系数。对称量化中, 常见形式是:
 
 $$
-q = \mathrm{round}\left(\frac{x}{s}\right), \qquad \hat{x} = q \cdot s
+q = \mathrm{clamp}\left(\mathrm{round}\left(\frac{x}{s}\right), q_{\min}, q_{\max}\right), \qquad \hat{x} = q \cdot s
 $$
 
 其中 $x$ 是原始浮点值, $s$ 是 scale, $q$ 是整数近似, $\hat{x}$ 是反量化后的近似值。
@@ -109,7 +121,7 @@ $$
 Zero-point 表示浮点 0 对应的整数位置。非对称量化常见形式是:
 
 $$
-q = \mathrm{round}\left(\frac{x}{s}\right) + z, \qquad \hat{x} = s\,(q - z)
+q = \mathrm{clamp}\left(\mathrm{round}\left(\frac{x}{s}\right) + z,\; q_{\min},\; q_{\max}\right), \qquad \hat{x} = s\,(q - z)
 $$
 
 其中 $s$ 和 $z$ 由实际数值范围和整数范围共同决定:
@@ -210,6 +222,18 @@ print("error:", error)
 - `scale` 由最大绝对值决定。
 - `round` 会造成误差。
 - `restored` 不是原始值, 而是低比特表示反量化后的近似。
+
+手算练习可以用更小数组:
+
+```text
+x = [-1.0, -0.5, 0.0, 0.5, 1.0]
+qmax = 127
+scale = 1.0 / 127
+q = round(x / scale)
+restored = q * scale
+```
+
+这组数的目的是确认公式和代码方向一致, 不是模拟真实模型分布。
 
 ## Outlier 示例
 

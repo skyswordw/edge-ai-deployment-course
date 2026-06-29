@@ -80,6 +80,17 @@ title: 模型微调与 LoRA/QLoRA
 | 复杂推理能力不足 | 换更强模型、任务拆解 | 微调不一定有效 |
 | 量化后质量下降 | 先做精度修复和 mixed precision | 微调是第二阶段 |
 
+常见问题的优先方案：
+
+| 问题 | 优先方案 |
+| --- | --- |
+| 模型不会某个领域术语 | 先尝试 RAG、prompt 或 system instruction |
+| 输出格式不稳定 | 少量 instruction tuning 或约束解码 |
+| 风格不符合业务 | LoRA 微调 |
+| 知识过期 | RAG 优先，不建议单纯微调 |
+| 端侧内存不足 | 换小模型或量化优先，不要先微调 |
+| 微调后 Q4 质量下降 | 回退 Q5/Q8 或重新评估 adapter/merge |
+
 一个实用判断：
 
 ```mermaid
@@ -93,6 +104,18 @@ flowchart TD
   F -- "不是" --> H{"基础能力不足吗?"}
   H -- "是" --> I[换模型 / 蒸馏 / 更大模型]
   H -- "不是" --> J[继续定位日志和数据]
+```
+
+## 微调后部署检查表
+
+```text
+[ ] base model 能跑
+[ ] adapter 能加载
+[ ] chat template 未改变或已记录
+[ ] 固定 prompt 对比 base vs adapter
+[ ] merge 前后输出一致性检查
+[ ] 量化后重新测试
+[ ] local API 重新测试
 ```
 
 ## 微调类型

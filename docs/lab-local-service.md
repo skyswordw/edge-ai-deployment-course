@@ -15,6 +15,8 @@ title: 本地 OpenAI-compatible 服务
 | 1 | 启动 `llama-server`，用 `curl` 完成 API smoke test | server 日志和 JSON 响应 |
 | 2 | 用 Python 客户端调用，记录超时、错误和服务化开销 | 服务验收记录 |
 
+最终报告最低验收只要求 curl 或 Python 客户端任选其一；如果课堂安排 2 学时，建议两种客户端都试一次。
+
 本实验对应理论章节：
 
 - [推理框架与部署链路](/docs/runtime-deployment)
@@ -26,11 +28,19 @@ title: 本地 OpenAI-compatible 服务
 完成本实验后，学习者应能：
 
 - 用 llama.cpp 启动本地 OpenAI-compatible API。
-- 使用 `curl` 调用 `/v1/chat/completions`。
-- 使用 Python 客户端完成 smoke test。
+- 使用 `curl` 或 Python 客户端调用 `/v1/chat/completions`。
 - 把模型推理从 CLI 推进到可被应用、VLM 或 Agent 调用的服务形态。
 - 记录 server 日志、请求参数、响应内容、错误和资源占用。
 - 解释 CLI 推理达标后为什么仍需要 API 层验收。
+
+## 本章定位
+
+| 项目 | 内容 |
+| --- | --- |
+| 本章解决的问题 | 量化模型从 CLI 实验进入本地 serving、benchmark 和 API 化时新增了哪些成本和风险。 |
+| 你需要先知道 | 已完成 Qwen baseline 或量化对比，知道 CLI 指标不能直接代表 API 端到端延迟。 |
+| 你会产出 | `llama-server` 日志、curl 或 Python 响应、服务记录表。 |
+| 最终报告位置 | 第 6 节 API 服务测试。 |
 
 ## 问题背景
 
@@ -83,7 +93,7 @@ flowchart LR
 flowchart TD
   A[CLI baseline 达标] --> B[启动 llama-server]
   B --> C[curl smoke test]
-  C --> D[Python client smoke test]
+  C --> D[可选：Python client smoke test]
   D --> E[记录 server 日志]
   E --> F[观察资源占用]
   F --> G{API 是否可集成?}
@@ -164,17 +174,23 @@ cd ~/edge-ai-lab/src/llama.cpp
 另开终端运行：
 
 ```bash
-curl http://localhost:8080/v1/chat/completions \
+cat > ~/edge-ai-lab/logs/api-curl-request.json <<'JSON'
+{
+  "model": "qwen-local",
+  "messages": [
+    {"role": "user", "content": "用三句话解释端侧模型量化。"}
+  ],
+  "temperature": 0.2,
+  "max_tokens": 128
+}
+JSON
+
+curl -sS http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{
-    "model": "qwen-local",
-    "messages": [
-      {"role": "user", "content": "用三句话解释端侧模型量化。"}
-    ],
-    "temperature": 0.2,
-    "max_tokens": 128
-  }' \
-  | tee ~/edge-ai-lab/logs/api-curl-response.json
+  -d @~/edge-ai-lab/logs/api-curl-request.json \
+  -o ~/edge-ai-lab/logs/api-curl-response.json \
+  -w "HTTP status: %{http_code}\nelapsed: %{time_total}s\n" \
+  | tee ~/edge-ai-lab/logs/api-curl-meta.txt
 ```
 
 如果终端输出不方便阅读，可以保存后再查看：
@@ -185,7 +201,7 @@ python3 -m json.tool ~/edge-ai-lab/logs/api-curl-response.json
 
 如果返回不是标准 JSON，也要保存原始输出。
 
-## Step 3：用 Python smoke test
+## Step 3：可选：用 Python smoke test
 
 课程仓库提供了一个简单脚本。
 
@@ -243,7 +259,11 @@ PY
 | 请求 prompt | 待填 |
 | `max_tokens` | 待填 |
 | HTTP 状态码 | 待填 |
+| elapsed | 待填 |
 | 响应是否 JSON | 待填 |
+| 请求 JSON 路径 | 待填 |
+| 响应 JSON 路径 | 待填 |
+| curl meta 路径 | 待填 |
 | 是否超时 | 待填 |
 | server 日志异常 | 待填 |
 | GPU/内存变化 | 待填 |
@@ -259,6 +279,15 @@ PY
 不要把 curl 命令耗时直接等同于模型 decode 性能。
 
 它还包含 HTTP、JSON 和客户端等待开销。
+
+回填报告时按下面分开：
+
+| API 记录 | 报告位置 |
+| --- | --- |
+| 启动命令、绑定地址、端口、请求样例、HTTP 状态 | 第 6 节 API 服务测试 |
+| 是否超时、server 日志异常、资源变化 | 第 6 节和第 7 节端侧部署风险 |
+| CLI 与 API 差异 | 第 6 节说明，不直接替代第 3-5 节 CLI 指标 |
+| 是否建议进入应用/VLM/Agent 集成 | 第 8 节最终部署建议 |
 
 ## Step 5：观察资源
 
@@ -301,11 +330,22 @@ ss -ltnp | grep 8080
 
 ## 验收结果
 
+本章课堂记录标准：
+
+```text
+[ ] `llama-server` 能启动或失败日志已保存
+[ ] `/v1/chat/completions` 有 curl 或 Python 响应，或清晰错误
+[ ] 记录了端口、模型、参数、响应和异常
+[ ] 能说明 API 相比 CLI 新增了哪些成本和风险
+```
+
+最终项目最低验收必须有一次成功的 curl 或 Python API 请求。只有失败日志可以作为阶段记录或限制说明，不能算最终验收通过。
+
 | 产物 | 验收标准 |
 | --- | --- |
 | server 日志 | 模型加载成功，无明显 OOM 或 fallback 异常 |
-| curl 响应 | `/v1/chat/completions` 返回可读响应 |
-| Python smoke test | 能打印模型回答或清晰错误 |
+| 客户端响应 | curl 或 Python 至少一种返回可读响应或清晰错误 |
+| 请求/响应/meta | 请求 JSON 或命令、响应 JSON、HTTP 状态和 elapsed 都能追溯 |
 | 资源记录 | Ubuntu 有 `nvidia-smi`，Jetson 有 `tegrastats` |
 | 服务记录表 | 端口、模型、参数、响应、异常都已记录 |
 | 安全说明 | 明确服务只在本机或受控内网暴露 |
@@ -372,10 +412,18 @@ ss -ltnp | grep 8080
 
 1. `llama-server` 启动命令。
 2. server 日志关键摘要。
-3. `curl` 请求和响应摘要。
-4. Python smoke test 输出摘要。
+3. curl 或 Python 请求与响应摘要。
+4. 如果使用了第二种客户端，补充输出摘要。
 5. 资源占用记录。
 6. 是否可以进入应用集成，以及还需要补充哪些保护措施。
+
+三句话复盘：
+
+```text
+我把 CLI 模型推进到了本地 API 服务。
+API smoke test 的结果是 ______，主要新增开销或风险是 ______。
+因此最终报告中会把服务化结论写成 ______。
+```
 
 ## 参考资料
 

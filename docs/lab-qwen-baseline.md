@@ -31,6 +31,15 @@ title: Qwen 基线推理
 - 记录首 token、tokens/s、显存、输出质量和原始日志。
 - 为后续 Q8/Q5/Q4 量化对比、GPU offload 和服务化实验提供基线。
 
+## 本章定位
+
+| 项目 | 内容 |
+| --- | --- |
+| 本章解决的问题 | 同一个 Qwen GGUF 模型能否在目标设备上稳定跑通一次 baseline。 |
+| 你需要先知道 | Linux/GPU 环境检查、TTFT、tokens/s、GGUF 和 llama.cpp 基础命令。 |
+| 你会产出 | `logs/qwen-baseline-*.txt`、模型清单、baseline 结果表。 |
+| 最终报告位置 | 第 2 节实验环境、第 3 节 Baseline 结果。 |
+
 ## 问题背景
 
 量化对比之前必须先有 baseline。
@@ -130,6 +139,14 @@ cmake --build build --config Release -j 2>&1 | tee ~/edge-ai-lab/logs/build-cuda
 cmake --build build --config Release -j2
 ```
 
+记录 `llama.cpp commit` 时，从 `~/edge-ai-lab/src/llama.cpp` 执行：
+
+```bash
+git rev-parse --short HEAD
+```
+
+不要把这里的 commit 和课程仓库 commit 混在一起。
+
 检查可执行文件：
 
 ```bash
@@ -157,10 +174,23 @@ cmake --build build --config Release -j2
 ~/edge-ai-lab/models/qwen/
 ```
 
+优先使用教师或课程指定的 Qwen Instruct GGUF 文件。第一次 baseline 不要自己同时换模型、换量化格式和换 runtime，否则后续结果无法比较。
+
+选择文件时先看三件事：
+
+| 检查项 | 建议 |
+| --- | --- |
+| 模型族 | 选 Qwen 小模型 Instruct 版本，文件名和报告中保持一致。 |
+| 文件格式 | 必须是 `.gguf`，用于 llama.cpp 主线。 |
+| 量化格式 | baseline 优先用 Q8 或教师指定版本；如果设备内存不足，再用 Q4 并记录原因。 |
+
+如果还没有模型文件，先不要跳过记录。把“模型来源未确定、计划使用的模型族、目标量化格式、需要教师确认的问题”写入报告第 3 节，再继续准备环境。
+
 检查文件：
 
 ```bash
 ls -lh ~/edge-ai-lab/models/qwen/*.gguf
+sha256sum ~/edge-ai-lab/models/qwen/*.gguf
 ```
 
 记录模型信息：
@@ -168,8 +198,11 @@ ls -lh ~/edge-ai-lab/models/qwen/*.gguf
 | 项目 | 结果 |
 | --- | --- |
 | 模型名称 | 待填 |
-| 模型来源 | 待填 |
+| 模型来源（报告第 2 节） | 教师提供 / Hugging Face repo / 离线包 + 文件名 |
+| 模型许可证（报告第 2 节） | 从模型卡或教师说明填写；查不到写“未记录” |
 | 文件名 | 待填 |
+| 下载 URL / 教师包编号 | 待填 |
+| SHA256（报告第 2 节） | 待填 |
 | 量化格式 | 待填 |
 | 文件大小 | 待填 |
 | 下载日期 | 待填 |
@@ -220,16 +253,19 @@ cd ~/edge-ai-lab/src/llama.cpp
 
 ## Step 6：同步观察 GPU
 
-另开一个终端：
+另开一个终端保存 GPU 采样日志：
 
 ```bash
-watch -n 0.5 nvidia-smi
+nvidia-smi \
+  --query-gpu=timestamp,name,memory.used,utilization.gpu,temperature.gpu,power.draw \
+  --format=csv \
+  -lms 500 | tee ~/edge-ai-lab/logs/nvidia-smi-qwen-baseline.csv
 ```
 
-也可以在运行前后保存：
+运行结束后用 `Ctrl+C` 停止采样，再保存一次结束快照：
 
 ```bash
-nvidia-smi > ~/edge-ai-lab/results/nvidia-smi-after-baseline.txt
+nvidia-smi | tee ~/edge-ai-lab/logs/nvidia-smi-after-baseline.txt
 ```
 
 记录：
@@ -261,8 +297,10 @@ nvidia-smi > ~/edge-ai-lab/results/nvidia-smi-after-baseline.txt
 | 设备 | 待填 |
 | GPU | 待填 |
 | Driver/CUDA | 待填 |
+| OS/CPU/RAM/Python | 见 `results/env-check.txt` |
 | llama.cpp commit | 待填 |
 | 模型文件 | 待填 |
+| 模型来源/许可证/SHA256 | 待填 |
 | 量化格式 | 待填 |
 | 文件大小 | 待填 |
 | `ctx-size` | 待填 |
@@ -272,6 +310,7 @@ nvidia-smi > ~/edge-ai-lab/results/nvidia-smi-after-baseline.txt
 | tokens/s / eval | 待填 |
 | 推理前显存 | 待填 |
 | 峰值显存 | 待填 |
+| GPU 采样日志 | `logs/nvidia-smi-qwen-baseline.csv` |
 | 输出质量备注 | 待填 |
 | 原始日志 | 待填 |
 
@@ -291,6 +330,19 @@ baseline 质量不是绝对评分，而是后续量化对比的参照。
 
 ## 验收结果
 
+本章最低通过标准：
+
+```text
+[ ] 命令能成功执行
+[ ] baseline 日志保存到 logs/qwen-baseline-*.txt
+[ ] 模型文件、量化格式、ctx-size、ngl 已记录
+[ ] 记录首 token/TTFT 口径；如果日志不直接给出，说明用 prompt eval 近似，并指出 eval/tokens/s 字段
+[ ] 峰值内存或显存、异常/错误检查结果已保存
+[ ] 能写出一句 baseline 质量判断
+```
+
+这是最终项目最低验收的基础：最终报告必须至少有一次成功的 Qwen 本地推理。失败日志可以作为阶段记录或限制说明，但不能替代最终验收中的 baseline 结果。
+
 | 产物 | 验收标准 |
 | --- | --- |
 | `cmake-cuda.txt` | 能看到 CUDA 构建配置记录 |
@@ -298,6 +350,7 @@ baseline 质量不是绝对评分，而是后续量化对比的参照。
 | 模型清单 | `ls -lh` 记录模型文件和大小 |
 | baseline 日志 | 包含模型加载、输出文本和性能统计 |
 | GPU 监控记录 | 能说明 GPU 是否参与 |
+| 异常检查 | 如果没有错误，也写“未观察到 OOM/fallback/unsupported”等检查结果 |
 | baseline 表 | 所有可获得字段已填写，缺失字段说明原因 |
 
 ## 失败排查
@@ -356,6 +409,14 @@ baseline 质量不是绝对评分，而是后续量化对比的参照。
 5. tokens/s 或 eval 信息。
 6. 显存观察。
 7. 一段不超过 150 字的 baseline 质量说明。
+
+三句话复盘：
+
+```text
+我在当前设备上跑通了 Qwen GGUF baseline。
+日志显示 ______，输出质量 ______。
+因此后续量化对比会固定 ______，并把 baseline 作为参照。
+```
 
 ## 参考资料
 

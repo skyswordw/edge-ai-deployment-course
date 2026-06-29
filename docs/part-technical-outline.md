@@ -20,7 +20,7 @@ flowchart LR
   A["导读: 定位和项目"] --> B["Part I: 共同语言"]
   B --> C["Part II: 部署问题框架"]
   C --> D["Part III: 量化与压缩"]
-  D --> E["Part IV: 微调与数据适配"]
+  D --> E{"Part IV: 是否需要微调"}
   E --> F["Part V: Runtime 与加速"]
   F --> G["Part VI: 真实设备实作"]
   G --> H["Part VII: VLM / Agent / 复盘"]
@@ -85,8 +85,8 @@ flowchart LR
 | --- | --- |
 | 学习顺序 | 先判断是否需要微调，再学数据格式和 chat template，然后学 LoRA/QLoRA，最后学评估、adapter 合并、再量化和部署回归。 |
 | 核心技术点 | prompt/RAG/tool/换模型/微调的选择；`messages` JSONL；chat template 一致性；SFT、LoRA、QLoRA、target modules、rank、alpha、learning rate、loss、checkpoint、adapter merge、灾难性遗忘。 |
-| 工程实作 | 跑 Qwen LoRA smoke test，保存数据、配置、训练日志和 adapter，用固定 prompt 对比基座和 adapter，再判断是否合并、转 GGUF、再量化和 profiling。 |
-| 阶段产出 | 微调必要性判断表、数据检查清单、训练配置草案、微调前后质量对比、部署去留结论。 |
+| 工程实作 | 先完成微调必要性判断和数据检查；60 学时或项目制课程再跑 Qwen LoRA smoke test，保存数据、配置、训练日志和 adapter，用固定 prompt 对比基座和 adapter，再判断是否合并、转 GGUF、再量化和 profiling。 |
+| 阶段产出 | 微调必要性判断表、数据检查清单；60 学时可增加训练配置草案、微调前后质量对比、部署去留结论。 |
 | 容易误解的边界 | 微调不是知识库更新的首选，也不能替代量化精度修复或 runtime profiling；训练成功不等于部署成功。 |
 
 这一 Part 独立出来，是因为微调在端侧链路中既影响模型质量，也影响后续量化和部署格式。课程应从“是否应该训练”讲起，而不是直接从 LoRA 公式或训练命令讲起。

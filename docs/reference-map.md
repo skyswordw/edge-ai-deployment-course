@@ -10,6 +10,8 @@ title: 参考资料地图
 
 本页既是学习者的阅读导航，也是课程后续扩写时的资料池。课堂上不要求一次读完所有资料，而是训练学习者知道“遇到某类问题应该查哪一类来源”。
 
+首次学习按 [Start Here](/docs/start-here) 走主线即可。本页主要用于教师备课、项目报告引用和扩展阅读。
+
 ## 学习目标
 
 - 建立课程后续扩写的资料来源池。
@@ -33,6 +35,18 @@ title: 参考资料地图
 如果要参考完整课程或在线教材，优先看：[类似教材与教程参考](/docs/similar-courses)。
 
 如果要理解为什么本课程这样取舍，优先看：[资料对比与课程取舍](/docs/source-comparison)。
+
+## 课程内部导航
+
+| 需求 | 先看 |
+| --- | --- |
+| 不知道怎么开始 | [Start Here：我该怎么学这门课](/docs/start-here) |
+| 不确定设备能不能学 | [环境与版本矩阵](/docs/environment-matrix) |
+| 看不懂指标和缩写 | [端侧部署术语表](/docs/glossary) |
+| 公式符号混乱 | [公式与符号约定](/docs/math-conventions) |
+| 不知道最终报告怎么写 | [最终报告模板](/docs/report-template) 和 [完成版报告样例](/docs/example-final-report) |
+| 实验报错 | [排障索引](/docs/troubleshooting-index) |
+| 教师备课和裁剪 | [教师使用指南](/docs/instructor-guide) |
 
 ## 资料地图
 

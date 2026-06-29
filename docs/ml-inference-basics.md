@@ -99,27 +99,74 @@ Latency 是单个请求的耗时。它可以有多个边界:
 
 课程实验默认记录端到端口径, 同时从 llama.cpp 日志中拆出 prompt eval 和 eval 统计。
 
-统计口径也要明确。单次测量受波动影响, 实验应重复多次并报告分位数: 把 $n$ 次测量从小到大排序, P50 是中位数, P99 是第 99% 分位:
+统计口径也要明确。单次测量受波动影响, 实验应重复多次并报告分位数。给定 $n$ 次请求延迟 $t_1,t_2,\ldots,t_n$, P99 表示 99% 请求不超过的延迟值:
 
 $$
 P_{99} = \inf\,\{\, t : F(t) \ge 0.99 \,\}
 $$
 
-$F(t)$ 是延迟的经验分布函数。P50 描述典型体验, P99 描述尾部最差体验。交互式服务通常对 P99 敏感: 100 次请求里最慢的那一次, 决定用户对“卡”的印象。
+$F(t)$ 是延迟的经验分布函数。工程计算时可以先排序:
+
+```text
+sorted_t = sort(t)
+P99 = sorted_t[ceil(0.99 * n) - 1]
+```
+
+P50 描述典型体验, P99 描述尾部最差体验。交互式服务通常对 P99 敏感: 100 次请求里最慢的那一次, 决定用户对“卡”的印象。更多公式约定见[公式与符号约定](/docs/math-conventions)。
 
 ### Throughput
 
-Throughput 是单位时间处理量。传统 CV/NLP 模型常用 samples/s, LLM 常用 tokens/s。它和 batch 的基本关系是:
+Throughput 是单位时间处理量。传统 CV/NLP 模型常用 samples/s, LLM 常用 tokens/s。两种口径不要混用。
+
+传统模型吞吐:
+
+$$
+throughput = \frac{batch\_size}{batch\_elapsed\_time}
+$$
+
+LLM 生成吞吐:
+
+$$
+tokens/s = \frac{generated\_tokens}{decode\_elapsed\_time}
+$$
+
+如果写成 batch 形式, $B$ 是 batch size, $T_{batch}$ 是一个 batch 的总耗时:
 
 $$
 X = \frac{B}{T_{batch}}
 $$
 
-$B$ 是 batch size, $T_{batch}$ 是一个 batch 的总耗时。batch 变大时 $T_{batch}$ 的增长通常慢于 $B$（设备利用率提高）, 所以吞吐上升, 但单个请求的等待时间被拉长。这就是“吞吐和延迟不总是一致”的数学形式:
+batch 变大时 $T_{batch}$ 的增长通常慢于 $B$（设备利用率提高）, 所以吞吐上升, 但单个请求的等待时间被拉长。这就是“吞吐和延迟不总是一致”的数学形式:
 
 - 增大 batch 可能提升吞吐, 但单个请求等待更久。
 - 并发请求可能提升设备利用率, 但增加排队时间。
 - 在 Jetson 上, 长时间高负载可能受功耗和温度影响, 吞吐不稳定。
+
+LLM 中不要把 requests/s 和 tokens/s 混为一谈。一个请求生成 32 tokens 和 512 tokens, 对服务压力完全不同。
+
+### 端到端延迟拆解
+
+```mermaid
+flowchart LR
+  A[request] --> B[tokenize]
+  B --> C[prefill]
+  C --> D[first token]
+  D --> E[decode]
+  E --> F[detokenize]
+  F --> G[response]
+```
+
+CLI 日志、HTTP 计时和用户体感可能对应不同边界。报告中必须写清楚测量的是哪一段。
+
+### llama.cpp 日志字段
+
+| 字段 | 常见含义 | 报告写法 |
+| --- | --- | --- |
+| `load time` | 模型加载和 runtime 初始化 | 单独记录, 不混入稳定生成速度 |
+| `prompt eval time` | prefill 阶段 | 用于解释首 token 或 TTFT |
+| `eval time` | decode 阶段 | 用于记录 tokens/s |
+| `sample time` | 采样开销 | 通常不是主瓶颈, 但异常时要记录 |
+| `total time` | CLI 总耗时 | 不等于 HTTP API 端到端延迟 |
 
 ### Batch size
 

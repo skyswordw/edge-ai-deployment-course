@@ -10,6 +10,8 @@ title: 资料对比与课程取舍
 
 本页适合放在课程导读或教师备课阶段使用。它回答一个关键问题：为什么本课程不是简单拼接量化论文、runtime 文档、Jetson 教程和 LLM 实作，而要重新组织成一门端侧部署课程。
 
+学生首次学习可以先跳过本页，等写最终报告、选择参考资料或做课程扩展时再回来查。
+
 ## 本页目标
 
 本课程参考公开课程、在线教材、论文和官方文档，但不会照搬任何一个来源。我们要做的是：吸收它们对知识结构、方法边界、实验设计和工程指标的优点，同时去掉不适合本课程目标的内容。
@@ -79,6 +81,20 @@ flowchart TD
 | Jetson / Ubuntu / API 服务 | NVIDIA Jetson AI Lab、TensorRT Edge-LLM、Qwen、llama.cpp server | 把环境、量化、profiling、本地服务和失败日志连成可复查实验 |
 | 移动端路线 | MLC LLM、LiteRT、Arm Android lab、Microsoft EdgeAI 样例 | 做路线图和选做方向，不在第一轮新增完整 Android 实验 |
 | VLM / Agent / 最终复盘 | LLM 后训练实践、NVIDIA Edge-LLM VLM 示例、Microsoft EdgeAI for Beginners | 用于系统拆解、端云协同、权限边界和最终项目复盘 |
+
+## 学生阅读版
+
+学生不需要一次读完全部外部资料。每个阶段只保留“必读 1 个 + 选读 2 个”：
+
+| 阶段 | 必读 | 选读 |
+| --- | --- | --- |
+| 推理指标和量化数学 | MIT 6.5940 相关章节 | DeepLearning.AI Quantization、MLPerf Inference |
+| Qwen/GGUF 主线 | Qwen llama.cpp 文档 | Coursera edge/llama.cpp 模块、llama.cpp README |
+| Runtime 与服务化 | DeepLearning.AI vLLM | Efficiently Serving LLMs、Coursera serving 模块 |
+| Jetson/端侧实作 | NVIDIA Jetson AI Lab | TensorRT Edge-LLM、Arm Android lab |
+| 移动端扩展 | MLC LLM | LiteRT、ExecuTorch |
+
+教师设计和课程裁剪建议放在 [教师使用指南](/docs/instructor-guide)，学生优先按 [Start Here](/docs/start-here) 走主线。
 
 ## 吸收到课程结构中
 

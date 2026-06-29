@@ -12,6 +12,8 @@ title: 最终项目与验收标准
 
 报告还必须说明量化后如何进入 serving、benchmark 和 API 化链路。可以借鉴外部课程的“压缩/量化 -> 高性能推理 -> edge runtime -> final project”结构，但不要求加入 Docker、NVIDIA Triton 或云端集群 serving。
 
+建议从第一周就按 [最终报告模板](/docs/report-template) 填写，不要等最后一周再整理。格式参考见 [完成版报告样例](/docs/example-final-report)。
+
 ## 项目主线
 
 ```mermaid
@@ -19,7 +21,7 @@ flowchart LR
   A[确定目标设备] --> B[建立环境基线]
   B --> C[运行 Qwen 基线]
   C --> D{是否需要微调?}
-  D -- 是 --> E[LoRA smoke test 与输出对比]
+  D -- 是 --> E[LoRA smoke test 与输出对比（60 学时/选做）]
   D -- 否 --> F[量化格式对比]
   E --> F
   F --> G[推理加速实验]
@@ -28,13 +30,24 @@ flowchart LR
   I --> J[部署评估报告]
 ```
 
+## 里程碑交付
+
+| 里程碑 | 时间点 | 交付物 | 对应报告位置 | 最低证据 |
+| --- | --- | --- | --- | --- |
+| M0 | 第 1 次课后 | 场景约束卡和环境记录表 | 第 1、2 节 | 目标设备、workload、约束字段、环境日志路径和关键版本 |
+| M1 | Part I 结束 | 推理指标小测和 baseline plan | 第 1、3 节草稿 | 固定 prompt、目标设备、模型文件、质量阈值和指标口径 |
+| M2 | Part III 结束 | Q8/Q5/Q4 量化对比表 | 第 4 节 | 至少三组量化结果和日志路径 |
+| M3 | Part V 结束 | runtime/profiling 对比表 | 第 5 节 | offload、ctx-size、threads 或 llama-bench 对比，含日志路径 |
+| M4 | Part VI 结束 | local API smoke test 和服务日志 | 第 6 节 | 一次请求、请求记录、响应 JSON、HTTP 状态、elapsed/meta、是否超时、server 日志异常检查、模型 hash 和 server 参数 |
+| M5 | 课程结束 | 端侧部署评估报告 | 全文 | 第 1-9 节完整、含推荐和不推荐方案 |
+
 ## 推荐项目范围
 
 | 层级 | 必做内容 | 可选扩展 |
 | --- | --- | --- |
-| 硬件 | Ubuntu Server + NVIDIA GPU | Jetson Orin / Xavier 对照 |
+| 硬件 | Ubuntu Server + NVIDIA GPU 或 Jetson 任选其一 | 第二台设备对照、Jetson Orin / Xavier 长稳 |
 | 模型 | Qwen 小模型 GGUF | 同尺寸其他开源模型 |
-| 微调 | 说明是否需要微调 | Qwen LoRA/QLoRA smoke test、adapter 输出对比 |
+| 微调 | 40 学时说明是否需要微调和理由，检查数据和 chat template | 60 学时或自选扩展：Qwen LoRA/QLoRA smoke test、adapter 输出对比 |
 | 量化 | 至少 Q8/Q5/Q4 或同类变体 | KV Cache 量化、更多低比特格式 |
 | Runtime | llama.cpp CLI 和 server | ONNX Runtime、TensorRT、MLC LLM |
 | 推理加速 | GPU offload、ctx-size、threads、llama-bench | batch、FlashAttention、speculative decoding |
@@ -45,28 +58,28 @@ flowchart LR
 
 最终报告建议按以下结构组织：
 
-1. **项目背景**：目标场景、部署设备、业务约束、不可接受风险。
-2. **环境基线**：操作系统、驱动/CUDA、JetPack、CPU/GPU/内存、runtime 版本。
-3. **模型与量化方案**：模型来源、许可证检查、量化格式、文件大小、选择理由。
-4. **微调判断**：是否需要 LoRA/QLoRA、数据格式、训练日志、微调前后输出对比。
-5. **基线推理结果**：prompt、参数、启动日志、首 token、tokens/s、内存。
-6. **量化对比实验**：Q8/Q5/Q4 或同类格式的速度、内存、质量现象。
-7. **推理加速实验**：GPU offload、ctx-size、threads、llama-bench 或服务参数。
-8. **Profiling 与失败分析**：`nvidia-smi`、`tegrastats`、日志片段、OOM/fallback/降速原因。
-9. **本地服务验证**：OpenAI-compatible API 请求、响应、错误处理，并说明量化模型如何 benchmark 和 API 化。
-10. **部署建议**：推荐方案、不推荐方案、上线前补充验证。
-11. **附录**：命令、日志路径、表格、参考资料。
+1. **场景与设备约束**：应用场景、目标设备、延迟、内存、功耗、隐私和不可接受风险。
+2. **实验环境**：操作系统、驱动/CUDA/JetPack、CPU/GPU/内存、runtime 版本、模型来源和许可证。
+3. **Baseline 结果**：prompt、参数、启动日志、首 token、tokens/s、内存和输出质量。
+4. **量化版本对比**：Q8/Q5/Q4 或同类格式的文件大小、速度、内存、质量现象和判断。
+5. **Runtime 参数与加速实验**：GPU offload、ctx-size、threads、llama-bench 或服务参数。
+6. **API 服务测试**：OpenAI-compatible API 请求、响应、错误处理，并说明量化模型如何 benchmark 和 API 化。
+7. **端侧部署风险**：温度、内存、长上下文、并发、输出质量、许可证、安全日志和端云 fallback。
+8. **最终部署建议**：推荐模型、量化版本、runtime、参数、不推荐方案和下一步验证。
+9. **附录**：命令、日志路径、表格、失败样例和参考资料。
 
 ## 评分维度
 
-| 维度 | 权重 | 高质量表现 |
-| --- | ---: | --- |
-| 问题定义 | 15% | 目标设备、约束和指标清晰，不只追求单一速度数字 |
-| 实验可复现 | 20% | 命令、版本、模型文件、参数、日志路径完整 |
-| 量化判断 | 20% | 能解释不同量化格式的速度、内存和质量权衡 |
-| 推理加速判断 | 15% | 能区分量化收益、GPU offload、KV Cache、runtime 参数的影响 |
-| Profiling 质量 | 15% | 有真实记录，能从日志定位失败或瓶颈 |
-| 工程结论 | 15% | 给出可执行的部署建议和后续验证计划 |
+| 维度 | 权重 | 高质量表现 | 证据示例 |
+| --- | ---: | --- | --- |
+| 问题定义 | 15% | 目标设备、约束和指标清晰，不只追求单一速度数字 | 第 1 节约束表 |
+| 实验可复现 | 20% | 命令、版本、模型文件、参数、日志路径完整 | 第 2、9 节环境和日志 |
+| 量化判断 | 20% | 能解释不同量化格式的速度、内存和质量权衡 | 第 4 节对比表 |
+| 推理加速判断 | 15% | 能区分量化收益、GPU offload、KV Cache、runtime 参数的影响 | 第 5 节参数实验 |
+| Profiling 质量 | 15% | 有真实记录，能从日志定位失败或瓶颈 | `nvidia-smi`、`tegrastats`、`llama-bench`、server 日志 |
+| 工程结论 | 15% | 给出可执行的部署建议和后续验证计划 | 第 7、8 节风险和建议 |
+
+助教批改分档见 [教师使用指南](/docs/instructor-guide)。
 
 如果项目选择做微调，微调结果不单独加分为“训练成功”。它要服务于工程判断：数据是否安全、格式是否稳定、adapter 是否改善目标任务、微调后是否还需要重新量化和 profiling。
 
@@ -75,9 +88,9 @@ flowchart LR
 最低验收要求：
 
 - 能在至少一台目标设备上完成 Qwen 小模型本地推理。
-- 能完成至少三种量化格式或参数配置的对比。
-- 能记录首 token、tokens/s、峰值内存或显存、错误日志。
-- 能启动本地 OpenAI-compatible API，并用 Python 客户端完成一次请求。
+- 能完成至少三组量化版本或模型变体对比；runtime 参数对比不能替代第 4 节量化对比。
+- 能记录首 token、tokens/s、峰值内存或显存、错误/异常检查结果；如未观察到错误，也要注明并保留原始日志。
+- 能启动本地 OpenAI-compatible API，并用 curl 或 Python 客户端完成一次请求；保留请求记录、响应 JSON、HTTP 状态、elapsed/meta、是否超时、server 日志异常检查、模型 hash 和 server 参数。
 - 能说明量化模型从 CLI 实验进入 serving、benchmark 和 API 化时新增了哪些成本和风险。
 - 能写出为什么推荐某个部署方案，而不是只贴命令输出。
 
@@ -107,6 +120,10 @@ flowchart LR
 ### 是否必须做模型微调？
 
 不必须。微调是条件触发任务：当问题主要来自固定格式、领域表达或交互风格时，才进入 Qwen LoRA/QLoRA smoke test。如果 prompt、RAG、校准、runtime 参数或换量化格式已经解决问题，报告中应说明为什么不做微调。
+
+### 没有做移动端路线怎么写？
+
+40 学时可以写“未做完整移动端实验”，说明原因是课程范围、设备限制或教师未布置。如果教师要求移动端路线图，列出候选模型格式、候选 runtime、未实测原因和下一步验证。
 
 ### 是否必须追求最高 tokens/s？
 
