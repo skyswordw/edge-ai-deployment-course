@@ -69,6 +69,8 @@ baseline 不只是“模型能说话”，还包括：
 
 不要把模型文件提交到 Git。
 
+一份服务器实跑记录见：[edge-ai-deployment-course-runs](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-server-smoke)。它只保存脱敏命令、环境摘要和结果摘要，不保存模型权重。
+
 ## 图示讲解
 
 ```mermaid
@@ -130,13 +132,18 @@ git rev-parse --short HEAD
 
 ```bash
 cmake -B build -DGGML_CUDA=ON 2>&1 | tee ~/edge-ai-lab/logs/cmake-cuda.txt
-cmake --build build --config Release -j 2>&1 | tee ~/edge-ai-lab/logs/build-cuda.txt
+cmake --build build --config Release --target llama-cli llama-bench llama-server -j2 \
+  2>&1 | tee ~/edge-ai-lab/logs/build-cuda.txt
+cmake --build build --config Release --target llama-completion -j2 \
+  2>&1 | tee ~/edge-ai-lab/logs/build-completion.txt
 ```
 
-如果机器核心数较少或内存紧张，可以降低并行度：
+第一次实验优先构建这几个目标。完整构建也可以，但输出更长，可能包含 server UI/frontend 相关构建信息。
+
+如果机器核心数和内存充足，可以提高并行度：
 
 ```bash
-cmake --build build --config Release -j2
+cmake --build build --config Release --target llama-cli llama-bench llama-server -j8
 ```
 
 记录 `llama.cpp commit` 时，从 `~/edge-ai-lab/src/llama.cpp` 执行：
@@ -153,6 +160,7 @@ git rev-parse --short HEAD
 ./build/bin/llama-cli --help | head
 ./build/bin/llama-bench --help | head
 ./build/bin/llama-server --help | head
+./build/bin/llama-completion --help | head
 ```
 
 记录：
@@ -165,6 +173,7 @@ git rev-parse --short HEAD
 | `llama-cli` 是否可运行 | 待填 |
 | `llama-bench` 是否可运行 | 待填 |
 | `llama-server` 是否可运行 | 待填 |
+| `llama-completion` 是否可运行 | 待填 |
 
 ## Step 3：准备 Qwen GGUF
 
@@ -185,6 +194,20 @@ git rev-parse --short HEAD
 | 量化格式 | baseline 优先用 Q8 或教师指定版本；如果设备内存不足，再用 Q4 并记录原因。 |
 
 如果还没有模型文件，先不要跳过记录。把“模型来源未确定、计划使用的模型族、目标量化格式、需要教师确认的问题”写入报告第 3 节，再继续准备环境。
+
+服务器或笔记本烟雾测试可以先用 Qwen2.5 0.5B Instruct 的 Q4_K_M 文件跑通流程：
+
+```bash
+cd ~/edge-ai-lab/models/qwen
+curl -L -C - --retry 3 --retry-delay 3 \
+  -o qwen2.5-0.5b-instruct-q4_k_m.gguf \
+  https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf
+
+ls -lh qwen2.5-0.5b-instruct-q4_k_m.gguf
+sha256sum qwen2.5-0.5b-instruct-q4_k_m.gguf
+```
+
+如果教师指定了其他 Qwen GGUF 文件，以教师指定文件为准，但仍记录文件名、来源、大小和 SHA256。
 
 检查文件：
 
@@ -228,30 +251,36 @@ sha256sum ~/edge-ai-lab/models/qwen/*.gguf
 ```bash
 cd ~/edge-ai-lab/src/llama.cpp
 
-./build/bin/llama-cli \
-  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q8_0.gguf \
+MODEL=~/edge-ai-lab/models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf
+
+nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader \
+  > ~/edge-ai-lab/results/gpu-before-baseline.csv
+
+./build/bin/llama-completion \
+  -m "$MODEL" \
   -p "用三句话解释端侧模型量化的价值。" \
   -n 128 \
   -ngl 99 \
   --ctx-size 2048 \
-  2>&1 | tee ~/edge-ai-lab/logs/qwen-baseline-q8.txt
+  --temp 0.2 \
+  --seed 42 \
+  -cnv \
+  -st \
+  --no-display-prompt \
+  --perf \
+  2>&1 | tee ~/edge-ai-lab/logs/qwen-baseline-q4.txt
+
+nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader \
+  > ~/edge-ai-lab/results/gpu-after-baseline.csv
 ```
 
 模型文件名按实际情况修改。
 
-如果使用 Q4 作为 baseline，也可以：
-
-```bash
-./build/bin/llama-cli \
-  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
-  -p "用三句话解释端侧模型量化的价值。" \
-  -n 128 \
-  -ngl 99 \
-  --ctx-size 2048 \
-  2>&1 | tee ~/edge-ai-lab/logs/qwen-baseline-q4.txt
-```
+新版 `llama.cpp` 中，`llama-cli --no-conversation` 可能不再是安全的非交互命令；如果看到提示 `please use llama-completion instead`，按上面的 `llama-completion -cnv -st` 路径执行。
 
 ## Step 6：同步观察 GPU
+
+如果不能另开终端，先使用 Step 5 中的 `gpu-before-baseline.csv` 和 `gpu-after-baseline.csv` 做最低记录。
 
 另开一个终端保存 GPU 采样日志：
 
@@ -272,7 +301,7 @@ nvidia-smi | tee ~/edge-ai-lab/logs/nvidia-smi-after-baseline.txt
 
 - 推理前显存。
 - 推理中峰值显存。
-- 是否看到 `llama-cli` 进程。
+- 是否看到 `llama-completion` 或对应 runtime 进程。
 - GPU 使用率是否有变化。
 
 ## Step 7：读取日志中的性能信息
@@ -289,6 +318,18 @@ nvidia-smi | tee ~/edge-ai-lab/logs/nvidia-smi-after-baseline.txt
 如果日志格式随 llama.cpp 版本变化，按实际输出记录。
 
 不要为了填表编造不存在的字段。
+
+可以再跑一次标准化小基准，补充报告第 5 节：
+
+```bash
+./build/bin/llama-bench \
+  -m "$MODEL" \
+  -ngl 99 \
+  -p 128 \
+  -n 128 \
+  -r 3 \
+  2>&1 | tee ~/edge-ai-lab/logs/qwen-bench.txt
+```
 
 ## 结果记录表
 

@@ -89,6 +89,8 @@ title: 最终报告模板
 | --- | --- | --- |
 | `prompt eval time` | prefill / prompt eval | 写入第 3、4、5 节的 TTFT 或 prefill 相关格子。 |
 | `eval time` / `tokens per second` | tokens/s / eval | 写入速度格子，保持同一 prompt 和参数。 |
+| `common_perf_print` | 本次 CLI baseline 性能摘要 | 抄 prompt eval、eval、total time，不要把采样时间当成模型速度。 |
+| `llama-bench` 的 `pp` / `tg` 行 | 标准化 benchmark | `pp` 近似 prompt processing，`tg` 近似 token generation，写入第 5 节。 |
 | `nvidia-smi` / `tegrastats` | 峰值内存/显存、温度/功耗 | 写入第 3、4、5、7 节，并附监控日志路径。 |
 | curl 或 Python 客户端计时 | API 端到端延迟 | 写入第 6 节，不要和 CLI tokens/s 混为一谈。 |
 

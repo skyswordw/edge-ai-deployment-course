@@ -12,6 +12,7 @@ title: 排障索引
 | `llama-cli` 不存在 | `build/bin` | 构建失败或路径不对 | 附录失败日志；影响实验完成时写 runtime 风险 | [Qwen 基线推理](/docs/lab-qwen-baseline) |
 | 模型文件缺失或加载失败 | `ls -lh ~/edge-ai-lab/models/qwen/*.gguf`、`-m` 参数、文件大小、来源、SHA256 | 未下载、路径错误、GGUF 下载不完整或版本不兼容 | 第 3 节写“缺失/失败”；最终验收前必须补模型文件和成功 baseline | [Qwen 基线推理](/docs/lab-qwen-baseline) |
 | baseline 命令执行失败 | baseline 日志、stderr、模型输出 | OOM、fallback、unsupported、CUDA offload 参数不匹配 | 第 3 节 baseline 失败；第 7 节按内存/显存或 runtime 风险登记 | [Qwen 基线推理](/docs/lab-qwen-baseline) |
+| baseline 命令一直停在 `>` 提示符 | 是否用了 `llama-cli --no-conversation`，日志是否提示 `please use llama-completion instead` | 当前 llama.cpp 版本进入了交互模式 | 第 3 节写 baseline 命令失败；改用 `llama-completion -cnv -st` 后重跑 | [Qwen 基线推理](/docs/lab-qwen-baseline) |
 | 首 token 很慢 | prompt eval、prompt 长度 | prefill 成本、冷启动、长上下文 | 第 3/5 节指标；第 7 节写长上下文或并发/超时风险 | [机器学习推理基础](/docs/ml-inference-basics) |
 | tokens/s 很低 | eval time、GPU 是否参与 | CPU fallback、低比特 kernel 不匹配 | 第 5 节加速实验；第 7 节写 runtime/GPU offload 风险 | [推理加速实验](/docs/lab-inference-acceleration) |
 | Q4 更小但不更快 | offload 日志、kernel 支持 | 反量化开销或瓶颈不在权重读取 | 第 4 节量化判断；第 7 节写性能或输出质量风险 | [推理加速基础](/docs/inference-acceleration) |
