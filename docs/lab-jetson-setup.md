@@ -102,6 +102,22 @@ flowchart LR
 | 散热 | 能持续运行实验 | 观察温度 |
 | 电源 | 满足设备要求 | 按板卡说明确认 |
 
+一份登录预检实跑记录见：[edge-ai-deployment-course-runs](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-login-check)。
+
+## Step 0：确认能登录 Jetson
+
+先确认 SSH 账号、密钥或密码可用，再进入环境检查。
+
+```bash
+ssh -o BatchMode=yes -o ConnectTimeout=8 \
+  <jetson-user>@<jetson-host> \
+  'echo SSH_OK; hostname; whoami'
+```
+
+如果看到 `Permission denied`，先找教师确认账号、SSH key 或密码。不要继续执行后面的环境命令。
+
+如果看到 `Host key verification failed`，说明本机记录的 host key 和当前设备不一致。常见原因是设备重刷、IP 被复用或你连到了另一台机器。先让教师确认设备指纹，再处理本机 SSH known_hosts 记录。
+
 ## Step 1：建立实验目录
 
 ```bash
