@@ -17,6 +17,7 @@ title: 排障索引
 | Jetson 只能通过网关访问 | 教师给的是 ProxyJump 还是先登录网关再登录 Jetson | 本机 key 和网关上的 key 不同 | 第 2 节写明访问方式，不公开内网地址 | [Jetson 环境](/docs/lab-jetson-setup) |
 | Jetson 上 `nvcc` 找不到 | `/usr/local/cuda*`、`find /usr/local -name nvcc` | CUDA 已装但不在默认 `PATH` | 第 2 节写 CUDA 路径；构建前导出 PATH | [Jetson 环境](/docs/lab-jetson-setup) |
 | Jetson CUDA 构建特别慢 | CMake 日志里的 `CMAKE_CUDA_ARCHITECTURES` | 默认编译了多套 CUDA 架构 | 第 7 节写构建风险；Orin 先用 `-DCMAKE_CUDA_ARCHITECTURES=87` | [Jetson 环境](/docs/lab-jetson-setup) |
+| 构建 `llama-server` 特别慢 | 构建日志是否进入 `npm install` 或 `vite build` | 当前 llama.cpp server 目标会构建 Web UI 资产 | 第 6 节写构建耗时；课堂演示前提前构建 | [本地 API](/docs/lab-local-service) |
 | 首 token 很慢 | prompt eval、prompt 长度 | prefill 成本、冷启动、长上下文 | 第 3/5 节指标；第 7 节写长上下文或并发/超时风险 | [机器学习推理基础](/docs/ml-inference-basics) |
 | tokens/s 很低 | eval time、GPU 是否参与 | CPU fallback、低比特 kernel 不匹配 | 第 5 节加速实验；第 7 节写 runtime/GPU offload 风险 | [推理加速实验](/docs/lab-inference-acceleration) |
 | Q4 更小但不更快 | offload 日志、kernel 支持 | 反量化开销或瓶颈不在权重读取 | 第 4 节量化判断；第 7 节写性能或输出质量风险 | [推理加速基础](/docs/inference-acceleration) |
@@ -25,6 +26,7 @@ title: 排障索引
 | 输出乱码或风格异常 | tokenizer、chat template | 模型不是 instruct 版或模板不一致 | 第 7 节写输出质量风险 | [Transformer 与 LLM 基础](/docs/transformer-llm-basics) |
 | API 无响应 | server 日志、端口、host | 服务未启动、端口不一致、防火墙 | 第 6 节服务失败；第 7 节写并发/超时或安全风险 | [本地 API](/docs/lab-local-service) |
 | API 返回非 200 或非 JSON | `api-curl-meta.txt`、`api-curl-response.json`、server 日志 | endpoint 路径、请求 JSON、模型未加载、服务端异常 | 第 6 节写失败；附 HTTP 状态、响应 JSON/原始响应和 server 日志 | [本地 API](/docs/lab-local-service) |
+| API 返回 200 但答案明显错误 | 固定 prompt、响应正文、server timing | 服务可用不代表模型质量合格，可能是模型太小、量化损失或 prompt 不适合 | 第 6 节写服务成功；第 4/7 节写质量风险 | [本地 API](/docs/lab-local-service) |
 | API 成功但很慢或超时 | server 日志、请求耗时、模型加载 | 冷启动、请求排队、上下文过长 | 第 6 节服务记录；第 7 节写并发/超时风险 | [本地 API](/docs/lab-local-service) |
 | Jetson 速度越跑越慢 | `tegrastats`、温度、功耗模式 | 热降频、电源或散热不足 | 第 7 节写温度/功耗风险；RAM 接近上限时补内存风险 | [Jetson 环境](/docs/lab-jetson-setup) |
 | 模型许可证未记录 | 模型卡、教师说明、下载来源 | 来源不清或离线包缺说明 | 第 2 节写未记录；第 7 节写许可证风险 | [Qwen 基线推理](/docs/lab-qwen-baseline) |

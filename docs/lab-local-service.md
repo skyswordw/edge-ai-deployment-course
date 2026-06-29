@@ -64,7 +64,7 @@ title: 本地 OpenAI-compatible 服务
 本实验默认：
 
 - 已完成 [Qwen 基线推理](/docs/lab-qwen-baseline)。
-- `llama-server` 可执行文件存在。
+- `llama-server` 可执行文件存在，或能在已有 llama.cpp 构建目录中补构建。
 - 模型文件在 `~/edge-ai-lab/models/qwen`。
 - 本机或同一内网可以访问服务端口。
 
@@ -118,8 +118,23 @@ flowchart TD
 
 ```bash
 cd ~/edge-ai-lab/src/llama.cpp
-./build/bin/llama-server --help | head
+
+SERVER_BIN=./build/bin/llama-server
+if [ -x ./build-jetson/bin/llama-server ]; then
+  SERVER_BIN=./build-jetson/bin/llama-server
+fi
+
+"$SERVER_BIN" --help | head
 ```
+
+如果 Jetson 上已经能运行 `llama-cli` 或 `llama-completion`，但没有 `llama-server`，可以只补构建 server 目标：
+
+```bash
+cmake --build build-jetson --target llama-server -j 4 \
+  2>&1 | tee ~/edge-ai-lab/logs/jetson-build-llama-server.txt
+```
+
+当前 llama.cpp 版本构建 `llama-server` 时可能会触发 Web UI 的 `npm install` 和 `vite build`。这一步可能持续数分钟，课堂演示前建议提前完成。
 
 检查模型：
 
@@ -130,12 +145,13 @@ ls -lh ~/edge-ai-lab/models/qwen/*.gguf
 检查端口是否被占用：
 
 ```bash
-ss -ltnp | grep 8080
+PORT=8080
+ss -ltnp | grep -E ":${PORT}\b"
 ```
 
 如果 `ss` 不可用，可以直接尝试启动服务。
 
-端口被占用时换一个端口，例如 8081。
+端口被占用时换一个端口，例如 8081。不要随意杀掉不属于本实验的进程。
 
 ## Step 1：启动本地服务
 
@@ -144,12 +160,19 @@ Ubuntu Server 或 Jetson 都可以使用类似命令。
 ```bash
 cd ~/edge-ai-lab/src/llama.cpp
 
-./build/bin/llama-server \
-  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+PORT=8080
+MODEL=~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf
+SERVER_BIN=./build/bin/llama-server
+if [ -x ./build-jetson/bin/llama-server ]; then
+  SERVER_BIN=./build-jetson/bin/llama-server
+fi
+
+"$SERVER_BIN" \
+  -m "$MODEL" \
   -ngl 99 \
   --ctx-size 2048 \
   --host 127.0.0.1 \
-  --port 8080 \
+  --port "$PORT" \
   2>&1 | tee ~/edge-ai-lab/logs/llama-server.txt
 ```
 
@@ -169,6 +192,17 @@ cd ~/edge-ai-lab/src/llama.cpp
 - 是否出现 OOM、fallback 或 error。
 - server 是否监听指定端口。
 
+另开终端请求前，先等服务 ready：
+
+```bash
+PORT=8080
+for i in $(seq 1 60); do
+  curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1 && break
+  curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1 && break
+  sleep 1
+done
+```
+
 ## Step 2：用 curl 验证 chat completions
 
 另开终端运行：
@@ -185,7 +219,9 @@ cat > ~/edge-ai-lab/logs/api-curl-request.json <<'JSON'
 }
 JSON
 
-curl -sS http://localhost:8080/v1/chat/completions \
+PORT=8080
+
+curl -sS "http://127.0.0.1:${PORT}/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d @~/edge-ai-lab/logs/api-curl-request.json \
   -o ~/edge-ai-lab/logs/api-curl-response.json \
@@ -209,7 +245,7 @@ python3 -m json.tool ~/edge-ai-lab/logs/api-curl-response.json
 
 ```bash
 python3 labs/scripts/openai_compatible_smoke_test.py \
-  --base-url http://localhost:8080/v1 \
+  --base-url http://127.0.0.1:8080/v1 \
   --prompt "用三句话解释端侧模型量化。" \
   2>&1 | tee ~/edge-ai-lab/logs/api-python-smoke-test.txt
 ```
@@ -233,7 +269,7 @@ payload = {
 }
 
 req = urllib.request.Request(
-    "http://localhost:8080/v1/chat/completions",
+    "http://127.0.0.1:8080/v1/chat/completions",
     data=json.dumps(payload).encode("utf-8"),
     headers={"Content-Type": "application/json"},
 )
@@ -261,6 +297,7 @@ PY
 | HTTP 状态码 | 待填 |
 | elapsed | 待填 |
 | 响应是否 JSON | 待填 |
+| 响应内容是否正确 | 待填 |
 | 请求 JSON 路径 | 待填 |
 | 响应 JSON 路径 | 待填 |
 | curl meta 路径 | 待填 |
@@ -279,6 +316,8 @@ PY
 不要把 curl 命令耗时直接等同于模型 decode 性能。
 
 它还包含 HTTP、JSON 和客户端等待开销。
+
+也不要把 HTTP 200 等同于模型质量合格。实跑中出现过 API 请求成功，但 0.5B Q4 模型对“端侧模型量化”的解释概念跑偏的情况。报告里应分开写：服务是否可用、端到端耗时如何、回答质量是否满足任务。
 
 回填报告时按下面分开：
 
@@ -335,7 +374,7 @@ ss -ltnp | grep 8080
 ```text
 [ ] `llama-server` 能启动或失败日志已保存
 [ ] `/v1/chat/completions` 有 curl 或 Python 响应，或清晰错误
-[ ] 记录了端口、模型、参数、响应和异常
+[ ] 记录了端口、模型、参数、HTTP 状态、响应内容质量和异常
 [ ] 能说明 API 相比 CLI 新增了哪些成本和风险
 ```
 
@@ -349,6 +388,10 @@ ss -ltnp | grep 8080
 | 资源记录 | Ubuntu 有 `nvidia-smi`，Jetson 有 `tegrastats` |
 | 服务记录表 | 端口、模型、参数、响应、异常都已记录 |
 | 安全说明 | 明确服务只在本机或受控内网暴露 |
+
+实跑记录：
+
+- [Jetson local service run](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-local-service)
 
 ## 失败排查
 

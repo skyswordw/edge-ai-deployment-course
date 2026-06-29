@@ -107,6 +107,7 @@ flowchart LR
 - [Jetson 登录预检](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-login-check)
 - [Jetson 环境与构建预检](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-env-build-preflight)
 - [Jetson Qwen baseline](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-qwen-baseline)
+- [Jetson 本地 API 服务](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-local-service)
 
 ## Step 0：确认能登录 Jetson
 
