@@ -101,10 +101,12 @@ flowchart LR
 | 项目 | 要求 |
 | --- | --- |
 | 模型 | 至少一个 Qwen GGUF |
-| llama.cpp | `llama-cli` 和 `llama-bench` 可运行 |
+| llama.cpp | `llama-completion` 和 `llama-bench` 可运行 |
 | 日志目录 | `~/edge-ai-lab/logs` |
 | 结果目录 | `~/edge-ai-lab/results` |
 | 监控 | Ubuntu 用 `nvidia-smi`，Jetson 用 `tegrastats` |
+
+一份服务器实跑记录见：[inference acceleration server run](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-inference-acceleration-server)。
 
 ## 实验原则
 
@@ -139,12 +141,18 @@ cd ~/edge-ai-lab/src/llama.cpp
 
 for ngl in 0 99
 do
-  ./build/bin/llama-cli \
-    -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  ./build/bin/llama-completion \
+    -m ~/edge-ai-lab/models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf \
     -p "解释端侧模型推理加速的主要手段。" \
-    -n 128 \
+    -n 96 \
     --ctx-size 2048 \
     -ngl ${ngl} \
+    --temp 0.2 \
+    --seed 42 \
+    -cnv \
+    -st \
+    --no-display-prompt \
+    --perf \
     2>&1 | tee ~/edge-ai-lab/logs/qwen-ngl-${ngl}.txt
 done
 ```
@@ -154,6 +162,8 @@ Ubuntu 观察：
 ```bash
 watch -n 0.5 nvidia-smi
 ```
+
+短 prompt 运行很快，单次前后快照可能抓不到峰值。需要峰值时，用连续采样或 `llama-bench` 补充判断。
 
 Jetson 观察：
 
@@ -174,6 +184,8 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-ngl-tegrastats.txt
 - 显存或统一内存是否增加？
 - 输出质量是否变化？
 - 如果没有变快，可能是哪些原因？
+
+注意：`-ngl 0` 运行时日志中仍可能出现 CUDA backend 信息，因为二进制是 CUDA 版本。判断 GPU offload 不能只看 `system_info`，还要看 `-ngl`、速度变化和 benchmark 输出。
 
 ## 实验 2：上下文长度与 KV Cache
 
@@ -197,12 +209,18 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-ngl-tegrastats.txt
 ```bash
 for ctx in 1024 2048 4096
 do
-  ./build/bin/llama-cli \
-    -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
-    -p "请用项目复盘方式解释 KV Cache 对端侧部署的影响。" \
-    -n 128 \
+  ./build/bin/llama-completion \
+    -m ~/edge-ai-lab/models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf \
+    -p "请用项目复盘方式解释 KV Cache 对端侧部署的影响，并列出三个风险。" \
+    -n 96 \
     --ctx-size ${ctx} \
     -ngl 99 \
+    --temp 0.2 \
+    --seed 42 \
+    -cnv \
+    -st \
+    --no-display-prompt \
+    --perf \
     2>&1 | tee ~/edge-ai-lab/logs/qwen-ctx-${ctx}.txt
 done
 ```
@@ -231,6 +249,8 @@ done
 - tokens/s 是否变化？
 - Jetson 是否更容易受 `ctx-size` 影响？
 
+如果 prompt 很短，`ctx-size` 变化可能不会表现出明显的速度差异。不要因此得出“上下文长度不影响内存”的结论；长上下文和多轮对话需要单独验证。
+
 ## 实验 3：CPU 线程参数
 
 目标：观察 CPU 路径或混合路径中线程参数的影响。
@@ -242,13 +262,19 @@ done
 ```bash
 for threads in 2 4 8
 do
-  ./build/bin/llama-cli \
-    -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  ./build/bin/llama-completion \
+    -m ~/edge-ai-lab/models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf \
     -p "用三句话解释 CPU fallback 为什么会影响推理速度。" \
-    -n 128 \
-    --ctx-size 2048 \
+    -n 64 \
+    --ctx-size 1024 \
     -ngl 0 \
     -t ${threads} \
+    --temp 0.2 \
+    --seed 42 \
+    -cnv \
+    -st \
+    --no-display-prompt \
+    --perf \
     2>&1 | tee ~/edge-ai-lab/logs/qwen-cpu-t${threads}.txt
 done
 ```
@@ -279,9 +305,9 @@ done
 
 ```bash
 ./build/bin/llama-bench \
-  -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
-  -p 512 \
-  -n 128 \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf \
+  -p 128 \
+  -n 64 \
   -ngl 99 \
   2>&1 | tee ~/edge-ai-lab/logs/llama-bench-q4-ngl99.txt
 ```
@@ -292,10 +318,11 @@ done
 for ngl in 0 99
 do
   ./build/bin/llama-bench \
-    -m ~/edge-ai-lab/models/qwen/qwen2.5-1.5b-instruct-q4_k_m.gguf \
-    -p 512 \
-    -n 128 \
+    -m ~/edge-ai-lab/models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf \
+    -p 128 \
+    -n 64 \
     -ngl ${ngl} \
+    -r 3 \
     2>&1 | tee ~/edge-ai-lab/logs/llama-bench-ngl-${ngl}.txt
 done
 ```
@@ -304,12 +331,36 @@ done
 
 | 硬件 | 模型 | `-p` | `-n` | `-ngl` | prompt eval | token eval | 备注 | 日志 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 待填 | 待填 | 512 | 128 | 0 | 待填 | 待填 | 待填 | 待填 |
-| 待填 | 待填 | 512 | 128 | 99 | 待填 | 待填 | 待填 | 待填 |
+| 待填 | 待填 | 128 | 64 | 0 | 待填 | 待填 | 待填 | 待填 |
+| 待填 | 待填 | 128 | 64 | 99 | 待填 | 待填 | 待填 | 待填 |
 
 `llama-bench` 的输出格式可能随版本变化。
 
 按实际字段记录。
+
+## 服务器实测参考
+
+Qwen2.5 0.5B Q4_K_M 在一台服务器 GPU 上的实测参考：
+
+| 实验 | 变量 | prompt eval | eval / decode | 判断 |
+| --- | --- | ---: | ---: | --- |
+| GPU offload | `-ngl 0` | 323.82 tokens/s | 86.61 tokens/s | CPU 路径明显慢 |
+| GPU offload | `-ngl 99` | 1746.99 tokens/s | 454.45 tokens/s | GPU offload 明显有效 |
+| ctx-size | 1024 | 2231.96 tokens/s | 453.46 tokens/s | 短 prompt 下变化不大 |
+| ctx-size | 2048 | 2531.41 tokens/s | 446.97 tokens/s | 短 prompt 下变化不大 |
+| ctx-size | 4096 | 1740.03 tokens/s | 442.24 tokens/s | 不能据此忽略 KV Cache |
+| CPU threads | 2 | 204.20 tokens/s | 60.85 tokens/s | 较慢 |
+| CPU threads | 4 | 394.13 tokens/s | 85.81 tokens/s | 本轮最佳 |
+| CPU threads | 8 | 333.90 tokens/s | 84.16 tokens/s | 没有继续提升 |
+
+`llama-bench` 同轮结果：
+
+| `-ngl` | `pp128` | `tg64` |
+| ---: | ---: | ---: |
+| 0 | 497.34 +/- 50.76 tokens/s | 85.30 +/- 1.90 tokens/s |
+| 99 | 11225.55 +/- 1566.34 tokens/s | 494.28 +/- 2.05 tokens/s |
+
+这张表是参考样例，不是评分标准。学生仍需记录自己的设备、模型、runtime commit 和日志路径。
 
 ## 实验 5：Jetson 功耗和温度观察
 
