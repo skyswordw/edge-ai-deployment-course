@@ -21,6 +21,10 @@ title: Profiling 与结果记录
 - [推理框架与部署链路](/docs/runtime-deployment)
 - [Jetson 部署基础](/docs/jetson-deployment)
 
+实跑记录：
+
+- [profiling record run](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-profiling-record)
+
 ## 学习目标
 
 完成本实验后，学习者应能：
@@ -197,6 +201,8 @@ nvidia-smi \
 
 如果某些 GPU 不支持 `power.draw` 字段，删除该字段再运行。
 
+如果实验只持续几百毫秒，`nvidia-smi` 可能采不到 GPU utilization 峰值，甚至显示 0%。这时不要只看 utilization；同时看显存、功耗、llama.cpp timing。需要稳定利用率时，改用更长生成或 `llama-bench`。
+
 ## Step 4：Jetson 资源监控
 
 记录功耗模式：
@@ -247,6 +253,12 @@ grep -i "warning\\|fallback\\|error\\|oom" ~/edge-ai-lab/logs/qwen-baseline-q4.t
 如果 `grep` 没有结果，不代表实验失败。
 
 说明该版本日志字段不同，人工查看即可。
+
+如果把 stdout 和 stderr 分开保存，要确认 timing 在哪个文件里。实跑中 `llama-completion --perf` 的 timing 出现在 stderr；解析 stdout 文件会得到空结果。最省事的写法仍然是：
+
+```bash
+./build/bin/llama-completion ... --perf 2>&1 | tee ~/edge-ai-lab/logs/profiling-sample.txt
+```
 
 ## Step 6：结果总表
 

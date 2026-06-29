@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import sys
 from pathlib import Path
 
 
@@ -71,6 +72,11 @@ def main() -> None:
 
     text = args.log.read_text(encoding="utf-8", errors="replace")
     values = {"log": str(args.log), **parse_log(text)}
+    if len(values) == 1:
+        print(
+            "warning: no llama.cpp timing fields found; parse the combined log or stderr log",
+            file=sys.stderr,
+        )
     for key in ["log", *PATTERNS]:
         print(f"{key}: {values.get(key, '')}")
 
