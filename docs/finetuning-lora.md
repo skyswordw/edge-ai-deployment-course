@@ -44,6 +44,16 @@ title: 模型微调与 LoRA/QLoRA
 
 Hugging Face LLM Course、Transformers chat template、TRL/PEFT、Qwen/LLaMA-Factory 和中文后训练资料都会讲数据格式、训练入口、adapter 和部署参数。本章不复刻这些教程的 API 细节，而是把它们收束成一个端侧部署闭环：先判断是否需要微调，再用最小 LoRA smoke test 验证数据和训练链路，最后回到 GGUF、量化、profiling 和本地 API。
 
+以下两张原图来自 [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)，许可为 Apache-2.0。先直接贴入本章，后续再改写成中文图解。
+
+![Hugging Face fine-tuning](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/finetuning.svg)
+
+这张图用于说明微调发生在预训练模型之后，但本课程还要继续追问：微调后的 adapter 是否值得合并、量化、profiling 和服务化。
+
+![Hugging Face chunking texts](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/chunking_texts.svg)
+
+这张图用于提醒学生：长文本训练或评估不能随意拼接，chunk 长度会影响训练样本、上下文窗口、显存和后续部署输入长度。
+
 ```mermaid
 flowchart LR
   A["公开资料: 微调与后训练教程"] --> B["判断: 是否真的需要微调"]
@@ -65,6 +75,34 @@ flowchart LR
 | Qwen / LLaMA-Factory | Qwen 微调流程、配置和训练命令组织 | 作为 Qwen 小模型实作参考，结论必须回到 GGUF 部署 |
 | 中文后训练与部署资料 | 微调、部署参数、KV Cache、LoRA serving 边界 | 用于补工程表达和 adapter 到服务化的取舍 |
 | LoRA / QLoRA 论文 | 低秩增量、NF4、double quantization | 用公式解释参数和显存，不扩展成论文精读 |
+
+### 外部教程可直接吸收的微调闭环
+
+Hugging Face、TRL/PEFT、Qwen/LLaMA-Factory 这类教程通常会给训练入口，但本课程要多问一步：训练产物能否回到端侧部署。下面这张表直接作为本章阅读和实作检查表。
+
+| 教程常见步骤 | 本课程保留什么 | 端侧部署追问 |
+| --- | --- | --- |
+| 准备 instruction 数据 | `messages` JSONL、role 顺序、assistant 输出格式 | 数据是否和部署 prompt 使用同一 chat template |
+| 应用 chat template | 打印至少 1 条样本的最终文本 | 训练和 llama.cpp/API 调用的格式是否一致 |
+| 配置 LoRA | base model、target modules、rank、alpha、dropout | adapter 是否绑定正确基座，是否能复现 |
+| 配置 QLoRA | 4-bit/NF4、bitsandbytes、显存限制 | QLoRA 是训练加载方式，不等于部署 GGUF 已量化 |
+| 运行短训练 | 命令、依赖版本、loss 片段、checkpoint/adapters | 5-step smoke test 只能证明 pipeline，不证明质量提升 |
+| 输出对比 | 固定 prompt 的 base vs adapter 摘要 | 是否值得合并、量化、profiling |
+| 部署回归 | merge 或 adapter serving、再量化、API smoke test | 微调后必须重新做 Q8/Q5/Q4 和 local API 验证 |
+
+PEFT 和 TRL 官方文档里的细节可以先按下面粒度贴进课程，而不是抄完整 API：
+
+| 官方教程字段 | 本章吸收什么 | 端侧部署证据 |
+| --- | --- | --- |
+| PEFT method / adapter type | LoRA、IA3、prompt tuning 等只是 adapter 路线，不是完整模型 | adapter 类型、base model、checkpoint 文件 |
+| LoRA config | `r`、`lora_alpha`、`target_modules` 决定可训练参数和作用位置 | 配置文件、可训练参数比例、target modules |
+| Adapter save/load | adapter 依赖基座模型和 tokenizer/template | adapter 路径、base model revision、加载日志 |
+| Merge / unmerge | 合并后才更接近普通权重部署链路 | merge 命令、合并前后固定 prompt 对比 |
+| TRL dataset format | `text`、`messages`、`prompt/completion` 都是不同输入契约 | 样本格式、role 顺序、template 后文本样例 |
+| SFTTrainer config | 训练参数、packing、max length 会改变样本和显存 | max_seq_length、packing、batch、gradient accumulation |
+| Train/eval split | 训练 loss 下降不等于部署质量提升 | eval prompt、失败样例、base vs adapter 输出 |
+
+如果一个微调教程没有覆盖“输出对比”和“部署回归”，本课程只把它当训练入口参考，不把它当端侧部署方案。
 
 本章每个微调实验都要留下四类证据：数据检查结果、训练日志、固定 prompt 输出对比、量化部署回归。
 
@@ -585,11 +623,12 @@ python llama.cpp/convert_hf_to_gguf.py \
 本章吸收方式：
 
 - **知识点**：从 Hugging Face LLM Course、chat templates、PEFT/TRL、Qwen/LLaMA-Factory、LoRA/QLoRA 中提取数据格式、adapter、训练入口和部署回归。
-- **图解**：把微调教程重画为“数据 -> template -> LoRA -> adapter -> 合并/量化 -> 部署验证”的闭环图。
+- **图解**：直接嵌入 Hugging Face Apache-2.0 fine-tuning 和 chunking 原图，再把微调教程重画为“数据 -> template -> LoRA -> adapter -> 合并/量化 -> 部署验证”的闭环图。
 - **实验**：外部训练路线只落到 5-step smoke test、输出对比、adapter 保存和回到 llama.cpp 的部署检查。
 - **取舍**：不把课程变成完整训练课；微调必须服务于端侧部署质量问题。
 
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course/chapter1/1)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
 - [Hugging Face Transformers Chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face PEFT documentation](https://huggingface.co/docs/peft/index)

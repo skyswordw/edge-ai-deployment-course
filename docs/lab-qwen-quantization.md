@@ -126,6 +126,31 @@ flowchart LR
 | MLPerf / Benchmark 资料 | 指标、条件、结果要一起报告 | 结果记录表必须包含硬件、参数、日志和质量备注 |
 | 课程 baseline 章节 | baseline 是量化对比的参照物 | 所有量化版本都和同一 baseline 条件比，不引用外部排行榜数字 |
 
+Microsoft EdgeAI 的 Qwen 与 llama.cpp 模块把 Qwen 多尺寸、多部署路径和 GGUF 量化放在同一条本地 SLM 链路里。本实验把它收束为模型变体、量化文件、runtime 参数和质量证据四类记录。
+
+### 外部课程原图参考
+
+下面两张图来自 vLLM 官方博客中的 DeepLearning.AI/vLLM 课程截图。本实验不改用 vLLM 工具链，只借用它对“量化方案”和“量化实验闭环”的表达。
+
+![DeepLearning.AI vLLM quantization schemes](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-schemes.png)
+
+![DeepLearning.AI vLLM quantization lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-lab.png)
+
+| 原图重点 | 本实验吸收什么 | 转成哪个记录字段 |
+| --- | --- | --- |
+| 量化方案要横向比较 | Q8/Q5/Q4 不能只看文件名 | `quant_type`、文件大小、来源、hash |
+| 量化实验要连接质量和效率 | Q4 更小不等于可部署 | 固定 prompt 输出、tokens/s、内存、失败样例 |
+| 量化要进入 serving/benchmark | CLI 成功后还要能服务化 | `llama-bench`、`llama-server` smoke test、报告建议 |
+
+| 选型问题 | 量化实验怎么回答 |
+| --- | --- |
+| 选哪个 Qwen 尺寸 | 先记录模型参数量、上下文长度、文件来源和设备内存，再决定是否进入 Q8/Q5/Q4 对比 |
+| 选哪个量化等级 | 不只看文件大小；同 prompt 比较内存、tokens/s、输出质量和失败边界 |
+| backend 是否支持 | 用 llama.cpp 启动日志和监控确认 CPU/GPU offload，而不是假设低比特一定加速 |
+| prompt 是否代表任务 | 用课程任务 prompt 和一个边界 prompt 测试，避免只用短问答得出部署结论 |
+| 是否能接 local API | 量化版本要能继续进入 `llama-server`，否则只能算 CLI 实验完成 |
+| 设备约束是什么 | 把 Jetson、普通 NVIDIA GPU 或 CPU-only 的约束写入结论，不搬用外部 benchmark |
+
 因此，本章不是“找一个别人说最快的量化格式”，而是训练学生把量化选择写成有证据的部署判断。
 
 ## 前置条件
@@ -167,14 +192,14 @@ ls -lh ~/edge-ai-lab/models/qwen/*.gguf
 
 ```bash
 cd ~/edge-ai-lab/models/qwen
-base=https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main
+repo=https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF
 
 for f in \
   qwen2.5-0.5b-instruct-q4_k_m.gguf \
   qwen2.5-0.5b-instruct-q5_k_m.gguf \
   qwen2.5-0.5b-instruct-q8_0.gguf
 do
-  curl -L -C - --retry 3 --retry-delay 3 -o "$f" "$base/$f"
+  curl -L -C - --retry 3 --retry-delay 3 -o "$f" "$repo/resolve/main/$f"
   ls -lh "$f"
   sha256sum "$f"
 done
@@ -442,16 +467,18 @@ python3 labs/scripts/parse_llama_log.py ~/edge-ai-lab/logs/qwen2.5-0.5b-instruct
 
 本章吸收方式：
 
-- **知识点**：从 Qwen 量化指南和 llama.cpp quantize 文档吸收 GGUF 量化格式、转换命令和量化命名。
-- **图解**：把工具流程重画为“基线模型 -> 多量化版本 -> 同 prompt 对比 -> 部署判断”。
+- **知识点**：从 Qwen 量化指南、llama.cpp quantize 文档、DeepLearning.AI/vLLM 课程截图和 Microsoft EdgeAI for Beginners 吸收 GGUF 量化格式、转换命令、量化命名、Qwen 变体和本地 SLM 部署链路。
+- **图解**：远程贴入 vLLM/DeepLearning.AI 量化方案和 lab 截图作为原图参考，再重画为“基线模型 -> 多量化版本 -> 同 prompt 对比 -> 部署判断”。
 - **实验**：固定 Q8/Q5/Q4 或教师指定变体，记录文件大小、内存、速度、质量备注和日志路径。
 - **取舍**：不把外部模型榜单写入结论；课程结论只来自自己的运行记录。
 
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
 - [Qwen2.5-0.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF)
-- [llama.cpp quantize documentation](https://www.mintlify.com/ggml-org/llama.cpp/tools/quantize)
+- [vLLM course announcement and screenshots](https://vllm.ai/blog/2026-06-03-deeplearning-ai-vllm-course)
+- [llama.cpp quantize documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/quantize)
 - [llama.cpp quantize README](https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
 - [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
+- [Microsoft EdgeAI for Beginners](https://github.com/microsoft/edgeai-for-beginners)
 - [DeepLearning.AI Quantization in Depth](https://www.deeplearning.ai/courses/quantization-in-depth/)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

@@ -128,7 +128,60 @@ flowchart LR
 | Distillation 和 DistilBERT 系列论文 | teacher/student、软标签、任务级能力迁移 | 用于设计蒸馏样例和第二阶段路线，不作为第一轮必做训练 |
 | Qwen、GGUF 和 llama.cpp 实验 | Q8/Q5/Q4 的真实部署证据 | 决定是否接受量化、换小模型、蒸馏或端云协同 |
 
+### 外部课程原图参考
+
+下面这张图来自 Hugging Face Course documentation-images dataset，许可为 Apache-2.0。本章用它提示学生：参数量是压缩问题的入口，但压缩路线必须继续落到真实 runtime 和设备日志。
+
+![Hugging Face model parameters](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/model_parameters.png)
+
+![Hugging Face fine-tuning](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/finetuning.svg)
+
+![Hugging Face chunking texts](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/chunking_texts.svg)
+
+![Hugging Face model evaluation example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png)
+
+| 原图重点 | 本章吸收什么 | 转成课程判断 |
+| --- | --- | --- |
+| 参数量和模型规模相关 | 文件大小、内存和带宽压力通常随模型规模上升 | 先判断瓶颈是权重、KV Cache、算子还是质量 |
+| 参数少不等于部署快 | 剪枝、蒸馏和小模型选择都要看 runtime 支持 | 真实 tokens/s、内存、质量备注 |
+| fine-tuning 图 | 蒸馏、LoRA 和继续训练都属于模型适配路线 | 先写训练数据、教师/学生、adapter 或学生模型边界 |
+| chunking 图 | 长文本数据构造会影响训练样本和上下文预算 | 记录 chunk 长度、overlap、prompt template 和 ctx-size |
+| evaluation 图 | 压缩后不能只看模型是否能跑 | 固定 prompt、固定任务、输出样例和质量备注 |
+| 外部原图只给背景 | 不能用外部图或论文结果替代本机实验 | Qwen Q8/Q5/Q4、小模型替代和蒸馏路线表 |
+
+MIT 6.5940 / EfficientML 的可借鉴点不是某个单独算法，而是“先问瓶颈，再选压缩手段”。本章把它改成下面的课程判断表：
+
+| EfficientML 视角 | 不应该直接得出的结论 | 本课程要求的证据 |
+| --- | --- | --- |
+| 剪枝减少参数 | 参数少了就一定快 | 稀疏结构是否被 runtime/kernel 使用，真实 latency 是否下降 |
+| 量化降低 bit-width | INT4 一定比 FP16 快 | 目标设备低比特 kernel、显存、tokens/s 和质量备注 |
+| 蒸馏迁移能力 | 训练一个学生模型就能解决部署问题 | 教师输出质量、学生容量、训练数据来源和回归评估 |
+| NAS / 架构选择 | 自动搜索优于人工选小模型 | 搜索成本、硬件约束、能否在课程周期内复现 |
+| TinyML / 端侧系统 | 所有任务都必须离线端侧完成 | 隐私、延迟、离线、成本和端云协同边界 |
+
 因此，本章的产物不是一个训练好的蒸馏模型，而是一份能写进部署报告的压缩路线判断。
+
+外部压缩课程里的方法图、算法表和论文摘要可以先贴入本章，但建议马上转成“选择证据”。每个方法只要回答三件事：解决哪个瓶颈、需要什么训练或数据成本、runtime 是否真的能利用。
+
+| 外部资料内容 | 可直接吸收的判断 | 本课程怎么落地 |
+| --- | --- | --- |
+| 剪枝方法分类图 | 非结构化和结构化剪枝目标不同 | 解释“参数少了不等于 llama.cpp 更快” |
+| 蒸馏框架图 | teacher、student、soft label、task data 是闭环 | 用于第二阶段路线，不作为第一轮必做实验 |
+| NAS / TinyML 课程表 | 架构搜索和硬件感知优化成本高 | 作为路线图，优先让学生学会换小模型 |
+| 稀疏加速材料 | 稀疏性必须被 kernel/runtime 支持 | 最终报告写清是否有稀疏 kernel 证据 |
+| 低秩或参数共享案例 | 文件可变小，但误差和 runtime 支持要复测 | 只作为选读，不替代 Qwen GGUF 主线 |
+| 蒸馏论文结果表 | 只吸收 teacher/student 设计思路 | 不把论文 benchmark 写成本课程结论 |
+
+把外部课程里的蒸馏和压缩章节先贴进来时，可以直接按下面这张“证据字段表”改写：
+
+| 外部课程常见段落 | 课程里先贴成什么 | 后续精修时保留什么 |
+| --- | --- | --- |
+| teacher/student 示意图 | 教师模型、学生模型、蒸馏数据、评估集四列 | 模型来源、许可证、训练成本、质量回归 |
+| soft label / temperature 说明 | 只说明教师输出不只是 hard label | 不展开完整训练推导，保留为什么能迁移能力 |
+| pruning mask 示例 | 一段 PyTorch mask 或稀疏率示例 | 参数减少和真实速度分开记录 |
+| structured sparsity 表 | runtime/kernel 是否支持稀疏加速 | Jetson/Ubuntu tokens/s 复测证据 |
+| small model 对比 | “换小模型”作为压缩失败后的路线 | 文件大小、峰值内存、速度、质量备注 |
+| evaluation case | 压缩前后固定 prompt 输出对比 | 不照搬论文分数，只保留评估表结构 |
 
 ## 压缩方法总览
 
@@ -594,12 +647,13 @@ tegrastats --interval 1000 --logfile logs/jetson-compression-choice.log
 本章吸收方式：
 
 - **知识点**：从 EfficientML、蒸馏论文、剪枝教程和 TensorRT 稀疏性资料中提取模型侧压缩、teacher/student、结构稀疏和 runtime 可利用性的边界。
-- **图解**：把压缩方法重画为“减少参数、减少计算、保持质量、需要 runtime 支持”的四类判断图。
+- **图解**：直接贴入 Hugging Face Apache-2.0 参数量原图作为参考，再把压缩方法重画为“减少参数、减少计算、保持质量、需要 runtime 支持”的四类判断图。
 - **实验**：本章只把剪枝/蒸馏作为路线判断和报告讨论，主实验仍回到 Qwen GGUF 与部署评估。
 - **取舍**：不新增完整蒸馏训练项目，除非后续课程单独扩展。
 
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [EfficientML.ai](https://efficientml.ai/)
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
 - [Distilling the Knowledge in a Neural Network](https://arxiv.org/abs/1503.02531)

@@ -56,7 +56,7 @@ flowchart TD
 
 ## 公开资料怎么转成本章内容
 
-本章吸收公开课程和官方文档时, 不复制原图或原表。它们通常会用模型生态图, 推理流程图, KV Cache 图, CUDA/Jetson 软件栈图来解释各自主题。本课程把这些图表重画成一条更窄的学习入口: 先理解模型输入契约, 再看推理状态, 最后落到可验证的本地部署日志。
+本章吸收公开课程和官方文档时, 只直接贴入许可明确的原图；许可不清的原图先放到暂存页或重画。公开资料通常会用模型生态图, 推理流程图, KV Cache 图, CUDA/Jetson 软件栈图来解释各自主题。本课程把这些图表收束成一条更窄的学习入口: 先理解模型输入契约, 再看推理状态, 最后落到可验证的本地部署日志。
 
 ```mermaid
 flowchart LR
@@ -72,6 +72,45 @@ flowchart LR
 | KV Cache 文档中的缓存位置和生成阶段说明 | “prefill/decode/KV Cache”三段式推理状态图 | 长上下文显存估算、推理加速、VLM token 成本 |
 | CUDA 和 Jetson 文档中的驱动、runtime、工具链层次 | “系统栈到模型命令”的依赖表 | Ubuntu 环境检查、Jetson 迁移、profiling |
 | ONNX Runtime / ML 系统资料中的性能指标表 | “端到端指标口径”表：加载、首 token、tokens/s、内存、功耗分开记录 | 量化对比、服务化 smoke test、最终报告 |
+
+把这些公开资料变成预习任务时，只保留会被后续实验复用的最小检查：
+
+| 预习检查 | 借鉴来源 | 后续复用 |
+| --- | --- | --- |
+| 能解释 tokenizer 和 chat template | Hugging Face LLM Course / Transformers | Qwen baseline、LoRA 数据、local API |
+| 能区分 prefill、decode、KV Cache | HF KV cache、vLLM serving 资料 | LLM 量化、推理加速、profiling |
+| 能手算一个 scale 和 zero-point | DeepLearning.AI 量化课程 | PTQ/QAT、Q8/Q5/Q4 质量解释 |
+| 能保存 GPU/Jetson 环境快照 | CUDA、Jetson docs | Ubuntu/Jetson 实验和最终报告第 2 节 |
+| 能用 curl 或 Python 计时一次 HTTP 请求 | OpenAI-compatible API 文档 | 本地服务 smoke test |
+
+外部前置课里的材料可以先贴成预习卡，进入正文时再改成本课程字段：
+
+| 外部材料 | 预习卡保留 | 正文改成 |
+| --- | --- | --- |
+| tokenizer / pipeline 图 | 输入、模型、后处理的顺序 | Qwen prompt、chat template、输出日志 |
+| KV Cache 图 | cache 随上下文增长 | `ctx-size`、prompt tokens、显存风险 |
+| 量化 scheme 图 | bit-width、scale、zero-point、粒度 | Q8/Q5/Q4 文件和质量对比 |
+| CUDA / Jetson 栈图 | driver、runtime、toolkit、设备状态 | `nvidia-smi`、JetPack/L4T、`tegrastats` |
+| API 请求示例 | endpoint、JSON、elapsed | local API smoke test 表 |
+
+### 外部课程原图参考
+
+下面几张图先让学习者建立“输入 -> 模型 -> 推理状态 -> 设备”的整体感觉。后面的章节会分别展开 tokenizer、KV Cache、量化和 Jetson 细节；本页只把它们放成前置知识地图。
+
+![Hugging Face full NLP pipeline](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter2/full_nlp_pipeline.svg)
+
+![DeepLearning.AI vLLM KV cache](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/kv-cache.png)
+
+![DeepLearning.AI vLLM quantization schemes](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-schemes.png)
+
+![Jetson AI Lab 设备族示意](https://www.jetson-ai-lab.com/images/hero/jetson-family-line_50pcnt.png)
+
+| 原图重点 | 本页吸收什么 | 后续回到哪里 |
+| --- | --- | --- |
+| NLP pipeline | 推理不是单个模型调用，而是预处理、模型执行、后处理 | 机器学习推理基础、local API |
+| KV Cache | 生成过程有状态，长上下文会改变内存压力 | Transformer 基础、推理加速 |
+| Quantization schemes | 量化要分对象、粒度和格式 | 量化数学、PTQ/QAT、LLM 量化 |
+| Jetson 设备族 | 端侧硬件不是单一服务器 GPU | 环境矩阵、Jetson 实验、最终报告 |
 
 这张表的用法是反向检查: 如果后续实验失败, 先判断问题属于输入契约, 推理状态, 执行环境, 还是实验记录口径, 不要直接把所有异常归因于“模型不好”或“量化失败”。
 
@@ -298,11 +337,14 @@ print(f"elapsed={elapsed:.6f}s")
 本章吸收方式：
 
 - **知识点**：从 Hugging Face、PyTorch、ONNX Runtime 和 CUDA/Jetson 文档提取最小共同语言：模型、tokenizer、runtime、GPU/Jetson 环境和日志。
-- **图解**：把外部工具链说明重画成“前置知识到实验主线”的课程地图，而不是复制工具文档截图。
+- **图解**：贴入 Hugging Face、vLLM/DeepLearning.AI 和 Jetson 原图，并把外部工具链说明重画成“前置知识到实验主线”的课程地图。
 - **实验**：所有前置检查都落到环境快照、目录结构和一次端到端计时，后续 Qwen/Jetson 实验直接复用。
 - **取舍**：不要求学生先学完整深度学习或 CUDA 编程，只保留推理部署需要的概念。
 
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
+- [Jetson AI Lab](https://www.jetson-ai-lab.com/)
 - [Hugging Face chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face KV cache strategies](https://huggingface.co/docs/transformers/kv_cache)
 - [PyTorch documentation](https://pytorch.org/docs/stable/index.html)

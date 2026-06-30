@@ -6,6 +6,19 @@ title: 课程迭代反馈记录
 
 本页记录课程体系审阅反馈和处理状态，避免建议只停留在对话中。每轮优先处理能降低学习门槛、统一交付口径、且不需要新增复杂实验代码的问题。
 
+## 外部资料贴入复核
+
+每次把外部课程、教程、论文或官方文档内容贴进来，都按下面这张表复核。这里记录的是课程审稿口径，不是新增作业。
+
+| 复核项 | 通过标准 | 不通过时怎么改 |
+| --- | --- | --- |
+| 来源清楚 | 有来源链接，原图说明来自哪里 | 补链接或移到暂存页 |
+| 主线相关 | 能落到 Qwen、GGUF、llama.cpp、量化、profiling、API 或报告 | 改成选读链接，不进正文 |
+| 证据字段化 | 外部内容已转成表格、检查项、日志字段或报告栏位 | 不保留长段背景描述 |
+| 许可边界 | 原图用源站或开放许可；正文不整段复制 | 改为重画图或短要点 |
+| 不替代实测 | 不把外部 benchmark 数字写成本课程结论 | 删除外部成绩，只留字段结构 |
+| 学生可用 | 学生知道填哪里、怎么验收、失败怎么写 | 补报告节号、日志路径或风险项 |
+
 ## 2026-06-29 第一轮
 
 ### 初学者视角
@@ -317,6 +330,35 @@ flowchart LR
 | 学生反馈 | 哪些入口、字段和概念最容易卡住 | 本页初学者视角 |
 | 教师反馈 | 哪些边界、评分和助教口径需要收紧 | 本页教师视角 |
 
+### 外部反馈证据原图参考
+
+下面几张图代表本页常见反馈的来源：模型来源证据不清、benchmark 字段不完整、失败日志无法复盘、质量评估缺条件。本页把这些问题转成具体课程改动，而不是只保留口头建议。
+
+![Hugging Face model card example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/model_card.png)
+
+![DeepLearning.AI vLLM benchmarking lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+![Hugging Face traceback example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/traceback.png)
+
+![Hugging Face model evaluation example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png)
+
+| 原图重点 | 反馈页吸收什么 | 变成哪类改动 |
+| --- | --- | --- |
+| model card | 模型来源、许可证、hash 容易漏填 | 环境页、baseline、报告模板字段 |
+| benchmarking lab | 指标必须绑定条件和日志 | 量化、profiling、样例日志字段 |
+| traceback | 失败不能只写“运行失败” | 排障索引、风险登记表 |
+| model evaluation | 质量结论要有任务、指标和样例 | 样例报告、最终项目验收 |
+
+后续继续从外部课程或学生反馈里搬材料时，按下面格式先贴入本页，再决定是否进入正文：
+
+| 反馈材料 | 先贴什么 | 判断是否进入正文 |
+| --- | --- | --- |
+| 学生说看不懂 | 原问题、所在章节、卡住的术语或命令 | 是否能用一张图、一张表或一个检查点解决 |
+| 外部课程图 | 原图链接、许可、解释的概念 | 是否服务 Qwen 主线或报告字段 |
+| 外部 lab 步骤 | 任务、命令、验收产物 | 是否能改成课程目录和日志路径 |
+| benchmark / demo | workload、硬件、指标名 | 是否只保留字段，不保留外部成绩 |
+| 教师评分意见 | 评分分歧、缺证据项 | 是否需要改 final-project 或 instructor-guide |
+
 反馈记录只处理能服务主线的改动：Qwen 小模型、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 和部署报告。不能落到这条主线的建议，先放入候选，不直接扩写成新章节。
 
 ## 参考资料
@@ -324,7 +366,7 @@ flowchart LR
 本章吸收方式：
 
 - **知识点**：从公开课程、官方文档、benchmark 资料和课程实跑反馈中吸收可改进的概念、边界和验收口径。
-- **图解**：重画为“资料/反馈 -> 问题分类 -> 章节改动 -> 验证 -> 下一轮候选”的 Mermaid 图。
+- **图解**：贴入 model card、benchmark、traceback 和 evaluation 原图，并重画为“资料/反馈 -> 问题分类 -> 章节改动 -> 验证 -> 下一轮候选”的 Mermaid 图。
 - **实验**：每轮反馈都要求回到 Qwen GGUF、Q8/Q5/Q4、profiling、local API、报告模板或排障记录。
 - **取舍**：不把反馈页变成需求池；只记录已经处理或明确进入下一轮候选的课程改动。
 
@@ -339,4 +381,6 @@ flowchart LR
 - [排障索引](/docs/troubleshooting-index)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

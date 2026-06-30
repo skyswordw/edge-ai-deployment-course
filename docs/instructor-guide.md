@@ -39,7 +39,55 @@ flowchart LR
 | Jetson / Edge AI 资料 | 作为 60 学时设备扩展和功耗/温度证据 | Jetson 对照和优秀项目要求 |
 | MLPerf / Nsight / llama-bench | 评分看指标、条件、日志和失败记录 | 评分建议和助教评分锚点 |
 
+教师决定是否引入一个外部资料时，可以直接用这张表：
+
+| 外部资料内容 | 进入 40 学时 | 进入 60 学时 | 不进入课堂正文 |
+| --- | --- | --- | --- |
+| 能帮助 Qwen/GGUF/llama.cpp 主线跑通 | 是 | 是 | 否 |
+| 只提供横向 runtime 对比 | 作为选型表 | 可做选做实验 | 不展开 API 手册 |
+| 需要额外设备或长训练 | 否 | 可选 | 不影响基础评分 |
+| 只有 benchmark 排名或宣传图 | 否 | 否 | 只保留参考链接 |
+| 能改善报告证据口径 | 是 | 是 | 否 |
+
+如果要把外部课程材料先放进课堂讲义，建议按下面的粒度贴入，后续再删改。不要把整门外部课搬进来。
+
+| 可先贴入的外部内容 | 教师如何改写 | 用在哪一课 |
+| --- | --- | --- |
+| 课程目录截图或结构图 | 改成 40/60 学时里程碑，不照搬周次 | 第 1 次课导读 |
+| 量化概念图 | 改成 Q8/Q5/Q4、文件大小、质量和 runtime 支持 | Part III |
+| benchmark lab 截图 | 改成 workload、硬件、参数、日志路径检查 | Profiling 前 |
+| model card / files 截图 | 改成模型来源、许可证、hash 检查 | Baseline 前 |
+| Jetson 设备图 | 改成设备型号、JetPack、功耗和温度字段 | Jetson 扩展 |
+| Agent 架构图 | 改成工具白名单、确认点和 fallback 表 | Part VII |
+
+外部课程的作业、rubric 和 final project 也可以先贴进来，但要马上转成课程自己的里程碑：
+
+| 外部作业/rubric 常见项 | 本课程吸收什么 | 对应里程碑 |
+| --- | --- | --- |
+| Quiz / concept check | 检查 tokenizer、prefill/decode、scale/zero-point、KV Cache 是否会解释 | M1 |
+| Quantization lab | 至少 Q8/Q5/Q4 三组结果，质量和性能一起看 | M2 |
+| Serving lab | 本地 API 请求、响应、状态码、server log 和超时 | M4 |
+| Benchmark report | workload、硬件、参数、日志路径和质量备注 | M3-M5 |
+| Final project rubric | 问题定义、复现、量化判断、profiling、工程建议 | M5 |
+| Peer review | 同学互评要指出缺证据的结论，不只改排版 | M5 前一周 |
+
 教师备课时应先保护主线，再安排扩展。扩展内容只有能回到最终报告证据链时才进入课堂。
+
+### 外部备课原图参考
+
+下面几张图适合教师备课时直接给学生看：模型来源要有卡片和文件证据，benchmark 要有固定条件，评估结果要能回到任务和数据。课堂不需要照搬外部数字，但要照搬这种证据意识。
+
+![Hugging Face model card example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/model_card.png)
+
+![DeepLearning.AI vLLM benchmarking lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+![Hugging Face model evaluation example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png)
+
+| 原图重点 | 教师页吸收什么 | 课堂检查项 |
+| --- | --- | --- |
+| model card | 模型名、许可证、文件和限制要一起记录 | 报告第 2 节模型来源 |
+| benchmarking lab | benchmark 要固定 workload、模型、参数和硬件 | M2-M4 里程碑日志 |
+| model evaluation | 质量评估要有任务、指标和条件 | 最终报告推荐/不推荐方案 |
 
 ## 40 学时讲法
 
@@ -117,7 +165,7 @@ Qwen -> GGUF -> llama.cpp -> Q8/Q5/Q4 -> profiling -> local API -> final report
 本章吸收方式：
 
 - **知识点**：从公开课程结构、量化/serving 教程、Jetson 文档和 benchmark 资料中吸收备课边界。
-- **图解**：重画为“外部资料 -> 40/60 学时取舍 -> 里程碑和评分 -> 部署报告验收”的 Mermaid 图。
+- **图解**：贴入 model card、benchmark 和 model evaluation 原图，并重画为“外部资料 -> 40/60 学时取舍 -> 里程碑和评分 -> 部署报告验收”的 Mermaid 图。
 - **实验**：教师页把外部资料转成 Qwen GGUF、Q8/Q5/Q4、profiling、local API 和最终报告的课堂任务。
 - **取舍**：不把扩展路线变成必做项，不把外部 benchmark 数字用于评分。
 
@@ -127,6 +175,8 @@ Qwen -> GGUF -> llama.cpp -> Q8/Q5/Q4 -> profiling -> local API -> final report
 - [最终项目与验收标准](/docs/final-project)
 - [类似教材与教程参考](/docs/similar-courses)
 - [参考资料地图](/docs/reference-map)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
 - [DeepLearning.AI Efficiently Serving LLMs](https://www.deeplearning.ai/courses/efficiently-serving-llms/)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

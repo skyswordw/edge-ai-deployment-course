@@ -31,6 +31,22 @@ flowchart LR
 | Roofline 论文和 runtime 优化资料 | 用算术强度判断 compute-bound / memory-bound | 解释低比特不一定更快 |
 | Hugging Face KV Cache、vLLM、LLM runtime 资料 | 用粗估公式说明 cache 随上下文增长 | `ctx-size`、长上下文、Jetson 内存风险 |
 
+### 外部公式原图参考
+
+下面几张图帮助统一本课程的符号来源：量化方案决定 `scale` 和粒度怎么解释，KV Cache 决定上下文和内存公式怎么解释，metrics 图决定平均值、分位数和吞吐不能混写。
+
+![DeepLearning.AI vLLM quantization schemes](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-schemes.png)
+
+![DeepLearning.AI vLLM KV cache](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/kv-cache.png)
+
+![DeepLearning.AI vLLM metrics](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/vllm-metrics.png)
+
+| 原图重点 | 本页统一什么 | 后续使用 |
+| --- | --- | --- |
+| quantization schemes | `scale`、`zero-point`、bit-width、量化对象 | Q8/Q5/Q4 误差和格式说明 |
+| KV Cache | `context`、`batch`、`bytes_per_value` 影响缓存 | `ctx-size`、长上下文、Jetson 内存估算 |
+| vLLM metrics | latency、throughput、tokens/s、P99 要分开 | profiling 表、API smoke test、最终报告 |
+
 公式页不是证明课。它的作用是让所有章节用同一套符号解释日志、表格和工程判断。
 
 ## 量化符号
@@ -145,7 +161,7 @@ $$
 本章吸收方式：
 
 - **知识点**：从量化、benchmark、runtime、Roofline 和 KV Cache 资料中提取课程必须统一的公式口径。
-- **图解**：重画为“外部公式口径 -> Qwen 量化/profiling -> 部署报告”的 Mermaid 图。
+- **图解**：贴入 quantization、KV Cache 和 metrics 原图，并重画为“外部公式口径 -> Qwen 量化/profiling -> 部署报告”的 Mermaid 图。
 - **实验**：公式只服务 Q8/Q5/Q4 量化记录、P99/tokens/s、roofline 判断和 KV Cache 估算。
 - **取舍**：不展开完整数学证明，不复制外部推导，也不引入课程暂时不用的复杂统计口径。
 
@@ -154,9 +170,10 @@ $$
 - [量化数学基础](/docs/quantization-math-basics)
 - [机器学习推理基础](/docs/ml-inference-basics)
 - [推理加速基础](/docs/inference-acceleration)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
 - [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
 - [PyTorch Quantization documentation](https://pytorch.org/docs/stable/quantization.html)
 - [ONNX Runtime Quantization](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
-- [Roofline: An Insightful Visual Performance Model](https://dl.acm.org/doi/10.1145/1498765.1498785)
+- [Roofline: An Insightful Visual Performance Model](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2008/Archive/EECS-2008-134.pdf)
 - [Hugging Face Transformers KV cache](https://huggingface.co/docs/transformers/kv_cache)

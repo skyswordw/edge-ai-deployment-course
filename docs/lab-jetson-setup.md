@@ -132,7 +132,56 @@ flowchart LR
 | Qwen / llama.cpp | Qwen GGUF、本地推理、server 和 benchmark | Step 6-8 的构建、baseline 和短 benchmark |
 | 课程实跑记录 | 登录、构建、baseline、local service 的真实日志 | 用失败和成功样例提醒学生保留证据 |
 
+### 外部 Jetson 原图参考
+
+下面这张图来自 Jetson AI Lab，用源站 URL 远程展示。本实验不根据图片选择设备，只把它转成必须填写的设备证据。
+
+![Jetson AI Lab device family visual](https://www.jetson-ai-lab.com/images/hero/jetson-family-line_50pcnt.png)
+
+| 原图提示 | 本实验要补的记录 |
+| --- | --- |
+| Jetson 有不同设备形态 | 写清楚具体设备型号、内存、JetPack/L4T |
+| 边缘设备受功耗和散热影响 | 记录 `nvpmodel -q`、`tegrastats`、散热/电源条件 |
+| demo 不能替代本课程实测 | 保存 Qwen GGUF 命令、stdout/stderr、质量样例和 Ubuntu 对照 |
+
+把官方资料转成实验动作时，只保留会影响 Qwen 迁移判断的字段：
+
+| 字段 | 采集命令或证据 | 写入哪里 |
+| --- | --- | --- |
+| Jetson Linux / L4T | `cat /etc/nv_tegra_release` | 环境摘要、报告第 2 节 |
+| 功耗模式 | `nvpmodel -q` | Jetson 对比表 |
+| 内存和温度 | `tegrastats --logfile ...` | profiling 记录和风险登记 |
+| CUDA 构建 | llama.cpp build log | runtime 参数说明 |
+| 模型运行 | Qwen baseline stdout/stderr | baseline 与量化对比 |
+| 本地服务 | API 请求、响应、server 日志 | local API smoke test |
+
 所以，本章验收的是迁移判断能力：同一模型到了 Jetson 后，是内存、功耗、温度、构建参数还是模型尺寸限制了下一步。
+
+外部 Jetson 教程里的截图、demo 和设备介绍可以直接贴进课堂材料，但必须同时改写成下面这张迁移记录表。否则学生容易只看到“Jetson 能跑 AI demo”，看不到自己的 Qwen 主线到底卡在哪里。
+
+| 外部资料常见内容 | 本实验吸收成什么 | 学生需要填写 |
+| --- | --- | --- |
+| 设备家族图 | 设备不是同一类服务器 GPU，内存、功耗和散热不同 | Jetson 型号、内存、存储、电源、散热 |
+| JetPack 安装页 | JetPack、L4T、CUDA、TensorRT 是一组绑定版本 | `nv_tegra_release`、JetPack 版本、CUDA/TensorRT 版本 |
+| AI demo 截图 | demo 证明平台能力，不证明本课程模型可用 | Qwen GGUF 是否加载、日志路径、失败原因 |
+| TensorRT 示例 | Jetson 有图优化和加速路线 | 本实验是否仍使用 llama.cpp，是否另列 TensorRT 选做 |
+| 性能宣传图 | 只能提供设备背景 | 不写入课程结论，结论只来自本机日志 |
+| tegrastats 示例 | 边缘设备必须看温度、功耗和统一内存 | `tegrastats` logfile、峰值内存、温度区间 |
+
+NVIDIA Jetson Linux Developer Guide 里的软件栈图可以直接贴到本实验，帮助学生理解为什么 JetPack/L4T/CUDA/TensorRT 不能分开乱记。下面三张图使用 NVIDIA 文档源站 URL 远程展示，不下载进仓库。
+
+![NVIDIA Jetson software stack](https://docs.nvidia.com/jetson/archives/r38.4/DeveloperGuide/_images/jetson-software-stack.jpg)
+
+![NVIDIA Jetson Linux stack](https://docs.nvidia.com/jetson/archives/r38.4/DeveloperGuide/_images/jetson-linux-stack.jpg)
+
+![NVIDIA Jetson AI compute stack](https://docs.nvidia.com/jetson/archives/r38.4/DeveloperGuide/_images/jetson-ai-compute-stack.jpg)
+
+| 官方栈图 | 本实验吸收什么 | 记录字段 |
+| --- | --- | --- |
+| Jetson software stack | JetPack 把系统、库、AI 组件和工具组合在一起 | JetPack、L4T、CUDA、TensorRT、cuDNN |
+| Jetson Linux stack | 板级系统不是普通 Ubuntu 镜像 | `nv_tegra_release`、kernel、Ubuntu 版本 |
+| NVIDIA AI compute stack | 推理性能受 CUDA/TensorRT/框架层共同影响 | llama.cpp 构建参数、是否使用 TensorRT 路线、fallback 说明 |
+| 三张图合在一起 | Jetson 问题要按层排查 | 环境层、runtime 层、模型层、设备监控层 |
 
 ## Step 0：确认能登录 Jetson
 
@@ -515,7 +564,7 @@ Qwen2.5 0.5B Q4_K_M 在一台 Orin NX Super 类设备上的实测参考：
 本章吸收方式：
 
 - **知识点**：从 Jetson AI Lab、Jetson docs、Developer Guide 和 llama.cpp 构建文档吸收设备环境、功耗、散热、构建和迁移检查。
-- **图解**：把 Jetson 官方资料重画为环境预检、运行监控和 Ubuntu vs Jetson 对比表。
+- **图解**：远程贴入 Jetson AI Lab 设备图作为原图参考，再把 Jetson 官方资料重画为环境预检、运行监控和 Ubuntu vs Jetson 对比表。
 - **实验**：至少保存 Jetson 环境摘要、`tegrastats`、Qwen baseline 和迁移判断。
 - **取舍**：Ubuntu-only 项目可把本章作为路线阅读；不强制新增完整 Jetson 项目。
 
@@ -525,4 +574,4 @@ Qwen2.5 0.5B Q4_K_M 在一台 Orin NX Super 类设备上的实测参考：
 - [NVIDIA Jetson Linux Developer Guide](https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/)
 - [TensorRT documentation](https://docs.nvidia.com/deeplearning/tensorrt/latest/)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
-- [llama.cpp build documentation](https://www.mintlify.com/ggml-org/llama.cpp/development/build)
+- [llama.cpp build documentation](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md)

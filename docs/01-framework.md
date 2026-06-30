@@ -116,7 +116,31 @@ flowchart LR
 | 端云协同和系统资料中的路由/fallback 思路 | 本地、云端、脱敏上传、受限返回的路由图 | local API、VLM/Agent 和最终复盘 |
 | 官方 runtime 文档中的后端和格式差异 | 模型、runtime、硬件、上下文、服务形态联合决策矩阵 | 避免只按模型文件大小选方案 |
 
+### 外部课程原图参考
+
+下面两张图来自 Hugging Face Course documentation-images dataset，许可为 Apache-2.0。本章借用它们提醒学生：端侧部署判断不只看模型能不能跑，还要看参数规模、能耗、设备占用和长期成本。
+
+![Hugging Face model parameters](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/model_parameters.png)
+
+![Hugging Face carbon footprint](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/carbon_footprint.svg)
+
+| 原图重点 | 本章吸收什么 | 转成课程判断 |
+| --- | --- | --- |
+| 参数量影响资源需求 | 模型大小、内存、带宽和加载时间要一起看 | 模型能力与设备预算表 |
+| 碳足迹图强调训练/部署成本 | 端侧部署不是只追求速度，还要看能耗、散热和长期运行 | 功耗、温度、单位 token 能耗和风险登记 |
+| 生态图不等于部署结论 | 外部图只提供判断维度 | 结论必须回到 Qwen GGUF、profiling 和本地 API 证据 |
+
 这张表要求每个方案都回答“为什么要端侧”和“证据在哪里”。如果某个方案只有命令能跑、没有指标阈值、没有设备日志、没有失败样例, 它还不是可评审的部署方案。
+
+Microsoft EdgeAI for Beginners 把端侧 AI 讲成 local-first 的产品架构：数据尽量在设备附近处理，小模型负责低延迟和隐私敏感任务，复杂任务再路由到更强模型或云端。本课程吸收这个思路，但把工具换成 Qwen GGUF、llama.cpp、Jetson 和本地 API。
+
+| local-first 设计点 | 本课程怎么落地 | 需要的证据 |
+| --- | --- | --- |
+| 隐私优先 | 敏感输入先在本地 Qwen 小模型处理，必要时只上传脱敏摘要 | 哪些字段不出端、脱敏规则、日志样例 |
+| 离线可用 | 弱网或断网时仍能完成摘要、抽取、格式化等低风险任务 | 断网场景说明、本地 API smoke test |
+| 成本可控 | 高频简单请求走本地，小模型承担固定格式任务 | 请求类型分布、tokens/s、单位能耗或设备占用 |
+| SLM/LLM 分工 | 本地 SLM 处理常规任务，云端或大模型处理复杂推理 | 路由规则、fallback 条件、失败样例 |
+| 可观察性 | 工具调用、模型输出、异常和人工确认都要留证据 | server 日志、请求/响应、确认记录、错误日志 |
 
 ## 指标体系
 
@@ -336,15 +360,17 @@ sudo jetson_clocks --show
 本章吸收方式：
 
 - **知识点**：从 ML Systems Book、MIT/EfficientML 和 Jetson 文档吸收“指标、硬件约束、部署生命周期”三类判断框架。
-- **图解**：把外部系统图重画为端侧部署决策闭环和端云协同路由图。
+- **图解**：直接贴入 Hugging Face Apache-2.0 参数量与碳足迹原图作为参考，再把外部系统图重画为端侧部署决策闭环和端云协同路由图。
 - **实验**：把框架落到目标设备、验收指标、风险清单和后续 Qwen/Jetson 实验记录。
 - **取舍**：不展开完整 MLOps 平台治理，也不把 Jetson 写成唯一端侧路线。
 
 - [40/60 学时教学安排](/docs/course-hours)
 - [资料对比与课程取舍](/docs/source-comparison)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
 - [EfficientML.ai](https://efficientml.ai/)
+- [microsoft/edgeai-for-beginners](https://github.com/microsoft/edgeai-for-beginners)
 - [Ubuntu Server NVIDIA driver guide](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)

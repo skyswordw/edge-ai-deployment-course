@@ -113,6 +113,31 @@ flowchart LR
 | MLPerf Inference | 指标、负载、条件、结果一起报告 | 综合结果表必须写硬件、参数、日志和解释 |
 | 课程实跑记录 | 短 prompt 采样可能抓不到 GPU 峰值 | 提醒用连续采样或 `llama-bench` 补证据 |
 
+### 外部课程原图参考
+
+下面的图来自 vLLM 官方博客中展示的 DeepLearning.AI/vLLM 课程截图。本实验仍以 llama.cpp 为主，只借用这些图里的结构化思路：先拆 prefill/decode/KV Cache，再把指标和 benchmark 记录清楚。
+
+![DeepLearning.AI 与 vLLM 课程结构](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/course-structure.png)
+
+![KV Cache 课程示意](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/kv-cache.png)
+
+![Benchmarking lab 课程截图](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+| 原图重点 | 本实验吸收什么 | 转成哪个实验字段 |
+| --- | --- | --- |
+| 课程结构图 | serving 课程会先讲指标、KV Cache、调度和 benchmark | 本实验把指标、KV Cache、`llama-bench` 分开记录 |
+| KV Cache 图 | 上下文长度不是免费参数，会改变缓存和内存压力 | `ctx-size` 对比表必须写首 token、内存和失败原因 |
+| Benchmarking lab 图 | benchmark 需要固定输入、硬件和运行条件 | `llama-bench` 结果表必须写硬件、模型、参数、日志 |
+
+把 vLLM / TensorRT-LLM / MLPerf 里的性能思路落到本实验时，只保留四类变量：
+
+| 变量 | 本实验怎么改 | 应该观察什么 |
+| --- | --- | --- |
+| GPU offload | `-ngl 0` 对比 `-ngl 99` 或设备可用最大值 | tokens/s、显存、CPU/GPU 负载 |
+| 上下文长度 | `ctx-size` 1024/2048/4096 | 首 token、KV Cache、OOM 风险 |
+| 量化格式 | Q8/Q5/Q4 或教师指定变体 | 文件大小、内存、质量和速度 |
+| 服务形态 | CLI 对比 `llama-server` smoke test | API 端到端耗时和日志异常 |
+
 所以，本章不是“调到最快”，而是训练学生说清楚：快在哪里、代价是什么、能否进入后续服务化验证。
 
 ## 前置条件
@@ -540,8 +565,8 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-acceleration-tegrasta
 - **实验**：一次只改一个变量，记录 `-ngl`、ctx、threads、batch、首 token、tokens/s 和资源变化。
 - **取舍**：不要求学生部署 vLLM/TensorRT-LLM 集群；它们用于解释更高阶路线。
 
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
-- [llama.cpp llama-cli documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/llama-cli)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
+- [llama.cpp llama-cli documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/cli)
 - [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)
 - [vLLM documentation](https://docs.vllm.ai/)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

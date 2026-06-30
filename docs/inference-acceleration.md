@@ -99,7 +99,7 @@ sequenceDiagram
 
 ## 公开资料怎么转成本章内容
 
-vLLM、TensorRT-LLM、TensorRT、llama.cpp、MLPerf 和 Nsight 的资料都能讲推理性能，但本章不复制它们的 benchmark 图或厂商性能表。这里把外部资料改写成一个课堂可执行的问题：同一个 Qwen GGUF 模型，在同一设备上改变 `-ngl`、`ctx-size`、量化格式和服务形态时，瓶颈到底移动到了哪里。
+vLLM、TensorRT-LLM、TensorRT、llama.cpp、MLPerf 和 Nsight 的资料都能讲推理性能。本章先贴入部分课程截图作为视觉参考，但不把外部 benchmark 图或厂商性能表当作课程结论。这里把外部资料改写成一个课堂可执行的问题：同一个 Qwen GGUF 模型，在同一设备上改变 `-ngl`、`ctx-size`、量化格式和服务形态时，瓶颈到底移动到了哪里。
 
 ```mermaid
 flowchart LR
@@ -122,6 +122,32 @@ flowchart LR
 | MLPerf Inference | 明确硬件、负载、指标和报告口径 | 用于规范结果表，不引用外部成绩 |
 | Nsight Systems | CPU/GPU 时间线和系统级 profiling | 作为进阶排查工具，课堂先用日志和监控命令 |
 | Qwen llama.cpp 文档 | Qwen 本地运行和量化路径 | 保持所有加速实验回到同一模型主线 |
+
+### 外部课程原图参考
+
+下面三张图来自 vLLM 官方博客中的 DeepLearning.AI/vLLM 课程截图。本章用它们提醒学生：推理加速不是单一参数调优，而是课程结构、KV Cache 和 metrics 三件事共同决定。
+
+![DeepLearning.AI vLLM course structure](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/course-structure.png)
+
+![DeepLearning.AI vLLM KV cache](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/kv-cache.png)
+
+![DeepLearning.AI vLLM metrics](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/vllm-metrics.png)
+
+| 原图重点 | 本章吸收什么 | 本课程里的动作 |
+| --- | --- | --- |
+| 课程结构覆盖压缩、服务、评估 | 加速实验要贯穿 Qwen 量化、server 和报告 | 把 Q8/Q5/Q4、`llama-server`、profiling 放进同一闭环 |
+| KV Cache 图强调状态增长 | 长上下文瓶颈不能只靠权重量化解释 | 固定并记录 `ctx-size`、prompt tokens、generated tokens |
+| metrics 图强调 serving 口径 | TTFT、tokens/s、throughput、P99 不是同一个指标 | CLI、`llama-bench` 和 API elapsed 分开记录 |
+
+DeepLearning.AI/vLLM serving 课程的价值在于把“压缩、服务、压测”连成一条闭环。本课程对应到更轻量的本地版本：
+
+| Serving 课程内容 | 本课程保留什么 | 本课程不展开什么 |
+| --- | --- | --- |
+| KV Cache 与显存层级图 | 解释 `ctx-size`、并发和长上下文为什么会吃内存 | 不要求学生改 vLLM 内存管理器 |
+| Continuous batching / PagedAttention | 说明 throughput 和单请求 latency 的取舍 | 不搭建高并发生产集群 |
+| OpenAI-compatible serving | 用 `llama-server` 验证本地 API 可调用 | 不把后端工程扩成完整 Web 服务 |
+| Benchmark under load | 区分 TTFT、tokens/s、throughput、并发 | 不引用外部排行榜作为课程结论 |
+| Quantization lab | 把压缩收益和质量回归一起看 | 不把 Qwen GGUF 主线换成其他工具链 |
 
 所以，本章的结论必须写成“在哪个设备、哪个模型、哪个参数组合下观察到什么”，不能写成泛泛的“某框架更快”。
 
@@ -458,19 +484,21 @@ tegrastats --interval 1000 --logfile ~/edge-ai-lab/logs/tegrastats-accel.log
 
 本章吸收方式：
 
-- **知识点**：从 llama.cpp、TensorRT、TensorRT-LLM、vLLM、MLPerf 和 Roofline 中提取 prefill/decode、KV 管理、kernel、内存带宽和 benchmark 口径。
-- **图解**：把系统优化资料重画为瓶颈定位分层图和首 token/tokens/s 拆分图。
+- **知识点**：从 llama.cpp、TensorRT、TensorRT-LLM、vLLM、DeepLearning.AI serving 课程、MLPerf 和 Roofline 中提取 prefill/decode、KV 管理、kernel、内存带宽和 benchmark 口径。
+- **图解**：远程贴入 vLLM/DeepLearning.AI 课程结构、KV Cache 和 metrics 截图作为原图参考，再重画为瓶颈定位分层图和首 token/tokens/s 拆分图。
 - **实验**：把加速方法转成 `-ngl`、ctx、threads、llama-bench、CLI/API 对照和 profiling 记录。
 - **取舍**：不要求全员搭建高并发 serving 集群，重点是能解释本地部署为什么慢。
 
-- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
 - [llama.cpp llama-bench README](https://github.com/ggml-org/llama.cpp/blob/master/tools/llama-bench/README.md)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
 - [TensorRT documentation](https://docs.nvidia.com/deeplearning/tensorrt/latest/)
 - [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)
 - [vLLM documentation](https://docs.vllm.ai/)
+- [DeepLearning.AI Fast & Efficient LLM Inference with vLLM](https://www.deeplearning.ai/courses/fast-and-efficient-llm-inference-with-vllm/)
+- [vLLM course announcement and screenshots](https://vllm.ai/blog/2026-06-03-deeplearning-ai-vllm-course)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
-- [Roofline: An Insightful Visual Performance Model](https://dl.acm.org/doi/10.1145/1498765.1498785)
+- [Roofline: An Insightful Visual Performance Model](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2008/Archive/EECS-2008-134.pdf)

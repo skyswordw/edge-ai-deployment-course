@@ -40,6 +40,30 @@ flowchart LR
 | OpenAI-compatible API 资料 | 请求、响应、HTTP 状态和端到端耗时要分开 | 第 6 节 API 服务测试 |
 | 课程实跑记录 | 脱敏日志、失败记录和未测说明的写法 | 附录和“缺失和失败怎么写” |
 
+引用外部课程或官方文档时，只能作为报告口径，不能作为本课程结论：
+
+| 可以借鉴 | 不可以直接写成结论 | 应替换成自己的证据 |
+| --- | --- | --- |
+| MLPerf 的指标组织 | “某硬件在排行榜上最快” | 本机硬件、prompt、参数和日志 |
+| vLLM / serving 课程的 TTFT/throughput 区分 | “服务化一定提升吞吐” | 本地 `llama-server` 或选做 vLLM 压测 |
+| Jetson 官方 demo | “Jetson 一定适合该任务” | 自己的 `tegrastats`、温度、内存和质量记录 |
+| 量化课程的 INT4/INT8 解释 | “低 bit 一定更快” | Q8/Q5/Q4 对比表和质量备注 |
+| OpenAI-compatible API 文档 | “接口兼容就可上线” | HTTP 状态、响应 JSON、超时和 server 日志 |
+
+### 外部课程原图参考
+
+下面两张图来自 Hugging Face Course documentation-images dataset，许可为 Apache-2.0。报告模板借用它们的写法：先说明数据和评估边界，再给模型结果。
+
+![Hugging Face dataset card](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter5/dataset-card.png)
+
+![Hugging Face review lengths](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/review-lengths.svg)
+
+| 原图重点 | 模板吸收什么 | 写进报告哪里 |
+| --- | --- | --- |
+| 数据卡说明来源和限制 | prompt 集、校准集、评估集都要交代来源和覆盖范围 | 第 1、4、9 节 |
+| 数据长度分布影响性能和质量 | 长 prompt 与短 prompt 要分开解释 | 第 3-5 节和风险登记 |
+| 外部图只是格式参考 | 不引用外部数据分布作为本项目证据 | 附录放自己的统计和日志 |
+
 底线：报告不能把“跑过一次”写成“可以部署”。推荐方案至少要同时有量化对比、runtime/API 记录和风险登记支撑。
 
 ```markdown
@@ -117,6 +141,16 @@ flowchart LR
 | `llama-bench` 的 `pp` / `tg` 行 | 标准化 benchmark | `pp` 近似 prompt processing，`tg` 近似 token generation，写入第 5 节。 |
 | `nvidia-smi` / `tegrastats` | 峰值内存/显存、温度/功耗 | 写入第 3、4、5、7 节，并附监控日志路径；Jetson 重点记录 RAM、GR3D、温度和 VDD_IN。 |
 | curl 或 Python 客户端计时 | API 端到端延迟 | 写入第 6 节，不要和 CLI tokens/s 混为一谈。 |
+
+benchmark 证据索引：
+
+| 结论类型 | 必须能指向的证据 | 不能只写 |
+| --- | --- | --- |
+| 推荐某个量化档位 | Q8/Q5/Q4 对比表、固定 prompt 输出、日志路径 | “Q5 最好” |
+| 推荐某个 runtime 参数 | 单变量实验、命令、stderr timing、资源采样 | “速度更快” |
+| API 可用 | 请求 JSON、HTTP 状态、elapsed、server log | “接口通了” |
+| Jetson 可用 | JetPack/L4T、`nvpmodel`、`tegrastats`、baseline 日志 | “Jetson 能跑” |
+| 不推荐某方案 | 失败日志、质量退化样例、OOM/fallback/超时证据 | “效果不好” |
 
 ## 4. 量化版本对比
 
@@ -235,13 +269,14 @@ flowchart LR
 本章吸收方式：
 
 - **知识点**：从 benchmark、runtime 和 serving 文档吸收报告指标、条件记录、服务化证据和风险登记口径。
-- **图解**：把外部评估方法重画为“资料口径 -> 课程证据 -> 风险登记 -> 部署建议 -> 附录”的报告链路。
+- **图解**：直接贴入 Hugging Face Apache-2.0 dataset card 和 review-lengths 原图作为参考，再把外部评估方法重画为“资料口径 -> 课程证据 -> 风险登记 -> 部署建议 -> 附录”的报告链路。
 - **实验**：要求所有 Qwen GGUF、Q8/Q5/Q4、profiling 和 local API 结论都回到日志、表格或 JSON。
 - **取舍**：不引用外部榜单数字当作本课程结论，也不把报告模板扩成论文综述。
 
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
-- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
 - [OpenAI API reference](https://platform.openai.com/docs/api-reference)

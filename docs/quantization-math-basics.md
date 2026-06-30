@@ -110,6 +110,39 @@ flowchart LR
 | llama.cpp quantize 文档中的 Q4/Q5/Q8 和 K-quants 格式 | “名义 bit-width 不等于实际文件大小”的 bpw 估算 | Qwen Q8/Q5/Q4 文件大小、内存和速度对比 |
 | 端侧 runtime 文档中的低比特 kernel 说明 | “变小不等于变快”的工程判断 | 最终报告同时记录文件、内存、tokens/s 和质量 |
 
+### 外部课程原图参考
+
+下面两张图来自 vLLM 官方博客中展示的 DeepLearning.AI/vLLM 课程截图。本章只借用它们展示的分类粒度：量化方案要说明对象、bit-width、粒度和实验记录，而不是只写“用了 int4”。
+
+![DeepLearning.AI vLLM quantization schemes](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-schemes.png)
+
+![DeepLearning.AI vLLM quantization lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-lab.png)
+
+| 原图重点 | 本章吸收什么 | 变成哪个课程要求 |
+| --- | --- | --- |
+| quantization schemes | 量化方案要区分 weight、activation、KV Cache、粒度和格式 | scale/zero-point、per-tensor/per-channel/per-group、weight-only/KV Cache 表 |
+| quantization lab | 课程实验要把方法、运行参数和观测结果放在一起 | Qwen Q8/Q5/Q4 对比时同时写文件、内存、速度、质量 |
+
+从 DeepLearning.AI、PyTorch、ONNX 和 llama.cpp 资料吸收数学内容时，本章只要求学生能把概念落到一个可算例子：
+
+| 概念 | 课堂最小算例 | 真实实验落点 |
+| --- | --- | --- |
+| 对称量化 | 给定 `max_abs` 和 bit-width，算 `scale`、整数值和反量化值 | 权重量化、Q8/Q5/Q4 直觉 |
+| 非对称量化 | 给定 `xmin/xmax`，算 `scale` 和 `zero_point` | 激活量化、TFLite/ONNX PTQ |
+| clipping | 比较 max 校准和 percentile 校准的误差 | outlier 排查、质量修复 |
+| per-group metadata | 用 `b + 16/g` 估算 bits/weight | 解释 GGUF 文件大小不等于名义 bit |
+| 误差记录 | 同一数组记录 MAE/MSE | 连接 toy example 和 Qwen 输出质量备注 |
+
+外部量化教程中的图表可以先贴进本章，但每张图都要落到一个可计算或可记录的动作：
+
+| 外部图表 | 本章保留什么 | 课堂动作 |
+| --- | --- | --- |
+| 对称/非对称量化图 | range、scale、zero-point 的方向 | 手算一个 INT8 例子 |
+| per-channel/per-group 图 | 粒度会增加 metadata，也会影响误差 | 比较 per-tensor 和 per-group 误差 |
+| clipping/outlier 图 | outlier 会拉大量化范围 | 比较 max 校准和 percentile 校准 |
+| weight-only / activation 图 | 量化对象不同，收益和风险不同 | 标注 Qwen GGUF 主要压缩什么 |
+| quantization lab 表 | 方法、参数、质量和速度要同表记录 | 连接到 Q8/Q5/Q4 实验表 |
+
 这张表避免两个常见误解: 第一, 量化数学不是论文证明课, 它要能解释实验现象；第二, Qwen 的 GGUF 量化格式不是抽象 INT4 标签, 它必须和 runtime、设备和质量备注一起记录。
 
 ## 核心概念

@@ -58,6 +58,45 @@ flowchart LR
 | Jetson AI Lab / Jetson docs | 边缘视觉、功耗、温度和节点分工 | Jetson 作为采集、预处理、小模型和权限节点 |
 | ML Systems Book | 可靠性、状态、失败恢复和系统复盘 | 端云协同、状态管理和最终项目风险清单 |
 
+下面这张原图来自 [microsoft/edgeai-for-beginners](https://github.com/microsoft/edgeai-for-beginners)，许可为 MIT。它适合作为 Local-first Agent 系统参考：本地 SLM、工具编排、人类确认、多模态输出和 observability 不是单一模型能力，而是一组系统组件。
+
+![Microsoft Edge AI local-first agent architecture](https://raw.githubusercontent.com/microsoft/edgeai-for-beginners/main/WorkshopForAgentic/imgs/arch.png)
+
+Microsoft 课程还提供了一张 Agent workflow 插图。图内个别英文只作为原课程视觉参考，本课程的工程判断仍以下面的权限表、状态表和失败恢复流程为准。
+
+![Microsoft Edge AI agent workflow illustration](https://raw.githubusercontent.com/microsoft/edgeai-for-beginners/main/WorkshopForAgentic/imgs/lab2.png)
+
+把 Local-first Agent 原图贴进章节后，需要立刻落到三张课程表：组件表、权限表和证据表。这样学生看到的是系统边界，而不是把 Agent 当成一个“会自动做事”的模型。
+
+| 原图组件 | 本章吸收成 | 学生需要能说明 |
+| --- | --- | --- |
+| Local SLM | 本地低风险 planner、formatter、summarizer | 哪些任务必须本地，哪些任务本地能力不足 |
+| Tools / function calling | 静态白名单、schema、应用层执行 | 工具参数如何校验，模型能否绕过权限 |
+| Human in the loop | 高风险动作确认点 | 哪些操作必须确认，确认记录保存在哪里 |
+| Multimodal input/output | VLM 输入、图像预处理、文本输出 | 图像大小、视觉 token、projector 是否成为瓶颈 |
+| Observability | 日志、trace、失败样例 | 保存哪些请求、工具结果和拒绝原因 |
+| Cloud fallback | 脱敏后复杂推理或知识补全 | 什么时候允许云端，断网时如何退化 |
+
+| 外部 VLM/Agent 资料 | 可以直接贴入的字段 | 本章转成的检查项 |
+| --- | --- | --- |
+| HF 多模态任务页 | input type、processor、image size、generated text | VLM 组件拆解和视觉 token 估算 |
+| Qwen-VL / llama.cpp mtmd 文档 | language model、mmproj、image flag、backend | VLM smoke test 命令和 projector 风险 |
+| OpenAI tools / function calling | tool name、description、JSON schema、tool result | Agent 工具契约和 policy validator |
+| OpenAI Agents / tracing 概念 | agent、handoff、guardrail、trace | 本章只吸收系统概念，不改成云端 SDK 实验 |
+| Microsoft EdgeAI | local-first、SLM/LLM 分工、人工确认 | 端云协同路由和权限边界 |
+
+OpenAI Function Calling 和 Agents SDK 文档里的概念可以直接转成 Agent 安全记录表。本课程不要求使用云端 SDK，但要吸收这些系统字段：
+
+| 官方文档概念 | 本章吸收什么 | 本地/端侧记录字段 |
+| --- | --- | --- |
+| Function tools | 工具必须有名称、schema、参数和返回值 | tool name、JSON schema、参数校验、返回摘要 |
+| Strict / structured output | 输出格式应先被机器校验，再进入执行 | schema validator、失败重试、拒绝执行记录 |
+| Handoffs / agents as tools | 复杂任务可以委托给更合适的模型或子流程 | handoff 条件、目标 agent、回退策略 |
+| Guardrails | 输入输出都要有安全和策略检查 | blocked tools、confirm_required、policy result |
+| Human in the loop | 高风险动作不应直接自动执行 | 人工确认点、确认内容、超时策略 |
+| Sessions / memory | 状态会影响后续工具调用 | session id、可保存字段、敏感字段清理 |
+| Tracing | Agent 结论要能回放每一步 | trace id、tool call log、错误和恢复路径 |
+
 所以，本章不是“搭一个完整 Agent demo”，而是让学生能判断：哪些组件适合本地，哪些需要云端或人工确认，哪些风险必须先写进报告。
 
 ## VLM 端侧链路
@@ -150,6 +189,34 @@ flowchart TD
 
 Agent 端侧化的关键不是“模型会不会调用工具”，而是“工具调用是否可控、可回滚、可审计”。
 
+## Function Calling 工作流
+
+Microsoft EdgeAI for Beginners 的 Function Calling 模块把工具调用拆成：工具定义、意图识别、参数抽取、JSON 输出、外部执行、结果回填。本课程采用同样的系统边界，但只要求学生实现可验证的本地白名单流程。
+
+```mermaid
+flowchart LR
+  A["用户请求"] --> B["工具定义: name / description / parameters"]
+  B --> C["小模型判断是否需要工具"]
+  C --> D["生成工具调用 JSON"]
+  D --> E["结构校验和权限检查"]
+  E --> F{"允许执行?"}
+  F -- "否" --> G["拒绝 / 请求确认 / fallback"]
+  F -- "是" --> H["应用层执行工具"]
+  H --> I["结果回填模型"]
+  I --> J["返回用户并保存日志"]
+```
+
+| 阶段 | 最容易出错的点 | 本课程最低检查 |
+| --- | --- | --- |
+| 工具定义 | 描述太宽泛，参数类型不明确 | 每个参数有类型、范围和默认值说明 |
+| 意图识别 | 小模型误判需要调用高风险工具 | 高风险工具不直接暴露给模型 |
+| JSON 输出 | 格式合法但字段冲突或缺必填参数 | 先跑 schema / policy validator |
+| 外部执行 | 模型输出被当成可信命令直接执行 | 应用层二次校验，不让模型绕过权限 |
+| 结果回填 | 工具失败被模型编造成成功 | 工具返回必须带 status/error |
+| 日志记录 | 保存了敏感路径或原始隐私数据 | 日志脱敏，并保留失败原因 |
+
+这个流程解释了为什么本课程的 Agent 实验只让模型生成策略草案，不让它直接操作系统。Function calling 的安全边界在应用层，不在模型文本里。
+
 ## Agent 权限边界
 
 端侧 Agent 接近真实系统操作，必须先定义工具权限。
@@ -189,6 +256,17 @@ Agent 经常失败在状态，而不是单次推理。
 ## 端云协同 Agent
 
 本地小模型适合处理隐私、低延迟和格式化任务；云端大模型适合复杂推理、长上下文和知识密集任务。
+
+Microsoft EdgeAI 课程强调 SLM 更适合高频、结构化、工具型工作流，LLM 更适合开放式复杂推理。本课程把它落成下面这张路由表：
+
+| 任务类型 | 本地 SLM 优先 | 云端/大模型优先 | 路由证据 |
+| --- | --- | --- | --- |
+| 固定格式抽取 | 是 | 否 | 输出 schema 通过率、tokens/s、失败样例 |
+| 本地日志摘要 | 是 | 只在脱敏后兜底 | 日志敏感级别、摘要质量、是否离线 |
+| 工具参数生成 | 是，但必须校验 | 高风险任务需人工确认 | policy validator 结果 |
+| 长文复杂推理 | 只做摘要或预筛 | 是 | 上下文长度、质量备注、超时记录 |
+| 创意开放问答 | 不作为主路径 | 是 | 质量要求和用户体验 |
+| 设备控制 | 只读或建议 | 仍需应用层权限 | 工具等级、确认记录、回滚能力 |
 
 ```mermaid
 flowchart LR
@@ -406,8 +484,8 @@ python3 labs/scripts/validate_agent_policy.py agent-policy.json
 
 本章吸收方式：
 
-- **知识点**：从 HF 多模态任务、Transformers、OpenAI Function Calling、Jetson AI Lab 和 ML Systems Book 吸收 VLM 组件、工具权限、端云协同和失败恢复。
-- **图解**：把多模态和 Agent 资料重画为 VLM 推理链路、工具权限表和端云协同图。
+- **知识点**：从 HF 多模态任务、Transformers、OpenAI Function Calling、Microsoft EdgeAI、Jetson AI Lab 和 ML Systems Book 吸收 VLM 组件、工具权限、端云协同和失败恢复。
+- **图解**：直接嵌入 Microsoft MIT 许可的 local-first agent 架构图和 workflow 插图，再把多模态和 Agent 资料重画为 VLM 推理链路、工具权限表和端云协同图。
 - **实验**：VLM/Agent 任务必须记录视觉 token、延迟、工具白名单、确认策略和失败恢复。
 - **取舍**：不追逐快速变化的框架接口，也不把 demo 成功等同于产品可用。
 
@@ -417,5 +495,6 @@ python3 labs/scripts/validate_agent_policy.py agent-policy.json
 - [Hugging Face Vision-Language Models task guide](https://huggingface.co/tasks/image-text-to-text)
 - [OpenAI Function Calling guide](https://platform.openai.com/docs/guides/function-calling)
 - [OpenAI Agents SDK documentation](https://openai.github.io/openai-agents-python/)
+- [microsoft/edgeai-for-beginners](https://github.com/microsoft/edgeai-for-beginners)
 - [NVIDIA Jetson AI Lab](https://www.jetson-ai-lab.com/)
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)

@@ -119,7 +119,55 @@ flowchart LR
 | Jetson documentation | 统一内存、功耗模式、温度和降频风险 | Jetson 的 `tegrastats`、`nvpmodel` 记录 |
 | 课程 profiling 实跑记录 | stderr timing、短运行 GPU 利用率采样容易失真 | Step 3、Step 5 明确用 `2>&1 | tee`，并保留显存/功耗证据 |
 
+vLLM 课程的 benchmark lab 提醒我们：压测结果必须同时说明负载形状和质量边界。本实验不引入 GuideLLM，但保留它的记录习惯：
+
+### 外部课程原图参考
+
+下面两张图来自 vLLM 官方博客中的 DeepLearning.AI/vLLM 课程截图。本实验不要求复现图中的工具，只把 metrics 和 benchmarking lab 的记录口径搬到 Qwen/llama.cpp 日志里。
+
+![DeepLearning.AI vLLM metrics](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/vllm-metrics.png)
+
+![DeepLearning.AI vLLM benchmarking lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+| 原图重点 | 本实验吸收什么 | 转成哪个证据 |
+| --- | --- | --- |
+| metrics 要区分层级 | API elapsed、TTFT、tokens/s、throughput 不混写 | timing log、curl 计时、结果总表 |
+| benchmark 要说明负载 | 并发、prompt 长度、生成长度会改变结论 | prompt 文件、`-p/-n`、ctx、并发说明 |
+| benchmark 还要看质量 | 更快不等于更可用 | 固定输出样例、质量备注、失败日志 |
+
+| Profiling 维度 | 记录什么 | 没记录会怎样 |
+| --- | --- | --- |
+| 负载形状 | 并发数、prompt 长度、生成长度、是否共享 system prompt | 吞吐数字无法解释 |
+| 延迟拆分 | TTFT、总耗时、tokens/s 或 `llama-bench` prompt/eval | 不知道用户等待来自 prefill 还是 decode |
+| 资源采样 | VRAM/RAM、功耗、温度、GPU 利用率 | 速度变化无法和设备状态对应 |
+| 质量回归 | 固定 prompt 输出、PPL 或规则检查 | 压缩后可能只是更快地输出坏结果 |
+| 原始证据 | 命令、stdout/stderr、采样日志、模型 hash | 报告无法复查 |
+
 所以，本章的重点不是画更复杂的性能图，而是让每个部署判断都有日志、采样和质量备注支撑。
+
+外部 benchmark 页面里的表格通常很好看，但不能直接搬成课程结论。可以先贴入它们的“字段结构”，再替换成本课程实测值。
+
+| 外部 benchmark 字段 | 本课程对应字段 | 备注 |
+| --- | --- | --- |
+| model / backend | Qwen GGUF 文件、llama.cpp commit、CUDA/Jetson backend | 不能只写模型名 |
+| workload | prompt tokens、generated tokens、ctx-size、并发数 | 短 prompt 结论不能推广到长上下文 |
+| latency | TTFT、total elapsed、prompt eval、eval | CLI 和 API 要分开 |
+| throughput | tokens/s、requests/s 或 samples/s | 本课程主线优先记录 tokens/s |
+| memory | VRAM/RAM、KV Cache、统一内存 | Jetson 必须补功耗和温度 |
+| quality | 固定 prompt 输出、规则检查、失败样例 | 更快但答错不算部署成功 |
+| evidence | 原始命令、日志、采样文件、hash | 没有证据的数字不进入报告 |
+
+把 MLPerf、Nsight Systems 和 llama-bench 的资料贴进课程时，最有用的是下面这些字段，而不是外部成绩：
+
+| 资料字段 | 本实验保留什么 | 写进哪份文件 |
+| --- | --- | --- |
+| Scenario / workload | 单请求、并发、prompt 长度、生成长度 | `results/profiling-summary.md` |
+| System under test | CPU/GPU/Jetson、driver、JetPack、功耗模式 | `results/env-check.txt` 或 Jetson 环境摘要 |
+| Model and precision | Qwen GGUF 文件、Q8/Q5/Q4、hash | 量化对比总表 |
+| Timing breakdown | prompt processing、text generation、total elapsed | `llama-bench` 或 stderr timing |
+| Resource trace | VRAM/RAM、温度、功耗、GPU/GR3D | `nvidia-smi` 或 `tegrastats` 日志 |
+| Accuracy / quality | 固定 prompt 输出、规则检查、失败样例 | 第 4 节质量备注 |
+| Reproducibility | 命令、参数、commit、日志路径 | 报告附录证据索引 |
 
 ## 指标定义
 
@@ -444,13 +492,15 @@ grep -i "warning\\|fallback\\|error\\|oom" ~/edge-ai-lab/logs/qwen-baseline-q4.t
 
 本章吸收方式：
 
-- **知识点**：从 llama-bench、Nsight、MLPerf、CUDA 和 Jetson 文档吸收 profiling 边界、采样工具和报告严谨性。
-- **图解**：把工具说明重画为“命令日志、系统采样、结果表、结论”的记录闭环。
+- **知识点**：从 llama-bench、Nsight、MLPerf、DeepLearning.AI/vLLM benchmark lab、CUDA 和 Jetson 文档吸收 profiling 边界、采样工具和报告严谨性。
+- **图解**：远程贴入 vLLM/DeepLearning.AI metrics 和 benchmarking lab 截图作为原图参考，再重画为“命令日志、系统采样、结果表、结论”的记录闭环。
 - **实验**：要求保留 stdout/stderr、`nvidia-smi` 或 `tegrastats`、解析表和失败样例。
 - **取舍**：不做竞赛级 benchmark，也不把截图当作唯一证据。
 
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
+- [DeepLearning.AI Fast & Efficient LLM Inference with vLLM](https://www.deeplearning.ai/courses/fast-and-efficient-llm-inference-with-vllm/)
+- [vLLM course announcement and screenshots](https://vllm.ai/blog/2026-06-03-deeplearning-ai-vllm-course)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)

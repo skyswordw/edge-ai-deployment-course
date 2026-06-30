@@ -57,7 +57,40 @@ flowchart LR
 | Jetson / Edge AI 资料 | 端侧功耗、温度、共享内存和迁移风险 | 60 学时完整路径 |
 | MLPerf / Nsight / llama-bench | 结果要能追溯到条件和日志 | 学生实跑覆盖索引和最终报告模板 |
 
+第一次学习时，看到外部资料可以按下面顺序处理：
+
+| 看到的资料 | 先做什么 |
+| --- | --- |
+| 原理课程 | 只记住和 token、量化、runtime、profiling 相关的概念 |
+| 官方命令 | 改成本课程的 Qwen GGUF / llama.cpp 命令后再运行 |
+| 原图或架构图 | 先看它解释的系统边界，再回到课程 Mermaid 和表格 |
+| benchmark 数字 | 只学习记录口径，不把数字写进自己的结论 |
+| 新 runtime | 先问它是否能接入 Qwen 主线和最终报告证据链 |
+
+第一次学习时可以直接把外部课程里的这些材料贴到个人笔记里，但进入课程报告前要替换成自己的记录：
+
+| 外部材料 | 个人笔记里先贴什么 | 报告里必须换成什么 |
+| --- | --- | --- |
+| LLM pipeline 图 | tokenizer、model、post-processing 的流程 | 本次 Qwen prompt、参数和输出日志 |
+| 量化 schemes 图 | bit-width、scale、weight-only 等关键词 | Q8/Q5/Q4 文件、hash、速度和质量 |
+| benchmark lab 图 | workload、metrics、server 的字段 | 自己的 `llama-bench` 或 API smoke test |
+| Jetson/edge 图 | 端侧设备和功耗约束 | 实际设备型号、温度、功耗或未测说明 |
+| Agent 架构图 | tools、human confirmation、fallback | 本项目是否需要 Agent，权限边界是什么 |
+
 所以，首次学习的原则是：先拿到一条能跑、能比较、能写报告的证据链，再回头读资料地图做扩展。
+
+### 外部原图速览
+
+第一次学习不需要读完所有外部课程，但可以先看这两类图：一类解释 LLM 推理链路，一类解释 serving/benchmark 课程为什么要把指标和报告连起来。
+
+![Hugging Face full NLP pipeline](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter2/full_nlp_pipeline.svg)
+
+![DeepLearning.AI vLLM benchmarking lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+| 原图重点 | 本页先吸收什么 | 第一次学习怎么用 |
+| --- | --- | --- |
+| NLP pipeline | 输入、模型和后处理是一个链路 | baseline 不是只看模型输出，还要保存输入和日志 |
+| Benchmarking lab | 结果必须绑定 workload、硬件、模型和参数 | 做 Q8/Q5/Q4 后必须填结果表和报告 |
 
 ## 适合谁
 
@@ -190,12 +223,14 @@ mkdir -p ~/edge-ai-lab/{env,models,repos,scripts,logs,results,report}
 本章吸收方式：
 
 - **知识点**：从 LLM 入门、runtime、量化、serving 和 benchmark 资料中抽出学习顺序。
-- **图解**：把外部资料重画为“公开资料 -> 主线 -> baseline -> 量化/profiling -> local API -> 报告”的入口路径。
+- **图解**：贴入 Hugging Face pipeline 和 vLLM benchmarking 原图，并把外部资料重画为“公开资料 -> 主线 -> baseline -> 量化/profiling -> local API -> 报告”的入口路径。
 - **实验**：入口页只指向已有实验章节，不新增命令。
 - **取舍**：首次学习先跳过扩展资料，避免把课程展开成厂商文档索引。
 
 - [类似教材与教程参考](/docs/similar-courses)
 - [参考资料地图](/docs/reference-map)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

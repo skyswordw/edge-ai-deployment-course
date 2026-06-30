@@ -10,6 +10,12 @@ title: 排障索引
 
 外部文档通常按工具或平台写排错：CUDA 文档看驱动，llama.cpp 文档看构建和模型参数，Jetson 文档看 JetPack、功耗和温度，benchmark/profiling 资料看指标和日志。本页把这些排错入口改写成课程自己的闭环：现象先归类，再回到 Qwen、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 和最终报告。
 
+下面两张原图来自 [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)，许可为 Apache-2.0。它们不是本课程的 Qwen 报错截图，但适合提醒学生：排障要先保留完整 traceback，并确认模型 ID、路径和文件名。
+
+![Hugging Face traceback example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/traceback.png)
+
+![Hugging Face wrong model id example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/wrong-model-id.png)
+
 ```mermaid
 flowchart LR
   A["失败现象"] --> B{"先归类"}
@@ -33,6 +39,32 @@ flowchart LR
 | Jetson / JetPack 文档 | Jetson 问题优先查 L4T、功耗模式、统一内存、温度和存储 | 第 2 节环境、第 7 节温度/功耗风险 |
 | llama-bench / Nsight / MLPerf | 性能问题先保留条件和原始日志，再判断瓶颈 | 第 5 节 profiling、第 7 节风险 |
 | llama.cpp server / API 文档 | API 问题要区分服务启动、HTTP 状态、JSON 响应和模型质量 | 第 6 节 local API、第 7 节并发/超时风险 |
+
+### 外部排障资料可直接吸收的记录法
+
+公开工具文档和课程里的排障示例有一个共同点：先保存“现场”，再解释原因。本课程把这个做法压成下面的最小证据包，任何失败都优先按这个包记录。
+
+| 失败层 | 最小证据包 | 不要只写 |
+| --- | --- | --- |
+| 环境层 | OS、driver/CUDA/JetPack、`nvidia-smi` 或 `tegrastats`、安装/构建日志 | “环境不行” |
+| 模型层 | 模型名、文件路径、文件大小、SHA256、许可证、加载日志 | “模型加载失败” |
+| runtime 层 | llama.cpp commit、构建参数、启动命令、stderr timing、`-ngl`、`ctx-size` | “llama.cpp 报错” |
+| 性能层 | workload、prompt token、生成 token、重复次数、资源采样、`llama-bench` | “速度慢” |
+| API 层 | server 命令、request、response、HTTP 状态、elapsed、server log | “API 不通” |
+| 质量层 | prompt ID、Q8/Q5/Q4 输出摘录、判断标准、是否可复现 | “回答不好” |
+
+官方排障文档里的命令很多，本课程只吸收能进入证据包的最小项：
+
+| 官方资料常见检查 | 本课程保留字段 | 对应问题 |
+| --- | --- | --- |
+| driver / CUDA 检查 | `nvidia-smi`、driver、CUDA runtime、`nvcc` 是否存在 | GPU 可见但构建或运行失败 |
+| model download / file list | 文件名、大小、SHA256、许可证、模型卡 | 模型路径或来源不明 |
+| runtime verbose log | commit、build flags、backend、offload、fallback | 同一命令不同机器结果不同 |
+| benchmark command | workload、ctx、生成长度、重复次数、日志路径 | 速度数字不可比较 |
+| device monitor | VRAM/RAM、温度、功耗、采样时间 | OOM、热降频、短运行采样失真 |
+| API debug | endpoint、request body、HTTP status、response、server stderr | API 200 但质量差或服务超时 |
+
+如果证据包不完整，报告里先写“无法判断原因”，不要急着把问题归因到量化、模型或硬件。
 
 排障不是额外作业。它是部署报告的证据来源：解决了的问题写进实验结论，未解决的问题写进风险登记。
 
@@ -84,17 +116,18 @@ flowchart LR
 本章吸收方式：
 
 - **知识点**：从 CUDA、Jetson、llama.cpp、profiling 和 API 文档中吸收按层定位故障的边界。
-- **图解**：重画为“现象 -> 归类 -> 原始日志 -> 报告风险”的 Mermaid 图。
+- **图解**：直接嵌入 Hugging Face Apache-2.0 traceback / wrong model id 原图，再重画为“现象 -> 归类 -> 原始日志 -> 报告风险”的 Mermaid 图。
 - **实验**：所有排障建议都回到 Qwen GGUF、Q8/Q5/Q4、profiling、local API 或最终报告字段。
 - **取舍**：不复制厂商排错手册，不把重装环境当默认答案，也不引入自动诊断工具。
 
 - [参考资料地图](/docs/reference-map)
 - [样例日志与结果表](/docs/sample-logs)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [Profiling 与结果记录](/docs/lab-profiling)
 - [本地 API 服务实验](/docs/lab-local-service)
 - [Jetson 环境与 Qwen 迁移](/docs/lab-jetson-setup)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
-- [llama.cpp server](https://github.com/ggml-org/llama.cpp/tree/master/examples/server)
+- [llama.cpp server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

@@ -79,7 +79,53 @@ flowchart LR
 | ML Systems Book | 系统可靠性、部署生命周期和复盘视角 | 端云协同、风险清单、上线边界 |
 | 课程公开运行记录 | 脱敏日志、失败记录和未测说明 | 作业中的失败复盘和最终报告附录 |
 
+把外部案例或同学项目搬进课堂复盘时，统一按下面的最小结构重写：
+
+| 复盘项 | 必填问题 | 不能只写 |
+| --- | --- | --- |
+| 目标 | 场景、设备、workload 和阈值是什么 | “要跑得快” |
+| 条件 | 模型、runtime、量化、ctx、硬件版本是什么 | “用某框架测试” |
+| 结果 | 质量、延迟、tokens/s、内存、功耗分别怎样 | 单个最快数字 |
+| 失败 | OOM、超时、质量退化、fallback、降频有没有 | 只展示成功截图 |
+| 归因 | 是模型、量化、runtime、硬件还是系统问题 | “可能环境有问题” |
+| 下一步 | 重测哪一个变量，成功标准是什么 | “后续继续优化” |
+
+### 外部课程原图参考
+
+下面两张图来自 Hugging Face Course documentation-images dataset，许可为 Apache-2.0。本章用它们提醒学生：案例复盘要有评估口径和标签定义，不能只展示最好的一次输出。
+
+![Hugging Face model evaluation example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png)
+
+![Hugging Face QA labels](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/qa_labels.svg)
+
+| 原图重点 | 案例复盘吸收什么 | 转成课程输出 |
+| --- | --- | --- |
+| 评估结果要绑定任务和指标 | 每个案例要写清 workload、metric 和条件 | 复盘表、评分建议、答辩证据 |
+| QA 标签要先定义 | 输出质量要有正确、部分正确、失败等分类 | 失败样例、质量备注、下一步验证 |
+| 外部评估图只是参考 | 不把别人的评估数字写进本课程结论 | 替换成自己的日志和固定 prompt 结果 |
+
 因此，本章把外部资料转成一套答辩规则：结论要能复现，失败要能归因，下一步要能执行。
+
+如果后续要把外部案例、厂商 demo 或同学项目资料先“贴进来”，统一按下面的格式粘贴。这样可以先保留材料，再在二次编辑时删掉不适合课程主线的部分。
+
+| 粘贴材料 | 保留什么 | 立刻补什么 | 二次编辑时删什么 |
+| --- | --- | --- | --- |
+| 架构图 | 组件、数据流、端侧/云端边界 | 本课程对应的 Qwen、runtime、设备、日志字段 | 不能验证的营销结论 |
+| 性能截图 | workload、硬件、指标名、条件 | 本课程是否有同口径实测 | 外部最高分或排名数字 |
+| demo 截图 | 输入、输出、交互路径 | 失败样例和不可复现限制 | 只展示成功的宣传语 |
+| 论文表格 | 方法类别、适用条件、误差来源 | 为什么和 Q8/Q5/Q4 或 Jetson 有关 | 与本课程无关的数据集细节 |
+| 官方命令 | 关键参数、环境前提、输出日志 | 改成本课程目录和模型路径 | 过长的安装说明和无关选项 |
+| 评估图 | 指标、标签、样本分布 | 固定 prompt 集和评分规则 | 外部模型成绩对比 |
+
+把材料贴进案例后，答辩前还要过一张证据表。它来自 MLPerf、Nsight、ML Systems Book 和课程公开运行记录的共同要求：结论必须可复查。
+
+| 答辩问题 | 需要展示的证据 | 失败时的合格说法 |
+| --- | --- | --- |
+| 为什么选这个模型 | 模型来源、许可证、hash、baseline 输出 | “模型来源未完整记录，本轮只作草稿结论” |
+| 为什么选这个量化档 | Q8/Q5/Q4 速度、内存、质量对比 | “Q4 质量退化，默认不推荐” |
+| 为什么认为瓶颈在这里 | timing、`llama-bench`、资源采样或 traceback | “采样不足，下一轮只重测这个变量” |
+| 为什么 API 能集成 | 请求、响应、HTTP 状态、elapsed、server log | “只通过 CLI，API 尚未验证” |
+| 为什么风险可接受 | 第 7 节风险登记和缓解动作 | “风险未闭环，不能上线推荐” |
 
 ## 案例一：传统视觉模型
 
@@ -317,12 +363,13 @@ VLM 和 Hybrid Agent 用于把课程从单模型部署扩展到系统架构。
 本章吸收方式：
 
 - **知识点**：从 llama.cpp、Qwen、Jetson、Nsight、MLPerf 和 ML Systems Book 吸收案例复盘、系统指标和报告证据链。
-- **图解**：把外部 benchmark 和系统课程思路重画为项目复盘表、风险清单和评分建议。
+- **图解**：直接贴入 Hugging Face Apache-2.0 model evaluation 和 QA labels 原图作为参考，再把外部 benchmark 和系统课程思路重画为项目复盘表、风险清单和评分建议。
 - **实验**：最终复盘必须串起 baseline、量化、runtime、profiling、Jetson、服务化和失败样例。
 - **取舍**：不奖励最高单项数字，优先评估可复现、可解释、可改进的工程报告。
 
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [NVIDIA Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)

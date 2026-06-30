@@ -99,6 +99,7 @@ const sidebars: SidebarsConfig = {
         'example-final-report',
         'reference-map',
         'similar-courses',
+        'raw-reference-intake',
       ],
     },
   ],

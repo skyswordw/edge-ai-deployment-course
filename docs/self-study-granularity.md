@@ -32,6 +32,38 @@ flowchart LR
 
 这意味着课程书不能只写“安装依赖并运行训练”。
 
+## 外部课程粒度原图参考
+
+下面几张图对应本页的写作标准：讲概念要能解释流程，讲实作要能保存模型来源和日志，讲验收要能处理 benchmark 和错误。
+
+![Hugging Face full NLP pipeline](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter2/full_nlp_pipeline.svg)
+
+![Hugging Face model card example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/model_card.png)
+
+![DeepLearning.AI vLLM benchmarking lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+![Hugging Face traceback example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/traceback.png)
+
+| 原图重点 | 本页吸收什么 | 写作要求 |
+| --- | --- | --- |
+| pipeline | 概念图要解释真实流程 | 每章要有图示和最小示例 |
+| model card | 实作不是只跑命令，还要保存来源 | 实验页要记录模型、许可证、hash |
+| benchmarking lab | 结果必须绑定条件 | 表格要写 workload、硬件、参数、日志 |
+| traceback | 失败日志也是课程证据 | 常见问题和排障顺序不能省略 |
+
+外部 lab handout 里的内容可以直接拆成下面几个块，贴进本课程对应章节后再改路径和模型：
+
+| 外部 lab 内容 | 本课程保留 | 本课程替换 |
+| --- | --- | --- |
+| Learning objectives | 学完后能做什么 | 指向 Qwen、GGUF、profiling、API 或报告 |
+| Setup / prerequisites | 环境检查顺序 | `~/edge-ai-lab` 目录、CUDA/Jetson 字段 |
+| Step-by-step commands | 命令结构和检查点 | Qwen GGUF、llama.cpp、`tee` 日志 |
+| Result table | 字段和比较方式 | Q8/Q5/Q4、TTFT、tokens/s、内存、质量 |
+| Troubleshooting | 失败分类和证据包 | 排障索引和报告第 7 节风险 |
+| Submission / rubric | 作业粒度和评分口径 | 最终报告第 1-9 节 |
+
+因此，扩写一章时不要只问“有没有讲到这个名词”，还要问“学生能不能按这页留下证据”。
+
 它应该写到：
 
 - 依赖装在哪里。
@@ -216,7 +248,7 @@ tail -n 20 ~/edge-ai-lab/finetune/logs/qwen-lora-smoke.log
 本章吸收方式：
 
 - **知识点**：把公开教材、官方教程和项目课的粒度差异，整理成课程章节、实验章节和教师检查表的最低要求。
-- **图解**：重画为“公开资料 -> 章节粒度标准 -> 实验记录 -> 最终报告”的 Mermaid 流程。
+- **图解**：贴入 pipeline、model card、benchmark 和 traceback 原图，并重画为“公开资料 -> 章节粒度标准 -> 实验记录 -> 最终报告”的 Mermaid 流程。
 - **实验**：要求每个实验都能留下命令、日志、结果表和排障记录，并最终进入部署报告。
 - **取舍**：不把本页扩成写作规范大全，只保留能约束 Qwen GGUF、llama.cpp、量化、profiling、local API 和报告闭环的规则。
 
@@ -224,6 +256,8 @@ tail -n 20 ~/edge-ai-lab/finetune/logs/qwen-lora-smoke.log
 - [类似教材与教程参考](/docs/similar-courses)
 - [模型微调与 LoRA/QLoRA](/docs/finetuning-lora)
 - [Qwen LoRA 微调实验](/docs/lab-qwen-lora-finetuning)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
 - [Hugging Face Transformers Chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face TRL SFTTrainer](https://huggingface.co/docs/trl/sft_trainer)
 - [Qwen LLaMA-Factory fine-tuning guide](https://qwen.readthedocs.io/en/v3.0/training/llama_factory.html)

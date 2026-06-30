@@ -127,6 +127,57 @@ flowchart LR
 | MLC LLM | 跨平台 LLM 编译和多后端部署 | 用于解释移动端和 Web/本地 LLM 的扩展方向 |
 | vLLM / OpenAI-compatible API | serving、KV Cache、parallel、throughput、接口形态 | 对照 llama.cpp server，帮助理解本地服务化边界 |
 
+Microsoft EdgeAI for Beginners 把本地 SLM 部署分成开发友好、企业集成、跨平台和硬件优化几类。本课程把这类材料收束为 runtime 选型的第二层问题：不要只比较框架名，还要比较模型管理、API 形态、硬件后端、部署目录和可观察性证据。
+
+| Microsoft EdgeAI 中的部署视角 | 本课程落点 | 验收证据 |
+| --- | --- | --- |
+| 本地模型生命周期 | 下载、缓存、版本、模型别名不能只写“已安装” | 模型路径、hash、来源链接、启动日志 |
+| Ollama / Foundry Local 这类封装 | 解释它们主要改善模型管理和 API 体验，不等于自动改变底层推理性能 | 同模型在封装前后的参数、日志和速度对比 |
+| llama.cpp 低依赖 runtime | 作为 GGUF 主线，直接暴露 CLI、bench 和 server | `llama-cli`、`llama-bench`、`llama-server` 三类证据 |
+| 跨平台 backend | CPU、CUDA、Metal、Vulkan、NPU 路线都要看实际启用情况 | backend 日志、GPU/NPU 监控、fallback 说明 |
+| 本地 API | 应用侧关心 endpoint、stream、timeout 和错误返回 | smoke test 请求、HTTP 状态、响应 JSON、server 日志 |
+| 硬件优化 | runtime 能否吃到低比特 kernel 和内存优势取决于目标后端 | 同一 prompt 下的显存、tokens/s、失败记录 |
+
+移动端和浏览器路线也可以参考，但本课程暂不新增完整手机实验。它们进入本章的方式是“路线图 + 验收字段”：
+
+| 移动端 / 跨平台 runtime | 官方资料强调什么 | 本课程最低吸收 |
+| --- | --- | --- |
+| LiteRT | Google AI Edge 的 on-device runtime，关注转换、runtime、优化和 CPU/GPU/NPU 加速 | Android / edge 路线图，记录模型格式、delegate、延迟、温度和失败日志 |
+| ExecuTorch | PyTorch 到移动、嵌入式和微控制器的 on-device 推理路径 | PyTorch 模型导出和 backend 覆盖风险，不替代 Qwen GGUF 主线 |
+| Core ML Tools | Apple 生态的模型转换、压缩、量化、剪枝和 palettization | iOS/macOS 路线图，记录 `.mlpackage`、compute units、ANE/GPU/CPU 和压缩前后质量 |
+| MLC LLM | 通过编译和多后端支持让 LLM 跑在 CUDA、Vulkan、Metal、WebGPU、Android/iOS 等平台 | 解释 Web/移动 LLM 的扩展方向，记录 compiled artifact、backend 和 tokenizer/template |
+
+移动端官方教程的细节可以先贴成下面这张记录表。这里不新增 Android/iOS 实验，只避免学生把“有移动端 runtime”误写成“本课程模型已经可上手机”。
+
+| 官方教程细节 | 课程先吸收什么 | 报告字段 |
+| --- | --- | --- |
+| LiteRT app/runtime/delegate 架构 | Android 端侧推理要区分模型文件、runtime、delegate 和硬件加速 | model format、delegate、CPU/GPU/NPU、fallback、温度 |
+| LiteRT conversion / optimization | 转换和优化是部署链路的一部分，不是训练结束自动发生 | converter、op coverage、代表性数据、失败日志 |
+| Core ML quantization | 权重量化、激活量化和运行时支持要分开写 | `.mlpackage`、bit-width、compute units、质量回归 |
+| Core ML palettization / pruning | 压缩可能减小包体，但未必减少端到端延迟 | 包体大小、加载时间、首 token/推理延迟 |
+| MLC / ExecuTorch backend | 同一模型在 Metal、Vulkan、CPU、NPU 上不是同一个结论 | backend、device、runtime log、未验证边界 |
+
+### 外部 Runtime 原图参考
+
+下面几张图来自 Android LiteRT、ExecuTorch 和 MLC LLM 官方资料。本章不把它们展开成新实验，只吸收“模型导出/编译 -> backend -> device runtime -> API”的链路，用来补强移动端和跨平台路线图。
+
+![LiteRT architecture](https://developer.android.com/static/images/ml/litert-architecture.svg)
+
+![ExecuTorch stack](https://docs.pytorch.org/executorch/stable/_images/executorch_stack.png)
+
+![MLC LLM project workflow](https://llm.mlc.ai/docs/_images/project-workflow.svg)
+
+![MLC LLM Python engine API](https://raw.githubusercontent.com/mlc-ai/web-data/main/images/mlc-llm/tutorials/python-engine-api.jpg)
+
+![MLC LLM REST server API](https://raw.githubusercontent.com/mlc-ai/web-data/main/images/mlc-llm/tutorials/python-serve-request.jpg)
+
+| 原图重点 | 本章吸收什么 | 课程里的记录字段 |
+| --- | --- | --- |
+| LiteRT architecture 把 app、runtime、delegate 和硬件分层 | 移动端加速不是单靠模型文件完成 | 模型格式、delegate、硬件后端、fallback、温度 |
+| ExecuTorch stack 把 PyTorch 模型落到设备 runtime | 端侧部署不是只保存权重，还要处理导出、lowering、backend 和运行时 | 源模型、导出格式、backend、设备、fallback |
+| MLC workflow 强调编译产物 | Web/移动 LLM 需要 compiled artifact、tokenizer 和 backend 共同匹配 | artifact 路径、backend、tokenizer/template、运行日志 |
+| Python engine / REST server API | runtime 既可以是库，也可以暴露服务接口 | Python 调用、HTTP endpoint、elapsed、错误日志 |
+
 所以，本章的核心问题不是“哪个 runtime 最快”，而是“哪个 runtime 能在目标设备上以可复查日志跑通本课程的 Qwen 部署链路”。
 
 ## 核心概念
@@ -468,15 +519,15 @@ trtexec --onnx=model-fp32.onnx --saveEngine=model.engine --fp16 \
 
 本章吸收方式：
 
-- **知识点**：从 llama.cpp、ONNX Runtime、TensorRT、TensorRT-LLM、ExecuTorch 和 MLC LLM 中提取模型格式、后端、server/API、移动端和 fallback。
-- **图解**：把多 runtime 文档重画为选型地图和“模型文件 -> runtime -> API/应用”的部署链路。
+- **知识点**：从 llama.cpp、ONNX Runtime、TensorRT、TensorRT-LLM、LiteRT、ExecuTorch、Core ML Tools、MLC LLM 和 Microsoft EdgeAI for Beginners 中提取模型格式、后端、server/API、移动端、模型生命周期和 fallback。
+- **图解**：远程贴入 LiteRT、ExecuTorch 和 MLC LLM 官方图作为原图参考，再把多 runtime 文档重画为选型地图和“模型文件 -> runtime -> API/应用”的部署链路。
 - **实验**：主线仍使用 llama.cpp/Qwen；ONNX、TensorRT、ExecuTorch 和 MLC 作为对比入口和选型解释。
 - **取舍**：不逐项覆盖所有 runtime API，也不把某个厂商后端写成唯一正确路线。
 
 - [推理加速基础](/docs/inference-acceleration)
 - [Jetson 部署基础](/docs/jetson-deployment)
-- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [ONNX Runtime documentation](https://onnxruntime.ai/docs/)
@@ -485,6 +536,8 @@ trtexec --onnx=model-fp32.onnx --saveEngine=model.engine --fp16 \
 - [vLLM documentation](https://docs.vllm.ai/)
 - [OpenAI API reference](https://platform.openai.com/docs/api-reference)
 - [ExecuTorch documentation](https://pytorch.org/executorch/stable/)
+- [LiteRT documentation](https://developers.google.com/edge/litert)
 - [TensorFlow Lite](https://www.tensorflow.org/lite)
 - [Core ML Tools optimization](https://apple.github.io/coremltools/docs-guides/source/opt-overview.html)
 - [MLC LLM documentation](https://llm.mlc.ai/docs/)
+- [Microsoft EdgeAI for Beginners](https://github.com/microsoft/edgeai-for-beginners)

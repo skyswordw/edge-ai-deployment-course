@@ -88,7 +88,7 @@ flowchart TD
 
 PyTorch、ONNX Runtime、TFLite、TensorRT、Transformers、Qwen 和 llama.cpp 的公开资料里都有很有价值的流程图、API 示例和对比表。
 
-本课程不复制这些图表，而是把它们改写成一个部署导向的问题：从 FP baseline 出发，如何决定量化对象、校准样本、PTQ/QAT 路线、低比特变体和真实设备验证。
+本课程把许可明确或源站可远程预览的图先放在参考位置，再把它们改写成一个部署导向的问题：从 FP baseline 出发，如何决定量化对象、校准样本、PTQ/QAT 路线、低比特变体和真实设备验证。
 
 ```mermaid
 flowchart LR
@@ -110,6 +110,43 @@ flowchart LR
 | TensorRT | calibration、precision、engine/kernel 路线 | 用于提醒低精度必须由 runtime 和硬件 kernel 承接 |
 | Transformers quantization、Qwen 和 llama.cpp | LLM 量化入口、GGUF、Q8/Q5/Q4 变体 | 收束到同一 Qwen 小模型的固定 prompt 对比 |
 | GPTQ、AWQ、SmoothQuant、LLM.int8() | outlier、重要权重、激活敏感性 | 用于解释 PTQ 失败后的修复方向和回退判断 |
+
+DeepLearning.AI 的量化课程很适合作为本章的概念补强。课程不直接复制它的实验环境，而是吸收下面这些判断维度：
+
+### 外部课程原图参考
+
+下面两张图来自 vLLM 官方博客中的 DeepLearning.AI/vLLM 课程截图。本课程用源站 URL 远程预览，后续会按 Qwen GGUF 主线重画；图中具体工具和实验环境不作为本课程要求。
+
+![DeepLearning.AI vLLM quantization schemes](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-schemes.png)
+
+![DeepLearning.AI vLLM quantization lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-lab.png)
+
+| 原图重点 | 本章吸收什么 | 改成本课程里的什么 |
+| --- | --- | --- |
+| 量化方案并列出现 | 量化不是单一路线，要区分格式、粒度、校准和 runtime | PTQ/QAT、Q8/Q5/Q4、INT8/INT4/NF4 的比较表 |
+| lab 从压缩走到评估 | 量化实验不能只生成文件，还要测质量和性能 | 校准集说明、固定 prompt、真实设备 profiling |
+| serving 课程把量化放进部署链路 | 低比特选择要服务最终 API 和报告 | Qwen GGUF -> llama.cpp -> local API -> 部署报告 |
+
+| DeepLearning.AI 量化主题 | 本章写进来的判断问题 | 对应学生记录 |
+| --- | --- | --- |
+| 线性量化 | `scale` 和 `zero_point` 是从数值范围得到的，不是手工拍脑袋 | 量化公式、取值范围、误差观察 |
+| 对称 / 非对称 | 权重和激活的分布不同，量化形式也可能不同 | 写清楚量化对象是 weight、activation 还是 KV |
+| Per-tensor / per-channel / per-group | 粒度越细，误差可能越小，但 metadata 和 kernel 要支持 | 模型格式、group size 或框架默认值 |
+| 校准数据 | PTQ 的统计来自校准集，校准集不代表真实任务就会误导 scale | 校准样本来源、覆盖任务、是否和评估集分离 |
+| Weight packing | 文件变小和运行加速之间还隔着内存布局、kernel 和硬件支持 | 真实设备上的 tokens/s 与内存记录 |
+
+ONNX Runtime 量化文档里的细节很适合直接补进本章，因为它把“量化”拆成了可操作的步骤，而不是只讲概念：
+
+| ONNX Runtime 官方细节 | 本章吸收什么 | 学生记录字段 |
+| --- | --- | --- |
+| QDQ 与 QOperator 两种表示 | 量化模型的图结构可能不同，不能只看文件名 | quant format、opset、是否保留 Q/DQ 节点 |
+| Pre-processing | shape inference、graph optimization 会影响量化质量和调试 | 是否单独预处理、优化日志、模型大小限制 |
+| Dynamic quantization | 激活 scale/zero point 运行时计算，精度可能更稳但有额外开销 | dynamic/static、输入形状、latency 变化 |
+| Static quantization | 校准数据提前计算激活参数 | calibration data、方法、样本覆盖、评估集分离 |
+| Quantization debugging | 对比 FP32 和量化模型的权重/激活差异 | 最大误差层、回退层、是否跳过某些张量 |
+| U8/S8 数据类型组合 | 同为 INT8，激活和权重 signedness 也会影响性能和精度 | activation dtype、weight dtype、CPU/GPU backend |
+| GPU quantization | GPU 加速依赖硬件和 TensorRT EP 等后端支持 | device、execution provider、Tensor Core/后端说明 |
+| Int4/UInt4 | 某些 op 可做 block-wise weight-only 量化 | op 支持范围、block size、opset、runtime 版本 |
 
 所以，本章每个量化决策最后都要产出三样东西：校准/评估集说明、量化变体列表、真实设备证据。
 
@@ -579,14 +616,17 @@ Jetson 实作重点：
 
 本章吸收方式：
 
-- **知识点**：从 PyTorch、ONNX Runtime、TFLite、TensorRT、Transformers 和 Qwen/llama.cpp 中提取 PTQ/QAT、校准、量化对象和部署格式。
-- **图解**：把框架教程中的流程重画为“原模型 -> 校准/训练 -> 量化模型 -> 部署验证”的课程图。
+- **知识点**：从 PyTorch、ONNX Runtime、TFLite、TensorRT、Transformers、DeepLearning.AI 量化课程和 Qwen/llama.cpp 中提取 PTQ/QAT、校准、量化对象、量化粒度和部署格式。
+- **图解**：远程贴入 vLLM/DeepLearning.AI 量化截图作为原图参考，再重画为“原模型 -> 校准/训练 -> 量化模型 -> 部署验证”的课程图。
 - **实验**：把外部方法收束到 Qwen GGUF 三组对比、校准集审查和 Jetson 记录。
 - **取舍**：不按框架 API 逐项讲解，也不默认低 bit 一定更快。
 
 - [PyTorch Quantization](https://pytorch.org/docs/stable/quantization.html)
 - [ONNX Runtime Quantization](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 - [TensorFlow Lite post-training quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)
+- [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
+- [DeepLearning.AI Quantization in Depth](https://www.deeplearning.ai/courses/quantization-in-depth/)
+- [vLLM course announcement and screenshots](https://vllm.ai/blog/2026-06-03-deeplearning-ai-vllm-course)
 - [NVIDIA TensorRT Developer Guide](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html)
 - [Hugging Face Transformers quantization](https://huggingface.co/docs/transformers/quantization/overview)
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)

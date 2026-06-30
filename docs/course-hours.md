@@ -66,7 +66,30 @@ flowchart LR
 | vLLM / TensorRT-LLM / MLC / LiteRT | 横向 runtime 和移动端路线 | 60 学时扩展或阅读，不进入 40 学时必做 |
 | MLPerf / Nsight / llama-bench | 评估要有指标、条件和日志 | 项目里程碑、最终报告和评分边界 |
 
+学时安排的取舍规则：
+
+| 内容类型 | 40 学时 | 60 学时 |
+| --- | --- | --- |
+| 解释主线必需概念 | 保留 | 保留并扩展 |
+| 让学生多跑一个真实证据 | 优先保留 | 优先保留 |
+| 横向工具生态比较 | 压成一张表 | 可加入选做 |
+| 需要新设备或新账号 | 只做路线图 | 可做分组项目 |
+| 只提供外部性能数字 | 不纳入结论 | 只作阅读材料 |
+
 所以，40 学时不是“删掉实验”，而是删掉横向铺开；保留能完成部署报告的最短证据链。
+
+### 外部课程结构原图参考
+
+下面两张图分别代表 serving 课程和边缘设备课程的两个方向。本页吸收它们的结构，而不是照搬学时：40 学时保留能完成报告的证据链，60 学时再加入更多 serving、Jetson 和移动端扩展。
+
+![DeepLearning.AI 与 vLLM 课程结构](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/course-structure.png)
+
+![Jetson AI Lab 设备族示意](https://www.jetson-ai-lab.com/images/hero/jetson-family-line_50pcnt.png)
+
+| 原图重点 | 本页吸收什么 | 学时安排里的处理 |
+| --- | --- | --- |
+| vLLM course structure | serving 课程会把指标、KV Cache、调度、量化和 benchmark 串起来 | 40 学时保留 profiling/API/report，vLLM 作为扩展 |
+| Jetson device family | 边缘设备差异会影响功耗、温度、内存和稳定性 | 40 学时可任选设备，60 学时做设备对照 |
 
 ## 项目里程碑
 
@@ -196,12 +219,14 @@ gantt
 本章吸收方式：
 
 - **知识点**：从高效 AI、量化 serving、Jetson、runtime 和 benchmark 资料中吸收学时分配和裁剪边界。
-- **图解**：把外部课程体量重画为 40 学时主线和 60 学时扩展的安排图。
+- **图解**：贴入 vLLM 课程结构和 Jetson 设备族原图，并把外部课程体量重画为 40 学时主线和 60 学时扩展的安排图。
 - **实验**：40 学时仍保留 Qwen baseline、Q8/Q5/Q4、profiling、local API 和最终报告。
 - **取舍**：不把 vLLM、TensorRT-LLM、Android、完整 VLM/Agent 写进基础必做链路。
 
 - [类似教材与教程参考](/docs/similar-courses)
 - [参考资料地图](/docs/reference-map)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
+- [Jetson AI Lab](https://www.jetson-ai-lab.com/)
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
 - [DeepLearning.AI Efficiently Serving LLMs](https://www.deeplearning.ai/courses/efficiently-serving-llms/)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

@@ -37,6 +37,25 @@ flowchart LR
 | Profiling 与 Jetson 资料 | 温度、功耗、显存、未测平台不能被忽略 | 第 7 节风险表和第 8 节下一步 |
 | 课程实跑记录 | 脱敏日志路径和未测说明的写法 | 第 9 节附录和“示例不得照抄”的提醒 |
 
+### 外部报告原图参考
+
+下面几张图提醒学生：报告样例不是“抄结论”，而是把模型来源、benchmark 条件、质量评估和失败日志写成可复查证据。
+
+![Hugging Face model card example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/model_card.png)
+
+![DeepLearning.AI vLLM metrics](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/vllm-metrics.png)
+
+![DeepLearning.AI vLLM benchmarking lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+![Hugging Face model evaluation example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png)
+
+| 原图重点 | 本样例吸收什么 | 报告章节 |
+| --- | --- | --- |
+| model card | 模型来源、许可证、文件和 hash 必须写清 | 第 2、9 节 |
+| vLLM metrics | TTFT、tokens/s、throughput、latency 分开解释 | 第 3、5、6 节 |
+| benchmarking lab | benchmark 需要固定 workload、硬件和参数 | 第 4、5 节 |
+| model evaluation | 质量结论要有任务和样例证据 | 第 4、7、8 节 |
+
 因此，本页不是参考答案，而是报告骨架示范：学生必须把“示例”替换成自己的证据，再写推荐和不推荐方案。
 
 ## 1. 场景与设备约束
@@ -148,12 +167,14 @@ flowchart LR
 本章吸收方式：
 
 - **知识点**：从 benchmark、runtime 和服务化资料吸收报告证据、风险登记和部署建议写法。
-- **图解**：把外部资料重画为“参考资料 -> 课程证据 -> profiling -> API -> 风险 -> 建议”的样例链路。
+- **图解**：贴入 model card、metrics、benchmark 和 evaluation 原图，并把外部资料重画为“参考资料 -> 课程证据 -> profiling -> API -> 风险 -> 建议”的样例链路。
 - **实验**：样例要求所有 baseline、量化、profiling 和 API 结论都用自己的日志替换。
 - **取舍**：不提供标准性能数字，不把外部榜单或示例值写成本课程结论。
 
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
-- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
 - [OpenAI API reference](https://platform.openai.com/docs/api-reference)

@@ -120,6 +120,25 @@ flowchart LR
 | Hugging Face 模型仓库和 model card | 模型来源、许可证、文件名和 hash 记录习惯 | “模型文件记录表”和部署报告证据 |
 | 课程服务器实跑记录 | 脱敏命令、环境摘要、结果摘要的写法 | 作为学生保存日志和解释失败原因的样例 |
 
+下面两张原图来自 [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)，许可为 Apache-2.0。它们用于提醒学生：下载模型不是只复制一个 URL，还要看 model card、文件列表、许可证和具体权重文件。
+
+![Hugging Face model card example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/model_card.png)
+
+![Hugging Face model files example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/files.png)
+
+外部模型页可以直接“贴进来”的不是网页正文，而是下面这些记录字段。学生拿到任意 Qwen GGUF 时，先把模型页、文件列表和本地文件核对成这张表，再继续跑 baseline。
+
+| 外部资料位置 | 直接吸收的字段 | 写入本实验哪里 | 不足时怎么标记 |
+| --- | --- | --- | --- |
+| Model card 顶部信息 | model id、模型族、Instruct/Base、许可证 | 模型信息表和最终报告第 2 节 | `model_card_missing` |
+| Model card 使用限制 | 适用任务、语言、风险、引用要求 | baseline 质量备注和风险登记 | `usage_limit_unknown` |
+| Files and versions | GGUF 文件名、量化后缀、更新时间 | Step 3 模型清单 | `file_version_unknown` |
+| 本地下载文件 | 文件大小、SHA256、下载日期 | 模型信息表 | `hash_missing` |
+| Qwen/llama.cpp 文档 | 推荐 runtime、chat template、命令形态 | Step 4-5 参数表 | `template_unverified` |
+| llama.cpp 运行日志 | backend、ctx、prompt eval、eval、tokens/s | Step 7 日志解释 | `timing_missing` |
+
+这张表后续可以原样贴到报告附录里。它的作用是把“我下载了某个模型”改成“我能证明这个模型是什么、从哪里来、怎么跑、能否复现”。
+
 本实验的底线是：baseline 必须能回放，后续量化、加速、服务化只能和这份 baseline 比。
 
 ## 前置条件
@@ -490,14 +509,15 @@ baseline 质量不是绝对评分，而是后续量化对比的参照。
 本章吸收方式：
 
 - **知识点**：从 Qwen 和 llama.cpp 文档吸收模型来源、GGUF、构建、CLI 参数和基础推理日志。
-- **图解**：把官方运行步骤重画为“模型文件 -> llama.cpp -> baseline 输出 -> 报告字段”的实验链路。
+- **图解**：直接嵌入 Hugging Face Apache-2.0 model card / files 原图，再把官方运行步骤重画为“模型文件 -> llama.cpp -> baseline 输出 -> 报告字段”的实验链路。
 - **实验**：要求记录模型来源、SHA256、固定 prompt、首 token、tokens/s 和失败原因。
 - **取舍**：不追逐更多模型族；baseline 只为后续量化、profiling 和服务化提供基准。
 
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
 - [Qwen2.5-0.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF)
-- [llama.cpp build documentation](https://www.mintlify.com/ggml-org/llama.cpp/development/build)
-- [llama.cpp llama-cli documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/llama-cli)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
-- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [llama.cpp build documentation](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md)
+- [llama.cpp llama-cli documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/cli)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)

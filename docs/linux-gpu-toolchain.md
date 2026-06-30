@@ -98,6 +98,44 @@ flowchart LR
 | Jetson docs / JetPack 的板端软件栈 | JetPack/L4T、`nvpmodel`、`tegrastats` 三件套记录 | Jetson 迁移和功耗/温度对比 |
 | llama.cpp build docs 的后端开关 | `GGML_CUDA=ON`、`-ngl`、运行日志共同证明 GPU offload | Q8/Q5/Q4 profiling 和 local API |
 
+把官方安装文档落到课程时，按这张表判定“环境证据是否够用”：
+
+| 层级 | 至少保存什么 | 说明 |
+| --- | --- | --- |
+| 系统 | OS、kernel、CPU、RAM、磁盘 | 解释下载、构建和运行容量问题 |
+| 驱动 | `nvidia-smi` 或 Jetson L4T | 证明 GPU/SoC 路径存在 |
+| Toolkit | `nvcc --version` 或“未安装” | 区分 runtime 可用和源码构建可用 |
+| 构建 | CMake 命令、`GGML_CUDA`、build log | 证明 llama.cpp 后端启用情况 |
+| 运行 | 模型路径、`-ngl`、stderr timing、资源采样 | 证明推理真的走了预期后端 |
+
+### 官方资料到课程字段
+
+官方文档里的安装图和兼容性表很多，但本课程最终只需要能支撑 Qwen/llama.cpp 实验的字段。下面这张表用于把外部资料压成可检查的证据，而不是让学生照抄整页安装手册。
+
+| 官方资料 | 可以直接贴进本章的内容类型 | 本章不照搬什么 | 落到课程里的证据 |
+| --- | --- | --- | --- |
+| Ubuntu NVIDIA driver guide | 驱动检查思路、GPU 可见性口径 | 发行版安装步骤和管理员操作细节 | `nvidia-smi`、Driver Version、GPU 型号 |
+| CUDA Installation Guide | driver/runtime/toolkit 的分层关系 | 完整平台支持矩阵和所有包管理器命令 | `nvcc --version`、构建失败说明、runtime/toolkit 边界 |
+| NVIDIA Container Toolkit | 容器访问 GPU 的路径图和前置条件 | Docker 运维和集群部署细节 | 是否使用容器、是否有 `--gpus all`、宿主机 GPU 是否正常 |
+| Jetson docs / JetPack | JetPack/L4T、功耗模式、板端监控口径 | 全套烧录和 BSP 开发流程 | JetPack/L4T、`nvpmodel`、`tegrastats` |
+| llama.cpp build docs | 后端开关、构建日志和运行参数 | 与本课无关的所有 backend 组合 | `GGML_CUDA=ON`、`-ngl`、llama.cpp commit |
+
+### 外部工具链原图参考
+
+下面几张图把工具链边界可视化：Jetson 是一组边缘硬件形态，MLC LLM 展示模型编译到 API 的跨平台链路，ExecuTorch 展示端侧 runtime 需要导出、lowering 和 backend。它们帮助本章说明“能跑在哪一层”，不是要求学生同时学习所有框架。
+
+![Jetson AI Lab 设备族示意](https://www.jetson-ai-lab.com/images/hero/jetson-family-line_50pcnt.png)
+
+![MLC LLM project workflow](https://llm.mlc.ai/docs/_images/project-workflow.svg)
+
+![ExecuTorch stack](https://docs.pytorch.org/executorch/stable/_images/executorch_stack.png)
+
+| 原图重点 | 本章吸收什么 | 工具链页怎么落地 |
+| --- | --- | --- |
+| Jetson 设备族 | 不同边缘硬件的内存、功耗和软件栈不同 | JetPack/L4T、`nvpmodel`、`tegrastats` 必须记录 |
+| MLC workflow | 模型格式、编译产物、backend 和 API 是不同层 | 区分模型文件、runtime、server 和客户端请求 |
+| ExecuTorch stack | 端侧 PyTorch 路线有导出、lowering、backend 和 device runtime | 移动端作为扩展路线，不替代 llama.cpp 主线 |
+
 这张表的实用规则是: 看到“能跑”还不够, 必须能说明它跑在哪个后端、哪个设备、哪个功耗模式、哪个 commit、哪个模型文件上。否则后续量化和推理加速结果无法比较。
 
 ## 核心概念
@@ -508,7 +546,7 @@ llama.cpp, Qwen 文档和低比特格式支持都在持续更新。没有 commit
 本章吸收方式：
 
 - **知识点**：从 Ubuntu、CUDA、Container Toolkit、Jetson/JetPack 和 llama.cpp 构建文档中提取 driver、runtime、编译后端和设备状态。
-- **图解**：把系统安装文档重画为“操作系统 -> 驱动/CUDA -> runtime -> 模型命令”的依赖栈。
+- **图解**：贴入 Jetson、MLC 和 ExecuTorch 原图，把系统安装文档和官方工具链图压成“操作系统 -> 驱动/CUDA -> runtime -> 模型命令”的依赖栈。
 - **实验**：所有外部安装建议都转成可保存的环境快照、构建日志和 GPU/Jetson 状态记录。
 - **取舍**：不把本章写成 Linux 运维手册，只保留会影响 Qwen/llama.cpp 部署判断的检查项。
 
@@ -517,5 +555,8 @@ llama.cpp, Qwen 文档和低比特格式支持都在持续更新。没有 commit
 - [Ubuntu Server NVIDIA driver guide](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/)
 - [NVIDIA Jetson Linux Developer Guide](https://docs.nvidia.com/jetson/)
 - [NVIDIA JetPack SDK](https://developer.nvidia.com/embedded/jetpack)
+- [Jetson AI Lab](https://www.jetson-ai-lab.com/)
+- [MLC LLM](https://llm.mlc.ai/docs/)
+- [ExecuTorch](https://docs.pytorch.org/executorch/stable/index.html)
 - [llama.cpp build docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md)
 - [Qwen llama.cpp local run guide](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

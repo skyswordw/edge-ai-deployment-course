@@ -30,7 +30,39 @@ flowchart LR
 | vLLM / serving / OpenAI-compatible API 资料 | TTFT、throughput、P50/P99、服务开销 | 区分 CLI 指标和 API 端到端体验 |
 | Jetson / MLPerf / Nsight / llama-bench | fallback、thermal throttling、指标条件 | 写入 profiling、排障和最终报告风险 |
 
+### 外部术语原图参考
+
+下面四张图分别对应本课程术语表里的四类词：输入链路、量化对象、服务指标和边缘设备。学生遇到不熟悉的词时，先判断它属于哪一类，再回到具体章节。
+
+![Hugging Face full NLP pipeline](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter2/full_nlp_pipeline.svg)
+
+![DeepLearning.AI vLLM quantization schemes](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-schemes.png)
+
+![DeepLearning.AI vLLM metrics](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/vllm-metrics.png)
+
+![Jetson AI Lab 设备族示意](https://www.jetson-ai-lab.com/images/hero/jetson-family-line_50pcnt.png)
+
+| 原图重点 | 对应术语 | 用来回答什么问题 |
+| --- | --- | --- |
+| NLP pipeline | tokenizer、pipeline、post-processing | 输入输出到底经过哪些步骤 |
+| quantization schemes | scale、zero-point、weight-only、KV Cache | Q8/Q5/Q4 到底量化了什么 |
+| vLLM metrics | TTFT、tokens/s、throughput、latency | 一个速度数字是否足够说明问题 |
+| Jetson 设备族 | JetPack、功耗、温度、thermal throttling | 服务器结果能否迁移到边缘设备 |
+
 术语表不是百科。每个词都要能回答一个工程问题：它影响哪个命令、哪个日志字段、哪张表，或者最终报告中的哪类判断。
+
+从外部课程或官方文档看到术语时，先按下面这张表转成课程字段：
+
+| 外部资料里的词 | 本课程怎么记录 | 对应报告位置 |
+| --- | --- | --- |
+| model card / files | 模型来源、许可证、文件名、SHA256 | 第 2 节环境与模型来源 |
+| tokenizer / chat template | prompt、role、template 后文本、token 数 | 第 3 节 baseline，第 6 节 API |
+| quantization / calibration | Q8/Q5/Q4、校准样本、评估 prompt | 第 4 节量化版本对比 |
+| TTFT / throughput / tokens/s | prompt eval、eval、API elapsed | 第 3、5、6 节 |
+| KV Cache / context length | `ctx-size`、prompt tokens、内存峰值 | 第 5、7 节 |
+| fallback / unsupported op | runtime 日志、CPU fallback、失败原因 | 第 7 节风险登记 |
+| power / temperature | `nvidia-smi`、`tegrastats`、功耗模式 | 第 5、7 节 |
+| tool / guardrail / trace | 工具白名单、确认策略、trace log | 第 7、8 节 |
 
 | 术语 | 一句话解释 | 本课程在哪里用 |
 | --- | --- | --- |
@@ -70,7 +102,7 @@ flowchart LR
 本章吸收方式：
 
 - **知识点**：从 LLM、量化、runtime、serving、Jetson 和 benchmark 资料中提取会影响实验判断的术语。
-- **图解**：重画为“术语来源 -> Qwen/量化/profiling/API -> 部署结论”的 Mermaid 图。
+- **图解**：贴入 pipeline、quantization、metrics 和 Jetson 原图，并重画为“术语来源 -> Qwen/量化/profiling/API -> 部署结论”的 Mermaid 图。
 - **实验**：每个术语都对应 Qwen GGUF、Q8/Q5/Q4、profiling、local API 或最终报告字段。
 - **取舍**：不做完整术语百科，不复制外部定义，也不收录本课程不会用到的厂商 API 名词。
 
@@ -78,7 +110,10 @@ flowchart LR
 - [参考资料地图](/docs/reference-map)
 - [公式与符号约定](/docs/math-conventions)
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [Hugging Face Transformers chat templates](https://huggingface.co/docs/transformers/chat_templating)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
+- [Jetson AI Lab](https://www.jetson-ai-lab.com/)
 - [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp](https://github.com/ggml-org/llama.cpp)

@@ -53,6 +53,39 @@ flowchart LR
 | Jetson / Nsight 资料 | 端侧功耗、温度、profiling 和设备差异 | Jetson 对照、profiling 质量和优秀项目要求 |
 | 课程公开运行记录 | 脱敏日志、失败样例和未测项说明 | 附录证据索引和最终报告引用 |
 
+最终项目允许引用外部课程图片、论文图或官方 demo，但必须在报告中写清楚“它启发了什么”，不能把外部结果当成本项目证据：
+
+| 外部材料 | 可以放进报告的位置 | 必须补的本项目证据 |
+| --- | --- | --- |
+| 量化/Serving 课程图 | 背景或方法说明 | 自己的 Q8/Q5/Q4、API 和 profiling 结果 |
+| Jetson 官方图或 demo 链接 | 设备路线选择 | 自己的 Jetson 环境、`tegrastats` 和 baseline 记录 |
+| MLPerf / Nsight 截图 | 评估口径说明 | 自己的负载、参数、日志和风险登记 |
+| Qwen / llama.cpp 文档命令 | 实验方法 | 自己执行后的输出、hash、commit 和错误记录 |
+
+最终报告可以先贴入外部课程里的“作业要求”和“实验结构”，但要改成本课程的交付物：
+
+| 外部课程内容 | 本项目保留 | 本项目替换 |
+| --- | --- | --- |
+| final project rubric | 场景、方法、结果、讨论、引用 | Qwen baseline、Q8/Q5/Q4、profiling、local API |
+| serving lab checklist | endpoint、请求、响应、指标 | `llama-server` smoke test 和 server 日志 |
+| edge AI demo | 端侧必要性和设备限制 | Ubuntu/Jetson 环境、温度、功耗、内存 |
+| quantization lab | 量化等级和质量/效率取舍 | GGUF 文件清单、质量样例、部署建议 |
+| system design case | 组件、fallback、风险 | 本地 API、VLM/Agent 扩展路线和权限边界 |
+
+### 外部课程原图参考
+
+下面两张图来自 Hugging Face Course documentation-images dataset，许可为 Apache-2.0。本章借用它们说明：最终项目不仅要跑模型，还要交代数据来源、限制、评估方法和失败边界。
+
+![Hugging Face dataset card](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter5/dataset-card.png)
+
+![Hugging Face model evaluation example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png)
+
+| 原图重点 | 本项目吸收什么 | 转成报告字段 |
+| --- | --- | --- |
+| dataset card 写清数据来源和限制 | 项目 prompt、校准集、评估集不能只写“自定义数据” | 数据来源、许可证、覆盖范围、限制 |
+| model evaluation 有任务和指标 | 最终建议要基于固定评估，而不是一次好看的输出 | 指标、样例、失败类型、日志路径 |
+| 外部图只提供格式 | 不能把外部评估结果写成本项目结论 | 替换成自己的 Qwen GGUF 实验和 API 记录 |
+
 本章验收的不是“功能多”，而是“证据链闭合”：每个推荐和不推荐方案都能回到自己的日志、表格或运行记录。
 
 ## 里程碑交付
@@ -101,6 +134,16 @@ flowchart LR
 | 不推荐方案 | 失败样例、质量备注 | 脱敏后公开 |
 | API 可用性 | 请求 JSON、HTTP 状态、server 日志 | 摘要可公开 |
 | Agent 权限风险 | policy validator 输出 | 摘要可公开 |
+
+外部 benchmark 和课程报告 rubrics 可以先贴成下面这张评分前检查表。它只检查证据是否足够，不替学生判断结果好坏：
+
+| 检查项 | 满足条件 | 对应扣分风险 |
+| --- | --- | --- |
+| 条件完整 | 模型、量化、runtime、设备、prompt、ctx、并发都能查到 | 数字不可比较 |
+| 日志可回放 | 每个关键数字都有命令和原始日志 | 结果无法复核 |
+| 质量同步 | 速度表旁边有固定 prompt 输出或质量规则 | 只优化性能、不保证可用 |
+| 风险闭环 | OOM、fallback、超时、热降频、许可证都进第 7 节 | 报告只报喜 |
+| 结论有取舍 | 推荐和不推荐方案都能指向证据 | 结论像主观偏好 |
 
 ## 评分维度
 
@@ -184,16 +227,17 @@ flowchart LR
 本章吸收方式：
 
 - **知识点**：从 ML Systems Book、MLPerf、llama.cpp、Qwen、Jetson、Nsight 和课程实跑记录中吸收系统指标、benchmark 严谨性、部署风险和证据链。
-- **图解**：把外部评估资料重画为最终报告目录、评分维度、风险清单和结果记录模板。
+- **图解**：直接贴入 Hugging Face Apache-2.0 dataset card 和 model evaluation 原图作为参考，再把外部评估资料重画为最终报告目录、评分维度、风险清单和结果记录模板。
 - **实验**：报告必须串起 Qwen baseline、量化对比、profiling、本地 API、Jetson/Ubuntu 对照和失败样例。
 - **取舍**：不引用外部 benchmark 数字作为结论；最终判断只基于学生自己的设备、日志和模型记录。
 
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [Coursera Deploying Deep Learning: Quantization, Serving, and Edge AI](https://www.coursera.org/learn/deploying-deep-learning-quantization-serving-and-edge-ai)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
-- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
-- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
+- [llama.cpp llama-bench documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/llama-bench)
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [OpenAI API reference](https://platform.openai.com/docs/api-reference)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)

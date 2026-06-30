@@ -102,6 +102,43 @@ flowchart LR
 | 中文后训练与部署资料 | LoRA、KV Cache、服务化和部署参数边界 | 判断合并/挂载 adapter 后是否进入量化和本地 API |
 | 课程实跑记录 | 真实错误、日志和可复查路径 | 明确失败也算结果，不删除失败日志 |
 
+把这些教程转成实验证据时，不要只抄训练命令。最低要补齐下面的记录：
+
+| 外部教程常见步骤 | 本实验要记录什么 | 失败时怎么写 |
+| --- | --- | --- |
+| 准备 SFT 数据 | JSONL 路径、样本数、role 字段、是否通过 template 检查 | `data_schema_error` 或 `template_mismatch` |
+| 配置 LoRA/QLoRA | base model、target modules、rank、alpha、4-bit/NF4 是否启用 | `adapter_config_error` 或 `bitsandbytes_unavailable` |
+| 启动训练 | 训练命令、依赖版本、GPU、步数、loss 片段 | `train_crash`，附 traceback 和日志路径 |
+| 保存 adapter | adapter 目录、文件列表、是否在课程仓库外 | `adapter_missing` 或 `path_not_recorded` |
+| 输出对比 | 同一 prompt 下 base vs adapter 的输出摘要 | `no_quality_gain`，停止部署路线 |
+| 回到部署 | 是否合并、是否量化、是否重新 profiling | `not_deployed_yet`，写下一轮验证项 |
+
+从 PEFT/TRL 教程里搬实验细节时，按下面字段落地到本实验日志：
+
+| 字段 | 为什么要记 | 最小记录 |
+| --- | --- | --- |
+| base model revision | adapter 不能脱离基座模型解释 | 模型名、commit/revision、许可证 |
+| tokenizer / chat template | 训练格式和部署 prompt 不一致会直接污染结论 | 打印 1 条 template 后样本 |
+| trainable parameters | LoRA 是否真的只训练小部分参数 | `print_trainable_parameters` 输出或等价日志 |
+| target modules | 不同模块选择会改变效果和合并风险 | `q_proj/v_proj/...` 列表 |
+| quantized loading | QLoRA 的 4-bit/NF4 是训练加载策略 | bitsandbytes 配置、显存记录 |
+| adapter files | 后续复现和合并需要文件证据 | `adapter_config.json`、adapter 权重文件列表 |
+| merge result | 部署前要确认合并没有破坏输出 | merge 日志、base/adapter/merged 三列对比 |
+
+### 外部课程原图参考
+
+下面两张图来自 Hugging Face Course documentation-images 数据集。它们适合直接贴入本实验：第一张提醒微调只是从预训练模型出发做任务适配，第二张提醒长文本或多轮样本进入训练前要先被切块、模板化和检查。
+
+![Hugging Face fine-tuning](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/finetuning.svg)
+
+![Hugging Face chunking texts](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/chunking_texts.svg)
+
+| 原图重点 | 本实验吸收什么 | 转成哪个检查项 |
+| --- | --- | --- |
+| fine-tuning | 微调从 base model 出发，产物要和原模型关系明确 | 记录 base model、adapter 路径、训练日志 |
+| chunking texts | 数据进入训练前要处理长度、边界和样本格式 | 检查 JSONL、`messages`、chat template、样本长度 |
+| 任务适配 | 微调后必须用固定 prompt 验证是否真的改善目标任务 | base vs adapter 输出对比和继续/停止判断 |
+
 本实验的核心不是“训练出更强模型”，而是把微调路线纳入同一份部署证据链。
 
 ## 目录结构
@@ -522,12 +559,13 @@ TypeError: SFTTrainer.__init__() got an unexpected keyword argument 'dataset_tex
 本章吸收方式：
 
 - **知识点**：从 PEFT、TRL、Qwen/LLaMA-Factory 和 chat template 文档吸收 SFT 数据、adapter、训练日志和部署 prompt 一致性。
-- **图解**：把外部微调流程重画为 smoke test 检查表和部署回归链路。
+- **图解**：贴入 Hugging Face fine-tuning / chunking 原图，并把外部微调流程重画为 smoke test 检查表和部署回归链路。
 - **实验**：只要求短步数跑通、保存 adapter、对比输出并回到课程报告，不追求训练效果指标。
 - **取舍**：不新增长训练任务；微调是否继续由质量证据决定。
 
 - [模型微调与 LoRA/QLoRA](/docs/finetuning-lora)
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course/chapter1/1)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
 - [Hugging Face Transformers Chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face PEFT documentation](https://huggingface.co/docs/peft/index)

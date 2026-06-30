@@ -119,6 +119,54 @@ flowchart LR
 | Nsight Systems | 系统级 profiling 需要稳定环境和可追踪日志 | 先用 `nvidia-smi` 建基线，高级 profiling 后置 |
 | Qwen / llama.cpp 主线 | 环境检查最终要服务模型运行 | 本章字段直接进入 Qwen baseline、profiling 和最终报告 |
 
+官方安装文档里的步骤很多，本实验只把它们压成后续可复查字段：
+
+| 环境字段 | 最小证据 | 后续用途 |
+| --- | --- | --- |
+| GPU 可见 | `nvidia-smi` 输出 | 证明能进入 GPU offload 实验 |
+| Driver / CUDA | `nvidia-smi`、`nvcc --version` 或“未安装 nvcc”说明 | 解释构建路径和失败边界 |
+| 编译工具 | `cmake --version`、`git --version` | 证明能构建 llama.cpp |
+| 工作目录 | `~/edge-ai-lab` 目录结构 | 保证日志、模型和结果可追踪 |
+| 磁盘空间 | `df -h` | 避免模型下载或构建中断 |
+
+### 官方资料到实验字段
+
+这节实验可以先把官方资料中的关键图表和说明“贴进脑子里”，但提交时只要留下能复查的字段。这样后面做 Qwen baseline、量化和 profiling 时，环境问题不会被误判成模型问题。
+
+| 官方资料 | 本实验可吸收的内容 | 需要写进日志的字段 | 后续章节怎么用 |
+| --- | --- | --- | --- |
+| Ubuntu NVIDIA driver guide | GPU 被系统识别后才能进入 CUDA 路线 | GPU 型号、Driver Version、`nvidia-smi` 状态 | 判断能否做 GPU offload |
+| CUDA Installation Guide | driver、runtime、toolkit 不是一回事 | `nvidia-smi` CUDA Version、`nvcc --version` 或未安装说明 | 解释构建失败和运行失败的差别 |
+| NVIDIA Container Toolkit | 容器 GPU 可见性依赖宿主机驱动 | 是否使用容器、是否能看到 GPU | 作为服务化扩展，不作为本章必做 |
+| Nsight Systems | profiling 依赖稳定环境和明确时间段 | 先保留环境快照和运行日志 | 后续再进入 profiling 实验 |
+| Qwen / llama.cpp | 环境检查最终要能支撑小模型运行 | llama.cpp commit、模型路径、构建日志位置 | 进入 baseline 和 Q8/Q5/Q4 对比 |
+
+如果学生直接从官方安装教程复制内容，本章只保留下面这些会进入报告的证据，不保留完整安装流水账：
+
+| 可贴入的官方内容 | 本章保留 | 报告里怎么写 |
+| --- | --- | --- |
+| 驱动安装结果 | `nvidia-smi` 截取或文本日志 | GPU、Driver、CUDA Version |
+| CUDA toolkit 检查 | `nvcc --version` 或未安装说明 | 构建能力和失败边界 |
+| CMake / Git / compiler 检查 | 版本输出 | llama.cpp 构建前置条件 |
+| 磁盘和内存检查 | `df -h`、`free -h` | 模型下载和构建风险 |
+| 失败日志 | 命令、stderr、返回码 | 排障索引和报告第 7 节 |
+
+### 外部原图到环境证据链
+
+环境检查本身通常没有漂亮的课程图，但后续所有模型卡、benchmark 和错误日志都依赖它。下面三张图用于提醒学生：本章保存的环境字段会进入模型来源、性能记录和失败复盘。
+
+![Hugging Face model card example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/model_card.png)
+
+![DeepLearning.AI vLLM benchmarking lab](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/benchmarking-lab.png)
+
+![Hugging Face traceback example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/traceback.png)
+
+| 原图重点 | 本实验吸收什么 | 环境页怎么落地 |
+| --- | --- | --- |
+| model card | 模型来源、许可证和文件证据要可追踪 | 记录模型来源、文件路径、hash 和许可证 |
+| benchmarking lab | benchmark 不能脱离硬件、runtime 和参数 | 记录 OS、driver、CUDA、CMake、Git、磁盘和日志路径 |
+| traceback | 失败日志必须能定位环境、依赖或模型问题 | 保存 `env-check.txt`、`nvidia-smi-before.txt` 和失败原因 |
+
 所以，本章的产物不是“安装成功截图”，而是一组能解释后续实验成败的环境证据。
 
 ## 前置条件
@@ -409,7 +457,7 @@ mv 路径/模型文件.gguf ~/edge-ai-lab/models/qwen/
 本章吸收方式：
 
 - **知识点**：从 Ubuntu、CUDA 和 Container Toolkit 文档提取驱动、CUDA、GPU 可见性和容器 GPU 访问的检查点。
-- **图解**：把安装链路重画为服务器基线环境栈。
+- **图解**：贴入 model card、benchmark 和 traceback 原图，把安装链路重画为服务器基线环境栈。
 - **实验**：所有检查都落到环境摘要、GPU 状态和后续 Qwen baseline 的可追溯字段。
 - **取舍**：不做通用服务器运维课，只保留影响模型推理的依赖。
 
@@ -417,4 +465,6 @@ mv 路径/模型文件.gguf ~/edge-ai-lab/models/qwen/
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [NVIDIA Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

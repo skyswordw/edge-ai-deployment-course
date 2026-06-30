@@ -126,6 +126,46 @@ flowchart LR
 | VLM / Agent 资料 | 应用或 Agent 需要稳定工具接口 | 本章只验证接口可被调用，不实现完整 Agent |
 | 课程实跑记录 | Jetson local service 的日志和失败边界 | 验收表要求保存 server 日志、请求响应和资源证据 |
 
+Microsoft EdgeAI 的本地 SLM 部署资料提醒：local API 不只是“能返回文本”，还要能说明 endpoint、模型别名、stream、timeout、模型加载状态、硬件后端和日志边界。本实验把这些内容改成最低记录项。
+
+### 外部课程原图参考
+
+下面这张图来自 vLLM 官方博客中的 DeepLearning.AI/vLLM 课程截图。本实验仍使用 `llama-server`，只吸收 serving metrics 的记录习惯。
+
+![DeepLearning.AI vLLM metrics](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/vllm-metrics.png)
+
+| 原图重点 | 本实验吸收什么 | 转成哪个记录 |
+| --- | --- | --- |
+| serving 指标不止一个延迟 | API elapsed、TTFT、tokens/s 和资源占用要分开看 | curl/Python elapsed、server timing、monitor log |
+| metrics 来自服务链路 | CLI 快不代表 API 快 | CLI baseline vs local API smoke test |
+| 指标要能定位风险 | 慢请求、OOM、timeout 都要能回到日志 | HTTP 状态、错误 JSON、server stderr |
+
+| 检查项 | 为什么重要 | 本实验最低记录 |
+| --- | --- | --- |
+| endpoint / base URL | 应用集成首先依赖稳定地址 | `http://127.0.0.1:8000/v1/chat/completions` 或实际端口 |
+| 模型别名 | client 看到的是 model id，不一定等于文件名 | 请求里的 `model` 字段和 server 启动日志 |
+| stream / non-stream | 流式输出影响前端体验和超时处理 | 本章至少记录 non-stream；选做记录 stream |
+| timeout | 本地 API 也可能被长 prompt 卡住 | 客户端超时设置和失败时的错误摘要 |
+| 模型加载与缓存 | 第一次请求和热启动请求可能差很多 | server 启动时间、首个请求耗时、后续请求耗时 |
+| backend / offload | API 成功不代表 GPU 已经启用 | `ngl` 参数、GPU/Jetson 监控和 server backend 日志 |
+| 错误响应 | 后续应用需要判断失败类型 | HTTP 状态、错误 JSON 或 server stderr 摘要 |
+| 隐私边界 | local-first 的价值来自数据留在本机或内网 | host 绑定、访问范围、是否调用外部云 API |
+
+MLC LLM 的官方教程也提供了本地引擎和 REST server 的接口截图。下面这张原图只作为 API 形态参考；本实验仍然用 `llama-server` 完成 OpenAI-compatible smoke test。
+
+![MLC LLM REST server API](https://raw.githubusercontent.com/mlc-ai/web-data/main/images/mlc-llm/tutorials/python-serve-request.jpg)
+
+把这类 serving 教程贴进本章时，建议统一改写成下面的验收字段，而不是照抄框架自己的代码：
+
+| Serving 教程常见内容 | 本实验直接吸收 | 报告字段 |
+| --- | --- | --- |
+| server 启动命令 | host、port、model path、ctx、backend | `server_command`、`base_url`、`model_file` |
+| client 请求示例 | method、endpoint、headers、JSON body | `request_json_path`、`endpoint` |
+| 响应截图 | HTTP status、JSON 是否可解析、message content | `http_status`、`response_json_path` |
+| 首次请求和后续请求 | cold start、warm request 差异 | `first_request_elapsed`、`second_request_elapsed` |
+| 服务日志 | 模型加载、backend、warning、error | `server_log_path`、`risk_notes` |
+| 本地/公网地址 | 数据是否只在本机或内网流动 | `host_binding`、`privacy_boundary` |
+
 因此，本章不追求完整后端工程；它只回答一个部署问题：这个本地模型是否已经有足够证据进入应用接口。
 
 ## 核心概念
@@ -499,13 +539,15 @@ API smoke test 的结果是 ______，主要新增开销或风险是 ______。
 
 本章吸收方式：
 
-- **知识点**：从 llama.cpp server 和 Qwen 文档吸收 OpenAI-compatible API、server 参数、日志和客户端请求形态。
-- **图解**：把命令行推理重画为“本地服务 -> HTTP 请求 -> 响应 JSON -> 应用集成”的链路。
+- **知识点**：从 llama.cpp server、Qwen 文档、DeepLearning.AI/vLLM serving 截图和 Microsoft EdgeAI for Beginners 吸收 OpenAI-compatible API、server 参数、日志、模型生命周期和客户端请求形态。
+- **图解**：远程贴入 vLLM/DeepLearning.AI metrics 截图作为原图参考，再把命令行推理重画为“本地服务 -> HTTP 请求 -> 响应 JSON -> 应用集成”的链路。
 - **实验**：API smoke test 必须记录请求、响应、HTTP 状态、elapsed/meta、server 日志和模型 hash。
 - **取舍**：不扩展成完整 Web 后端课程，只证明模型可以进入服务化接口。
 
-- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [OpenAI API reference](https://platform.openai.com/docs/api-reference)
 - [vLLM documentation](https://docs.vllm.ai/)
 - [DeepLearning.AI Efficiently Serving LLMs](https://www.deeplearning.ai/courses/efficiently-serving-llms/)
+- [vLLM course announcement and screenshots](https://vllm.ai/blog/2026-06-03-deeplearning-ai-vllm-course)
+- [Microsoft EdgeAI for Beginners](https://github.com/microsoft/edgeai-for-beginners)

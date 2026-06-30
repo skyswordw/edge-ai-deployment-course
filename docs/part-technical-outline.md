@@ -59,6 +59,36 @@ flowchart LR
 | Part VI | Qwen、llama.cpp、Jetson docs、JetPack、Jetson AI Lab | Qwen baseline、GGUF、量化对比、Jetson/Ubuntu 迁移和 local API |
 | Part VII | HF 多模态资料、OpenAI tools/agents 文档、MLPerf、Nsight、llama-bench | VLM/Agent 系统边界、失败恢复和最终报告证据链 |
 
+### 外部原图到 Part 的映射
+
+下面几张图不代表本课程要照搬对应课程目录，而是说明 Part I-VII 为什么要按“模型共同语言 -> 量化压缩 -> runtime/serving -> 端侧设备 -> 系统复盘”的顺序组织。
+
+![Hugging Face transformer blocks](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/transformers_blocks.svg)
+
+![DeepLearning.AI vLLM quantization schemes](https://raw.githubusercontent.com/vllm-project/vllm-project.github.io/main/assets/figures/2026-06-03-deeplearning-ai-course/quantization-schemes.png)
+
+![MLC LLM project workflow](https://llm.mlc.ai/docs/_images/project-workflow.svg)
+
+![ExecuTorch stack](https://docs.pytorch.org/executorch/stable/_images/executorch_stack.png)
+
+| 原图 | 对应 Part | 本课程怎么吸收 |
+| --- | --- | --- |
+| Transformer blocks | Part I | 只讲和推理成本、KV Cache、量化对象有关的结构 |
+| Quantization schemes | Part III | 转成 scale、粒度、对象、Q8/Q5/Q4 记录要求 |
+| MLC workflow | Part V/VI | 说明模型格式、编译产物、backend 和 API 是不同层 |
+| ExecuTorch stack | Part VI | 移动端和嵌入式路线作为扩展，不改 40 学时主线 |
+
+外部课程内容可以先按下面粒度贴入对应 Part，后续再改写。这样能快速增加教材厚度，同时不把课程改成资料堆。
+
+| 可先贴入的外部材料 | 放到哪个 Part | 改成本课程什么内容 |
+| --- | --- | --- |
+| LLM/tokenizer/pipeline 图 | Part I | Qwen 输入、chat template、prefill/decode 说明 |
+| 量化 scheme、校准、误差图 | Part III | Q8/Q5/Q4 对比前的概念表和失败模式 |
+| LoRA/SFT 数据格式示例 | Part IV | `messages` JSONL、adapter 记录和部署回归表 |
+| runtime workflow / API 截图 | Part V | model format、backend、server、endpoint 和日志字段 |
+| Jetson/device stack 图 | Part VI | JetPack/L4T、功耗模式、`tegrastats` 和迁移清单 |
+| Agent/function calling 图 | Part VII | 工具白名单、确认点、fallback 和风险表 |
+
 这张表的用途是控制课程边界：外部资料提供解释和图表思路，课堂主线仍收束到 Qwen、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 和部署报告。
 
 ## 导读：课程定位与项目主线
@@ -173,14 +203,19 @@ flowchart LR
 本章吸收方式：
 
 - **知识点**：把 LLM、系统、量化、runtime、Jetson 和 benchmark 资料压成 Part I-VII 的递进顺序。
-- **图解**：重画为“外部资料 -> Part -> 部署报告主线”的 Mermaid 图。
+- **图解**：贴入 Transformer、量化、MLC 和 ExecuTorch 原图，并重画为“外部资料 -> Part -> 部署报告主线”的 Mermaid 图。
 - **实验**：每个 Part 都必须落到 Qwen、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 或最终报告。
 - **取舍**：不把外部课程目录、厂商 API 或 benchmark 数字原样搬进总纲。
 
 - [类似教材与教程参考](/docs/similar-courses)
 - [参考资料地图](/docs/reference-map)
 - [课程来源对照与取舍](/docs/source-comparison)
+- [可吸收原始资料暂存](/docs/raw-reference-intake)
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course)
+- [Hugging Face Course documentation-images](https://huggingface.co/datasets/huggingface-course/documentation-images)
+- [vLLM / DeepLearning.AI course screenshots](https://github.com/vllm-project/vllm-project.github.io/tree/main/assets/figures/2026-06-03-deeplearning-ai-course)
+- [MLC LLM](https://llm.mlc.ai/docs/)
+- [ExecuTorch](https://docs.pytorch.org/executorch/stable/index.html)
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
 - [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

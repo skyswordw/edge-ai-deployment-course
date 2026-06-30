@@ -129,6 +129,33 @@ flowchart LR
 | Hugging Face Evaluate / OpenAI Evals | 指标、样例、评分规则和评估记录 | 用于设计课堂质量检查集和失败类型枚举 |
 | MLPerf Inference | 明确硬件、负载、指标和可复现报告 | 用于最终部署报告的证据格式，不引用外部成绩 |
 
+### 外部课程原图参考
+
+下面三张图来自 Hugging Face Course documentation-images dataset，许可为 Apache-2.0。本章借用它们说明：质量修复不能只靠主观感觉，要看评估结果、输入分布和标签定义。
+
+![Hugging Face model evaluation example](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png)
+
+![Hugging Face review lengths](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/review-lengths.svg)
+
+![Hugging Face QA labels](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/qa_labels.svg)
+
+| 原图重点 | 本章吸收什么 | 转成课程检查 |
+| --- | --- | --- |
+| 模型评估截图有任务和指标 | Q4/Q5 质量退化要用固定任务和指标说明 | 固定 prompt 集、规则检查、失败样例 |
+| 输入长度分布会影响结果 | 校准集和评估集要覆盖真实 prompt 长度 | prompt tokens、ctx-size、长短样本分层 |
+| QA 标签图强调标签定义 | 开放问答也要定义什么算正确、部分正确或失败 | 输出格式、事实性、拒答、幻觉类型 |
+
+Hugging Face Evaluate、lm-evaluation-harness 和 OpenAI Evals 这类资料的核心不是某个分数，而是“评估对象、样本、指标、评分器和日志”必须同时存在。本章把它们压成下面的质量回归表：
+
+| 评估资料里的字段 | 本章吸收什么 | Qwen 量化质量记录 |
+| --- | --- | --- |
+| dataset / samples | 评估样本要固定，不能每次临时换 prompt | prompt ID、输入文本、token 数 |
+| metric | 指标必须和任务匹配 | PPL、规则命中、JSON 合法率、人工标签 |
+| model backend | 模型格式和 runtime 会影响输出 | GGUF 档位、llama.cpp commit、采样参数 |
+| evaluator / scorer | 自动评分和人工判断要分开写 | 规则脚本、人工备注、失败类型 |
+| bootstrap / repeat | 生成任务受采样影响，需要重复或固定 seed | seed、repeat count、方差或稳定性备注 |
+| artifact log | 结论必须能回到原始输出 | 输出 JSONL、stderr、资源日志路径 |
+
 所以，本章的修复动作必须同时回答三件事：质量是否恢复，资源成本是否可接受，证据是否能回放。
 
 ## 先确认 baseline
@@ -625,13 +652,14 @@ tegrastats --interval 1000 --logfile logs/jetson-qwen-quality.log
 本章吸收方式：
 
 - **知识点**：从 AWQ、SmoothQuant、LLM.int8、GPTQ 和评测工具中吸收“误差来源、敏感层、outlier、质量回归”的定位方法。
-- **图解**：把方法论文的动机重画为质量问题归因图和修复决策表。
+- **图解**：直接贴入 Hugging Face Apache-2.0 模型评估、输入分布和 QA 标签原图作为参考，再把方法论文的动机重画为质量问题归因图和修复决策表。
 - **实验**：要求保留失败样例、固定 prompt、原模型对照和量化版本回退证据。
 - **取舍**：不把单一指标当成质量结论，也不把所有质量问题都归因到量化。
 
 - [AWQ paper](https://arxiv.org/abs/2306.00978)
 - [SmoothQuant paper](https://arxiv.org/abs/2211.10438)
 - [LLM.int8 paper](https://arxiv.org/abs/2208.07339)
+- [Hugging Face Course documentation-images dataset](https://huggingface.co/datasets/huggingface-course/documentation-images)
 - [GPTQ paper](https://arxiv.org/abs/2210.17323)
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
 - [Hugging Face Evaluate](https://huggingface.co/docs/evaluate/index)
