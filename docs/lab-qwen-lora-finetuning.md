@@ -491,6 +491,13 @@ TypeError: SFTTrainer.__init__() got an unexpected keyword argument 'dataset_tex
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 PEFT、TRL、Qwen/LLaMA-Factory 和 chat template 文档吸收 SFT 数据、adapter、训练日志和部署 prompt 一致性。
+- **图解**：把外部微调流程重画为 smoke test 检查表和部署回归链路。
+- **实验**：只要求短步数跑通、保存 adapter、对比输出并回到课程报告，不追求训练效果指标。
+- **取舍**：不新增长训练任务；微调是否继续由质量证据决定。
+
 - [模型微调与 LoRA/QLoRA](/docs/finetuning-lora)
 - [Hugging Face Transformers Chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face PEFT documentation](https://huggingface.co/docs/peft/index)

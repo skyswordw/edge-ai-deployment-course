@@ -289,6 +289,13 @@ VLM 和 Hybrid Agent 用于把课程从单模型部署扩展到系统架构。
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 llama.cpp、Qwen、Jetson、Nsight、MLPerf 和 ML Systems Book 吸收案例复盘、系统指标和报告证据链。
+- **图解**：把外部 benchmark 和系统课程思路重画为项目复盘表、风险清单和评分建议。
+- **实验**：最终复盘必须串起 baseline、量化、runtime、profiling、Jetson、服务化和失败样例。
+- **取舍**：不奖励最高单项数字，优先评估可复现、可解释、可改进的工程报告。
+
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [NVIDIA Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)

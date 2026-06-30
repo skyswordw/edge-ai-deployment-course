@@ -548,6 +548,13 @@ Jetson 实作重点：
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 PyTorch、ONNX Runtime、TFLite、TensorRT、Transformers 和 Qwen/llama.cpp 中提取 PTQ/QAT、校准、量化对象和部署格式。
+- **图解**：把框架教程中的流程重画为“原模型 -> 校准/训练 -> 量化模型 -> 部署验证”的课程图。
+- **实验**：把外部方法收束到 Qwen GGUF 三组对比、校准集审查和 Jetson 记录。
+- **取舍**：不按框架 API 逐项讲解，也不默认低 bit 一定更快。
+
 - [PyTorch Quantization](https://pytorch.org/docs/stable/quantization.html)
 - [ONNX Runtime Quantization](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 - [TensorFlow Lite post-training quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)

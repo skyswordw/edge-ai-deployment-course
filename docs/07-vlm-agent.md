@@ -380,6 +380,13 @@ python3 labs/scripts/validate_agent_policy.py agent-policy.json
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 HF 多模态任务、Transformers、OpenAI Function Calling、Jetson AI Lab 和 ML Systems Book 吸收 VLM 组件、工具权限、端云协同和失败恢复。
+- **图解**：把多模态和 Agent 资料重画为 VLM 推理链路、工具权限表和端云协同图。
+- **实验**：VLM/Agent 任务必须记录视觉 token、延迟、工具白名单、确认策略和失败恢复。
+- **取舍**：不追逐快速变化的框架接口，也不把 demo 成功等同于产品可用。
+
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)

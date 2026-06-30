@@ -470,5 +470,12 @@ API smoke test 的结果是 ______，主要新增开销或风险是 ______。
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 llama.cpp server 和 Qwen 文档吸收 OpenAI-compatible API、server 参数、日志和客户端请求形态。
+- **图解**：把命令行推理重画为“本地服务 -> HTTP 请求 -> 响应 JSON -> 应用集成”的链路。
+- **实验**：API smoke test 必须记录请求、响应、HTTP 状态、elapsed/meta、server 日志和模型 hash。
+- **取舍**：不扩展成完整 Web 后端课程，只证明模型可以进入服务化接口。
+
 - [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

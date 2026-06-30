@@ -413,6 +413,13 @@ python3 labs/scripts/parse_llama_log.py ~/edge-ai-lab/logs/qwen2.5-0.5b-instruct
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 Qwen 量化指南和 llama.cpp quantize 文档吸收 GGUF 量化格式、转换命令和量化命名。
+- **图解**：把工具流程重画为“基线模型 -> 多量化版本 -> 同 prompt 对比 -> 部署判断”。
+- **实验**：固定 Q8/Q5/Q4 或教师指定变体，记录文件大小、内存、速度、质量备注和日志路径。
+- **取舍**：不把外部模型榜单写入结论；课程结论只来自自己的运行记录。
+
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
 - [llama.cpp quantize documentation](https://www.mintlify.com/ggml-org/llama.cpp/tools/quantize)
 - [llama.cpp quantize README](https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md)

@@ -507,6 +507,13 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-acceleration-tegrasta
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 llama-bench、llama-cli、TensorRT-LLM 和 vLLM 文档吸收 benchmark、GPU offload、KV Cache 和 serving 参数的解释。
+- **图解**：把服务化推理资料重画为参数影响表和瓶颈判断流程。
+- **实验**：一次只改一个变量，记录 `-ngl`、ctx、threads、batch、首 token、tokens/s 和资源变化。
+- **取舍**：不要求学生部署 vLLM/TensorRT-LLM 集群；它们用于解释更高阶路线。
+
 - [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
 - [llama.cpp llama-cli documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/llama-cli)
 - [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)

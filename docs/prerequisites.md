@@ -274,6 +274,13 @@ print(f"elapsed={elapsed:.6f}s")
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 Hugging Face、PyTorch、ONNX Runtime 和 CUDA/Jetson 文档提取最小共同语言：模型、tokenizer、runtime、GPU/Jetson 环境和日志。
+- **图解**：把外部工具链说明重画成“前置知识到实验主线”的课程地图，而不是复制工具文档截图。
+- **实验**：所有前置检查都落到环境快照、目录结构和一次端到端计时，后续 Qwen/Jetson 实验直接复用。
+- **取舍**：不要求学生先学完整深度学习或 CUDA 编程，只保留推理部署需要的概念。
+
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
 - [Hugging Face chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face KV cache strategies](https://huggingface.co/docs/transformers/kv_cache)

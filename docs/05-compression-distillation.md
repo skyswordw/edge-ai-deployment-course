@@ -563,6 +563,13 @@ tegrastats --interval 1000 --logfile logs/jetson-compression-choice.log
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 EfficientML、蒸馏论文、剪枝教程和 TensorRT 稀疏性资料中提取模型侧压缩、teacher/student、结构稀疏和 runtime 可利用性的边界。
+- **图解**：把压缩方法重画为“减少参数、减少计算、保持质量、需要 runtime 支持”的四类判断图。
+- **实验**：本章只把剪枝/蒸馏作为路线判断和报告讨论，主实验仍回到 Qwen GGUF 与部署评估。
+- **取舍**：不新增完整蒸馏训练项目，除非后续课程单独扩展。
+
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
 - [Distilling the Knowledge in a Neural Network](https://arxiv.org/abs/1503.02531)

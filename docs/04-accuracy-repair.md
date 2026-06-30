@@ -593,6 +593,13 @@ tegrastats --interval 1000 --logfile logs/jetson-qwen-quality.log
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 AWQ、SmoothQuant、LLM.int8、GPTQ 和评测工具中吸收“误差来源、敏感层、outlier、质量回归”的定位方法。
+- **图解**：把方法论文的动机重画为质量问题归因图和修复决策表。
+- **实验**：要求保留失败样例、固定 prompt、原模型对照和量化版本回退证据。
+- **取舍**：不把单一指标当成质量结论，也不把所有质量问题都归因到量化。
+
 - [AWQ paper](https://arxiv.org/abs/2306.00978)
 - [SmoothQuant paper](https://arxiv.org/abs/2211.10438)
 - [LLM.int8 paper](https://arxiv.org/abs/2208.07339)

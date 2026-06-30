@@ -409,6 +409,13 @@ LLM 权重矩阵很大, 不同区域分布差异明显。per-tensor 太粗, per-
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 DeepLearning.AI 量化课程、PyTorch/ONNX/TFLite 和 GPTQ/AWQ/SmoothQuant/LLM.int8 论文中提取 scale、zero-point、group、outlier 和误差来源。
+- **图解**：把量化公式和误差传播重画成课程内的数轴、流程和 outlier 示意，不复制论文图。
+- **实验**：用 NumPy toy example 和 Qwen Q8/Q5/Q4 表格连接数学直觉与真实部署记录。
+- **取舍**：不把每个框架 API 逐条展开，优先解释为什么低比特可能变小、变慢或变差。
+
 - [PyTorch Quantization documentation](https://pytorch.org/docs/stable/quantization.html)
 - [ONNX Runtime Quantization](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 - [TensorFlow Lite post-training quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)

@@ -554,6 +554,13 @@ python llama.cpp/convert_hf_to_gguf.py \
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 Hugging Face LLM Course、chat templates、PEFT/TRL、Qwen/LLaMA-Factory、LoRA/QLoRA 中提取数据格式、adapter、训练入口和部署回归。
+- **图解**：把微调教程重画为“数据 -> template -> LoRA -> adapter -> 合并/量化 -> 部署验证”的闭环图。
+- **实验**：外部训练路线只落到 5-step smoke test、输出对比、adapter 保存和回到 llama.cpp 的部署检查。
+- **取舍**：不把课程变成完整训练课；微调必须服务于端侧部署质量问题。
+
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course/chapter1/1)
 - [Hugging Face Transformers Chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face PEFT documentation](https://huggingface.co/docs/peft/index)

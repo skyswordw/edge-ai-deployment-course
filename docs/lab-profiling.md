@@ -415,6 +415,13 @@ grep -i "warning\\|fallback\\|error\\|oom" ~/edge-ai-lab/logs/qwen-baseline-q4.t
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 llama-bench、Nsight、MLPerf、CUDA 和 Jetson 文档吸收 profiling 边界、采样工具和报告严谨性。
+- **图解**：把工具说明重画为“命令日志、系统采样、结果表、结论”的记录闭环。
+- **实验**：要求保留 stdout/stderr、`nvidia-smi` 或 `tegrastats`、解析表和失败样例。
+- **取舍**：不做竞赛级 benchmark，也不把截图当作唯一证据。
+
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
 - [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)

@@ -482,6 +482,13 @@ llama.cpp, Qwen 文档和低比特格式支持都在持续更新。没有 commit
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 Ubuntu、CUDA、Container Toolkit、Jetson/JetPack 和 llama.cpp 构建文档中提取 driver、runtime、编译后端和设备状态。
+- **图解**：把系统安装文档重画为“操作系统 -> 驱动/CUDA -> runtime -> 模型命令”的依赖栈。
+- **实验**：所有外部安装建议都转成可保存的环境快照、构建日志和 GPU/Jetson 状态记录。
+- **取舍**：不把本章写成 Linux 运维手册，只保留会影响 Qwen/llama.cpp 部署判断的检查项。
+
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [NVIDIA Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [Ubuntu Server NVIDIA driver guide](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/)

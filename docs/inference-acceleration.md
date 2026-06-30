@@ -428,6 +428,13 @@ tegrastats --interval 1000 --logfile ~/edge-ai-lab/logs/tegrastats-accel.log
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 llama.cpp、TensorRT、TensorRT-LLM、vLLM、MLPerf 和 Roofline 中提取 prefill/decode、KV 管理、kernel、内存带宽和 benchmark 口径。
+- **图解**：把系统优化资料重画为瓶颈定位分层图和首 token/tokens/s 拆分图。
+- **实验**：把加速方法转成 `-ngl`、ctx、threads、llama-bench、CLI/API 对照和 profiling 记录。
+- **取舍**：不要求全员搭建高并发 serving 集群，重点是能解释本地部署为什么慢。
+
 - [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
 - [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
 - [llama.cpp llama-bench README](https://github.com/ggml-org/llama.cpp/blob/master/tools/llama-bench/README.md)

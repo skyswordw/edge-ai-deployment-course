@@ -310,6 +310,13 @@ sudo jetson_clocks --show
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 ML Systems Book、MIT/EfficientML 和 Jetson 文档吸收“指标、硬件约束、部署生命周期”三类判断框架。
+- **图解**：把外部系统图重画为端侧部署决策闭环和端云协同路由图。
+- **实验**：把框架落到目标设备、验收指标、风险清单和后续 Qwen/Jetson 实验记录。
+- **取舍**：不展开完整 MLOps 平台治理，也不把 Jetson 写成唯一端侧路线。
+
 - [40/60 学时教学安排](/docs/course-hours)
 - [资料对比与课程取舍](/docs/source-comparison)
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)

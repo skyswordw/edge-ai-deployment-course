@@ -75,6 +75,40 @@ flowchart TD
 | 额外重点 | [microsoft/edgeai-for-beginners](https://github.com/microsoft/edgeai-for-beginners) | SLM、Edge AI 入门、多平台样例、Foundry Local、agent/function calling | 借鉴广义 EdgeAI 叙事和应用样例，不替换课程主线 |
 | 额外重点 | [arm-education/Advanced-AI-Hardware-Software-Co-Design](https://github.com/arm-education/Advanced-AI-Hardware-Software-Co-Design) | 极端量化、QAT、逐层 bit-width 搜索、Android llama.cpp benchmark | 作为高级选做或教师演示，不作为第一轮必做实验 |
 
+## 资料吸收工作表
+
+外部资料进入本课程时，先过这张表。它把“可以参考的配图、知识点、实验细节”转成课程自己的图、表和任务，不复制原图和原文。
+
+```mermaid
+flowchart LR
+  A["外部课程/教程"] --> B["识别可吸收点"]
+  B --> C["重画为本课程图表"]
+  B --> D["改写为课程讲解"]
+  B --> E["转成 Qwen/Jetson 实验提示"]
+  C --> F["章节图示讲解"]
+  D --> G["核心概念和工程判断"]
+  E --> H["配套实作和验收结果"]
+  F --> I["保留来源链接"]
+  G --> I
+  H --> I
+```
+
+| 课程部分 | 可吸收资料 | 重画/改写成什么 | 落地位置 |
+| --- | --- | --- | --- |
+| 前置知识 | Hugging Face LLM Course、Transformers、ML Systems Book | LLM 输入链路、prefill/decode、KV Cache、系统指标 | tokenizer、推理基础、量化数学 |
+| 部署框架 | MIT/EfficientML、ML Systems Book、Jetson docs | 端侧约束闭环、端云协同、风险清单 | 部署问题框架、Jetson 部署 |
+| 量化压缩 | DeepLearning.AI Quantization、PyTorch、ONNX、TFLite、OpenVINO、GPTQ/AWQ/SmoothQuant | PTQ/QAT 流程、误差来源、outlier、量化粒度 | PTQ/QAT、LLM 量化、质量修复、压缩蒸馏 |
+| 微调适配 | Hugging Face、TRL/PEFT、Qwen/LLaMA-Factory、中文后训练资料 | chat template、一致性检查、adapter 到部署回归 | LoRA/QLoRA、Qwen 微调实验 |
+| Runtime/Serving | llama.cpp、Qwen、vLLM、TensorRT-LLM、MLC LLM | runtime 选型图、KV 管理、server/API、benchmark 指标 | Runtime、推理加速、Profiling、本地服务 |
+| Ubuntu/Jetson/移动端 | Ubuntu/CUDA、Jetson AI Lab、LiteRT、ExecuTorch、Core ML | 环境栈、功耗温度记录、移动端路线图 | Ubuntu、Jetson、Qwen baseline、量化实验 |
+| VLM/Agent/复盘 | HF VLM、OpenAI tools/agents、MLPerf、Nsight | 组件拆解、权限边界、失败恢复、评估报告 | VLM/Agent、案例复盘、最终项目 |
+
+每个核心章节的“参考资料”前应有一段“本章吸收方式”，说明三件事：
+
+- **知识点**：本章从哪些外部资料吸收概念和边界。
+- **图解**：本章把外部图示思路重画成哪类课程图、表或流程。
+- **实验**：本章把资料中的方法转成哪个 Qwen、GGUF、llama.cpp、Jetson 或 profiling 任务。
+
 ## 主参考课程与教材
 
 | 资料 | 类型 | 适合借鉴 | 不直接照搬 |

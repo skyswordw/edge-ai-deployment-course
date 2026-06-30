@@ -438,6 +438,13 @@ trtexec --onnx=model-fp32.onnx --saveEngine=model.engine --fp16 \
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 llama.cpp、ONNX Runtime、TensorRT、TensorRT-LLM、ExecuTorch 和 MLC LLM 中提取模型格式、后端、server/API、移动端和 fallback。
+- **图解**：把多 runtime 文档重画为选型地图和“模型文件 -> runtime -> API/应用”的部署链路。
+- **实验**：主线仍使用 llama.cpp/Qwen；ONNX、TensorRT、ExecuTorch 和 MLC 作为对比入口和选型解释。
+- **取舍**：不逐项覆盖所有 runtime API，也不把某个厂商后端写成唯一正确路线。
+
 - [推理加速基础](/docs/inference-acceleration)
 - [Jetson 部署基础](/docs/jetson-deployment)
 - [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)

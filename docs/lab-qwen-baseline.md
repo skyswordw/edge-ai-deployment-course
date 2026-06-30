@@ -461,6 +461,13 @@ baseline 质量不是绝对评分，而是后续量化对比的参照。
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 Qwen 和 llama.cpp 文档吸收模型来源、GGUF、构建、CLI 参数和基础推理日志。
+- **图解**：把官方运行步骤重画为“模型文件 -> llama.cpp -> baseline 输出 -> 报告字段”的实验链路。
+- **实验**：要求记录模型来源、SHA256、固定 prompt、首 token、tokens/s 和失败原因。
+- **取舍**：不追逐更多模型族；baseline 只为后续量化、profiling 和服务化提供基准。
+
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp build documentation](https://www.mintlify.com/ggml-org/llama.cpp/development/build)
 - [llama.cpp llama-cli documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/llama-cli)

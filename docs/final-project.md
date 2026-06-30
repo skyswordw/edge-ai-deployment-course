@@ -153,3 +153,20 @@ flowchart LR
 - [Ubuntu Server 与 NVIDIA GPU 环境](/docs/lab-ubuntu-nvidia)
 - [Jetson 环境与 Qwen 迁移](/docs/lab-jetson-setup)
 - [Profiling 与结果记录](/docs/lab-profiling)
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 ML Systems Book、MLPerf、llama.cpp、Qwen、Jetson、Nsight 和课程实跑记录中吸收系统指标、benchmark 严谨性、部署风险和证据链。
+- **图解**：把外部评估资料重画为最终报告目录、评分维度、风险清单和结果记录模板。
+- **实验**：报告必须串起 Qwen baseline、量化对比、profiling、本地 API、Jetson/Ubuntu 对照和失败样例。
+- **取舍**：不引用外部 benchmark 数字作为结论；最终判断只基于学生自己的设备、日志和模型记录。
+
+- [The Machine Learning Systems Book](https://www.mlsysbook.ai/)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [公开运行记录仓库](https://github.com/neardws/edge-ai-deployment-course-runs)

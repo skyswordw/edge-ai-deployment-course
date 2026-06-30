@@ -380,6 +380,13 @@ mv 路径/模型文件.gguf ~/edge-ai-lab/models/qwen/
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 Ubuntu、CUDA 和 Container Toolkit 文档提取驱动、CUDA、GPU 可见性和容器 GPU 访问的检查点。
+- **图解**：把安装链路重画为服务器基线环境栈。
+- **实验**：所有检查都落到环境摘要、GPU 状态和后续 Qwen baseline 的可追溯字段。
+- **取舍**：不做通用服务器运维课，只保留影响模型推理的依赖。
+
 - [Ubuntu Server NVIDIA driver guide](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [NVIDIA Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)

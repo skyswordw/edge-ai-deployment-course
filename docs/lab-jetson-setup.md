@@ -487,6 +487,13 @@ Qwen2.5 0.5B Q4_K_M 在一台 Orin NX Super 类设备上的实测参考：
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 Jetson AI Lab、Jetson docs、Developer Guide 和 llama.cpp 构建文档吸收设备环境、功耗、散热、构建和迁移检查。
+- **图解**：把 Jetson 官方资料重画为环境预检、运行监控和 Ubuntu vs Jetson 对比表。
+- **实验**：至少保存 Jetson 环境摘要、`tegrastats`、Qwen baseline 和迁移判断。
+- **取舍**：Ubuntu-only 项目可把本章作为路线阅读；不强制新增完整 Jetson 项目。
+
 - [Jetson AI Lab](https://www.jetson-ai-lab.com/)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
 - [NVIDIA Jetson Linux Developer Guide](https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/)
