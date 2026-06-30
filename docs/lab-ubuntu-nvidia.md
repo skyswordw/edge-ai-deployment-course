@@ -95,6 +95,32 @@ flowchart TD
   E --> I[实验表格和报告]
 ```
 
+## 公开资料怎么转成本章内容
+
+Ubuntu、CUDA、NVIDIA Container Toolkit 和 Nsight 的官方资料通常从安装和运维角度讲环境配置。本实验只吸收其中和课程主线有关的检查点：GPU 是否可见、驱动/CUDA 是否匹配、工具链是否能构建 llama.cpp、后续 profiling 是否有可复查日志。
+
+```mermaid
+flowchart LR
+  A["公开资料: Ubuntu / CUDA / NVIDIA 工具链"] --> B["环境证据: OS / driver / CUDA / tools"]
+  B --> C["课程工作区: ~/edge-ai-lab"]
+  C --> D["llama.cpp CUDA 构建"]
+  D --> E["Qwen GGUF baseline"]
+  E --> F["Q8-Q5-Q4 profiling"]
+  F --> G["local API 与部署报告"]
+  B --> H["失败记录: 缺驱动 / 无 GPU / CUDA 不可用 / 磁盘不足"]
+  H --> G
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| Ubuntu NVIDIA driver guide | 驱动安装前要确认硬件、系统和管理员权限 | 本章只记录状态，未授权时不要求学生改系统 |
+| CUDA Installation Guide | driver、CUDA toolkit、runtime 的边界 | 用 `nvidia-smi` 和后续构建日志判断 CUDA 路线是否成立 |
+| NVIDIA Container Toolkit | 容器访问 GPU 的前置条件 | 作为后续扩展，不把容器变成第一轮必做 |
+| Nsight Systems | 系统级 profiling 需要稳定环境和可追踪日志 | 先用 `nvidia-smi` 建基线，高级 profiling 后置 |
+| Qwen / llama.cpp 主线 | 环境检查最终要服务模型运行 | 本章字段直接进入 Qwen baseline、profiling 和最终报告 |
+
+所以，本章的产物不是“安装成功截图”，而是一组能解释后续实验成败的环境证据。
+
 ## 前置条件
 
 开始前确认：
@@ -390,3 +416,5 @@ mv 路径/模型文件.gguf ~/edge-ai-lab/models/qwen/
 - [Ubuntu Server NVIDIA driver guide](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [NVIDIA Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

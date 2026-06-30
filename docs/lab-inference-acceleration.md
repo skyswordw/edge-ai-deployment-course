@@ -89,6 +89,32 @@ flowchart LR
   D --> F[OOM 风险]
 ```
 
+## 公开资料怎么转成本章内容
+
+vLLM、TensorRT-LLM、llama.cpp 和 MLPerf 资料都会讨论推理加速，但本实验不要求学生切换 runtime 或复现竞赛 benchmark。本章只吸收它们的判断框架：把 prefill、decode、KV Cache、GPU offload、线程和资源监控拆开，一次只改一个变量，用自己的 Qwen GGUF 日志说明参数是否真的改善目标瓶颈。
+
+```mermaid
+flowchart LR
+  A["公开资料: vLLM / TensorRT-LLM / llama.cpp / MLPerf"] --> B["瓶颈拆分: prefill / decode / KV Cache"]
+  B --> C["单变量实验: ngl / ctx-size / threads / bench"]
+  C --> D["运行证据: llama-completion --perf / llama-bench"]
+  D --> E["资源证据: nvidia-smi / tegrastats"]
+  E --> F{"是否有效加速"}
+  F --> G["有效: 保留参数并进入 local API"]
+  F --> H["无效: 解释计算 / 内存 / runtime / 功耗瓶颈"]
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| vLLM serving 资料 | prefill、decode、KV Cache 和吞吐/延迟分开看 | 解释为什么 `ctx-size`、首 token 和 tokens/s 要分开记录 |
+| TensorRT-LLM 文档 | runtime、kernel、precision 和 GPU 执行路径影响性能 | 作为更高阶路线，不替代本章 llama.cpp 实验 |
+| llama.cpp CLI 文档 | `-ngl`、`--ctx-size`、threads、`--perf` 等参数口径 | 实验 1-3 的固定变量与改变变量 |
+| llama.cpp llama-bench | 标准化 prompt processing / text generation 记录 | 实验 4 和最终报告第 5 节 |
+| MLPerf Inference | 指标、负载、条件、结果一起报告 | 综合结果表必须写硬件、参数、日志和解释 |
+| 课程实跑记录 | 短 prompt 采样可能抓不到 GPU 峰值 | 提醒用连续采样或 `llama-bench` 补证据 |
+
+所以，本章不是“调到最快”，而是训练学生说清楚：快在哪里、代价是什么、能否进入后续服务化验证。
+
 ## 前置条件
 
 已经完成：
@@ -518,3 +544,4 @@ tegrastats --interval 1000 | tee ~/edge-ai-lab/logs/jetson-acceleration-tegrasta
 - [llama.cpp llama-cli documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/llama-cli)
 - [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)
 - [vLLM documentation](https://docs.vllm.ai/)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

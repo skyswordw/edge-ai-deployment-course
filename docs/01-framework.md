@@ -95,6 +95,29 @@ flowchart LR
   E --> G
 ```
 
+## 公开资料怎么转成本章内容
+
+ML Systems Book 强调系统指标、部署可靠性和生命周期；MIT/EfficientML 强调模型效率、硬件感知优化和实验结构；Jetson 文档强调边缘设备的软件栈、功耗、温度和迁移风险。本章不复制它们的系统图或课程表, 而是把这些资料重画成课程自己的立项判断框架: 先判定端侧必要性, 再选择模型/runtime/硬件, 最后用真实设备日志决定是否继续。
+
+```mermaid
+flowchart LR
+  A["端侧必要性: 隐私 / 延迟 / 弱网 / 成本"] --> B["模型能力: 质量 / 上下文 / 输出格式"]
+  B --> C["执行路径: 量化 / runtime / GPU offload"]
+  C --> D["目标设备: Ubuntu baseline / Jetson / 移动端路线"]
+  D --> E["系统策略: 本地 / 云端 / 端云协同"]
+  E --> F["验收证据: 日志 / profiling / 失败样例 / 报告"]
+```
+
+| 外部资料中的经典图表思路 | 本章重画/改写成 | Qwen 主线中的落点 |
+| --- | --- | --- |
+| ML Systems Book 的部署指标、可靠性和生产生命周期视角 | “质量、延迟、资源、稳定性、工程成本、安全边界”六维指标表 | 最终部署评估报告的评分维度 |
+| MIT/EfficientML 的高效模型、硬件约束和实验组织 | “模型能力 -> 量化/压缩 -> runtime -> 真实设备 profiling”的决策闭环 | Q8/Q5/Q4 对比和推理加速实验 |
+| Jetson 文档中的功耗、温度、软件栈和设备约束 | Ubuntu baseline 与 Jetson 迁移对照表 | 解释服务器结果为什么不能直接代表边缘设备 |
+| 端云协同和系统资料中的路由/fallback 思路 | 本地、云端、脱敏上传、受限返回的路由图 | local API、VLM/Agent 和最终复盘 |
+| 官方 runtime 文档中的后端和格式差异 | 模型、runtime、硬件、上下文、服务形态联合决策矩阵 | 避免只按模型文件大小选方案 |
+
+这张表要求每个方案都回答“为什么要端侧”和“证据在哪里”。如果某个方案只有命令能跑、没有指标阈值、没有设备日志、没有失败样例, 它还不是可评审的部署方案。
+
 ## 指标体系
 
 端侧指标要同时覆盖模型质量和系统可用性。任何单一指标都不足以支撑部署决策。
@@ -321,6 +344,7 @@ sudo jetson_clocks --show
 - [资料对比与课程取舍](/docs/source-comparison)
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
+- [EfficientML.ai](https://efficientml.ai/)
 - [Ubuntu Server NVIDIA driver guide](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/)
 - [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)

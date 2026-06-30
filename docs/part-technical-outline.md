@@ -31,6 +31,36 @@ flowchart LR
 
 本课程不是单一量化课，而是用同一个 Qwen 小模型、同一套设备约束、同一组量化版本和同一份部署评估报告贯穿压缩、适配、runtime 加速、服务化和复盘。
 
+## 公开资料怎么转成本页细纲
+
+公开课程和官方文档分别擅长不同层面：LLM 课程讲共同语言，EfficientML 和量化课程讲压缩方法，runtime 文档讲执行层，Jetson 和 benchmark 资料讲设备证据。本页只把这些资料压成 Part I-VII 的递进关系，不把外部课程目录照搬进来。
+
+```mermaid
+flowchart LR
+  A["LLM / ML Systems"] --> B["Part I: 指标、Tokenizer、KV Cache"]
+  C["EfficientML / Quantization"] --> D["Part III: PTQ、QAT、LLM 量化"]
+  E["Qwen / llama.cpp"] --> F["Part VI: Qwen GGUF 实作"]
+  G["vLLM / TensorRT / MLC"] --> H["Part V: Runtime 与服务化"]
+  I["Jetson / MLPerf / Nsight"] --> J["Part VI-VII: 设备证据和报告"]
+  B --> K["部署报告主线"]
+  D --> K
+  F --> K
+  H --> K
+  J --> K
+```
+
+| Part | 主要吸收的外部资料 | 在本课程中改写成什么 |
+| --- | --- | --- |
+| Part I | Hugging Face LLM Course、ML Systems Book | tokenizer、prefill/decode、KV Cache 和推理指标的共同语言 |
+| Part II | ML Systems Book、EfficientML、Jetson docs | 场景、质量、延迟、内存、功耗和端云协同决策表 |
+| Part III | DeepLearning.AI Quantization、PyTorch/ONNX/TFLite/OpenVINO、GPTQ/AWQ/SmoothQuant | Q8/Q5/Q4 前的量化概念、误差来源和方法边界 |
+| Part IV | Hugging Face、TRL/PEFT、Qwen/LLaMA-Factory | 是否微调、数据检查、chat template、adapter 和部署回归 |
+| Part V | llama.cpp、vLLM、TensorRT-LLM、MLC LLM | runtime 选型、KV 管理、server/API 和 profiling 假设 |
+| Part VI | Qwen、llama.cpp、Jetson docs、JetPack、Jetson AI Lab | Qwen baseline、GGUF、量化对比、Jetson/Ubuntu 迁移和 local API |
+| Part VII | HF 多模态资料、OpenAI tools/agents 文档、MLPerf、Nsight、llama-bench | VLM/Agent 系统边界、失败恢复和最终报告证据链 |
+
+这张表的用途是控制课程边界：外部资料提供解释和图表思路，课堂主线仍收束到 Qwen、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 和部署报告。
+
 ## 导读：课程定位与项目主线
 
 | 项目 | 内容 |
@@ -137,3 +167,23 @@ flowchart LR
 4. 最后补阅读资料和课堂讨论题。
 
 不要先堆工具名或论文名。每个技术点都要能回答：它解决什么问题，什么时候不用，如何在实验中验证，如何进入最终报告。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：把 LLM、系统、量化、runtime、Jetson 和 benchmark 资料压成 Part I-VII 的递进顺序。
+- **图解**：重画为“外部资料 -> Part -> 部署报告主线”的 Mermaid 图。
+- **实验**：每个 Part 都必须落到 Qwen、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 或最终报告。
+- **取舍**：不把外部课程目录、厂商 API 或 benchmark 数字原样搬进总纲。
+
+- [类似教材与教程参考](/docs/similar-courses)
+- [参考资料地图](/docs/reference-map)
+- [课程来源对照与取舍](/docs/source-comparison)
+- [Hugging Face LLM Course](https://huggingface.co/learn/llm-course)
+- [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
+- [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp)
+- [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

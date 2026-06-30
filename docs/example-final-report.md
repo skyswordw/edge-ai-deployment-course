@@ -14,6 +14,31 @@ title: 完成版报告样例
 | 数字 | 每个数字必须能追溯到日志路径。 |
 | 结论 | 推荐和不推荐方案必须来自自己的量化、runtime、API 和风险证据。 |
 
+## 公开资料怎么转成本样例
+
+MLPerf、llama-bench、Qwen/llama.cpp 和 OpenAI-compatible API 资料在本页只用于示范报告结构，不用于给出标准性能数字。样例里的每个“示例”都代表学生需要用自己的日志替换：baseline 证明模型能跑，Q8/Q5/Q4 证明量化取舍，profiling 证明瓶颈，local API 证明服务化入口，风险表证明哪些结论还不能上线承诺。
+
+```mermaid
+flowchart LR
+  A["参考资料: benchmark / runtime / API"] --> B["样例写法: 不填外部数字"]
+  B --> C["课程证据: baseline + Q8/Q5/Q4"]
+  C --> D["profiling: speed / memory / quality"]
+  D --> E["local API: request / response / elapsed"]
+  E --> F["风险表: 未测项 + 不推荐方案"]
+  F --> G["最终建议: 可部署范围 + 下一步"]
+```
+
+| 外部资料中的经典内容 | 本样例吸收什么 | 样例里的落点 |
+| --- | --- | --- |
+| MLPerf Inference | 报告要同时写指标、负载和条件 | 自查表和第 3-5 节的日志路径要求 |
+| llama.cpp llama-bench | 标准化记录 prompt processing / token generation | 第 5 节的 `llama-bench` 行，并说明与业务 prompt 分开解释 |
+| Qwen / llama.cpp | Qwen GGUF、runtime commit、量化格式和模型来源 | 第 2-4 节的环境、baseline 和量化对比 |
+| llama.cpp server / OpenAI-compatible API | 请求、响应、HTTP 状态和端到端 elapsed | 第 6 节 API 服务测试 |
+| Profiling 与 Jetson 资料 | 温度、功耗、显存、未测平台不能被忽略 | 第 7 节风险表和第 8 节下一步 |
+| 课程实跑记录 | 脱敏日志路径和未测说明的写法 | 第 9 节附录和“示例不得照抄”的提醒 |
+
+因此，本页不是参考答案，而是报告骨架示范：学生必须把“示例”替换成自己的证据，再写推荐和不推荐方案。
+
 ## 1. 场景与设备约束
 
 - 应用场景：本地课程助教，回答端侧部署常见问题。
@@ -117,3 +142,18 @@ title: 完成版报告样例
 - API 响应 JSON：示例路径 `logs/qwen-api-response.json`。
 - 模型 SHA256：示例路径 `results/model-sha256.txt`。
 - 未测扩展说明：示例路径 `results/scope-note.md`。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 benchmark、runtime 和服务化资料吸收报告证据、风险登记和部署建议写法。
+- **图解**：把外部资料重画为“参考资料 -> 课程证据 -> profiling -> API -> 风险 -> 建议”的样例链路。
+- **实验**：样例要求所有 baseline、量化、profiling 和 API 结论都用自己的日志替换。
+- **取舍**：不提供标准性能数字，不把外部榜单或示例值写成本课程结论。
+
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference)

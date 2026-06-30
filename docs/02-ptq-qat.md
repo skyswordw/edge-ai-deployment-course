@@ -84,6 +84,35 @@ flowchart TD
   H -- "不成立" --> J["调整量化策略或回退"]
 ```
 
+## 公开资料怎么转成本章内容
+
+PyTorch、ONNX Runtime、TFLite、TensorRT、Transformers、Qwen 和 llama.cpp 的公开资料里都有很有价值的流程图、API 示例和对比表。
+
+本课程不复制这些图表，而是把它们改写成一个部署导向的问题：从 FP baseline 出发，如何决定量化对象、校准样本、PTQ/QAT 路线、低比特变体和真实设备验证。
+
+```mermaid
+flowchart LR
+  A["FP baseline: 质量 + 日志"] --> B["选择量化对象: 权重 / 激活 / KV Cache"]
+  B --> C["准备校准集和评估集"]
+  C --> D{"先做 PTQ 还是进入 QAT?"}
+  D -- "PTQ" --> E["生成 Q8 / Q5 / Q4 或 INT8 变体"]
+  D -- "QAT" --> F["训练中模拟量化误差"]
+  E --> G["真实设备验证: 质量 / 内存 / tokens/s"]
+  F --> G
+  G --> H["部署结论: 保留 / 回退 / 修复"]
+```
+
+| 外部资料中的经典内容 | 本章吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| PyTorch Quantization | observer、fake quant、PTQ/QAT 生命周期 | 用于解释校准、QAT 和 STE，不逐项讲 API |
+| ONNX Runtime Quantization | static/dynamic quantization、`CalibrationDataReader` | 用于把传统模型 PTQ 写成显式校准流程 |
+| TFLite Model Optimization | post-training quantization、representative dataset、移动端约束 | 用于说明端侧部署必须同时看格式、设备和输入分布 |
+| TensorRT | calibration、precision、engine/kernel 路线 | 用于提醒低精度必须由 runtime 和硬件 kernel 承接 |
+| Transformers quantization、Qwen 和 llama.cpp | LLM 量化入口、GGUF、Q8/Q5/Q4 变体 | 收束到同一 Qwen 小模型的固定 prompt 对比 |
+| GPTQ、AWQ、SmoothQuant、LLM.int8() | outlier、重要权重、激活敏感性 | 用于解释 PTQ 失败后的修复方向和回退判断 |
+
+所以，本章每个量化决策最后都要产出三样东西：校准/评估集说明、量化变体列表、真实设备证据。
+
 ## 数值格式与工程含义
 
 不同精度格式的意义不只是 bit 数不同。

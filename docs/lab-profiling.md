@@ -94,6 +94,33 @@ flowchart LR
   J[功耗/温度] --> K[持续性能]
 ```
 
+## 公开资料怎么转成本章内容
+
+llama-bench、Nsight Systems、MLPerf 和厂商设备文档都在讲 profiling，但层级不同。本章只吸收三件事：指标必须定义清楚，采样条件必须记录清楚，结论必须能追溯到原始日志。复杂 trace、竞赛级 benchmark 和跨厂商榜单都作为扩展阅读，不进入课堂最低要求。
+
+```mermaid
+flowchart LR
+  A["公开资料: benchmark / profiling / device docs"] --> B["实验条件: model / quant / ctx / ngl / prompt"]
+  B --> C["运行日志: stdout + stderr + --perf"]
+  B --> D["设备采样: nvidia-smi / tegrastats"]
+  C --> E["指标表: prefill / decode / tokens/s"]
+  D --> F["资源表: VRAM / RAM / power / temperature"]
+  E --> G["瓶颈判断"]
+  F --> G
+  G --> H["报告动作: keep / lower ctx / switch quant / profile deeper"]
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| llama.cpp llama-bench | 把 prompt processing 和 text generation 分开记录 | Step 2、Step 5 和结果总表中的速度字段 |
+| Nsight Systems | 系统级 profiling 先看时间线和资源占用 | 作为“需要更深分析时再用”的扩展工具 |
+| MLPerf Inference | 指标、负载、条件、结果必须一起报告 | 验收表要求每行结果能对应原始日志 |
+| CUDA / NVIDIA 文档 | GPU 状态、显存、温度、功耗的采样入口 | Ubuntu Server 的 `nvidia-smi` 记录 |
+| Jetson documentation | 统一内存、功耗模式、温度和降频风险 | Jetson 的 `tegrastats`、`nvpmodel` 记录 |
+| 课程 profiling 实跑记录 | stderr timing、短运行 GPU 利用率采样容易失真 | Step 3、Step 5 明确用 `2>&1 | tee`，并保留显存/功耗证据 |
+
+所以，本章的重点不是画更复杂的性能图，而是让每个部署判断都有日志、采样和质量备注支撑。
+
 ## 指标定义
 
 | 指标 | 含义 | 记录建议 |

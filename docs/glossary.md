@@ -6,6 +6,32 @@ title: 端侧部署术语表
 
 本页只收录课程中反复出现、会影响实验判断的术语。更细的公式约定见 [公式与符号约定](/docs/math-conventions)。
 
+## 公开资料怎么转成本页术语
+
+公开课程和官方文档会使用很多相同词汇，但上下文不同：LLM 课程强调 tokenizer、chat template 和生成流程，量化资料强调 scale、zero-point、outlier 和 calibration，serving/runtime 资料强调 TTFT、throughput、KV Cache 和 API，Jetson/benchmark 资料强调内存、温度、功耗和可复现条件。本页只保留会影响本课程实验判断的词。
+
+```mermaid
+flowchart LR
+  A["LLM 基础术语"] --> E["Qwen 输入和输出质量"]
+  B["量化术语"] --> F["Q8 / Q5 / Q4 对比"]
+  C["runtime / serving 术语"] --> G["profiling 和 local API"]
+  D["设备 / benchmark 术语"] --> H["部署报告风险"]
+  E --> I["端侧部署结论"]
+  F --> I
+  G --> I
+  H --> I
+```
+
+| 术语来源 | 本页吸收什么 | 为什么保留 |
+| --- | --- | --- |
+| Hugging Face LLM / Transformers | tokenizer、chat template、prefill、decode、KV Cache | 解释 Qwen 输入格式、首 token 和长上下文 |
+| DeepLearning.AI / PyTorch / ONNX 量化资料 | calibration、scale、zero-point、outlier、低比特 | 支撑 Q8/Q5/Q4 和质量退化判断 |
+| Qwen / llama.cpp 文档 | GGUF、Q4/Q5/Q8、GPU offload、`ctx-size`、server | 对齐课程主线实验命令和日志字段 |
+| vLLM / serving / OpenAI-compatible API 资料 | TTFT、throughput、P50/P99、服务开销 | 区分 CLI 指标和 API 端到端体验 |
+| Jetson / MLPerf / Nsight / llama-bench | fallback、thermal throttling、指标条件 | 写入 profiling、排障和最终报告风险 |
+
+术语表不是百科。每个词都要能回答一个工程问题：它影响哪个命令、哪个日志字段、哪张表，或者最终报告中的哪类判断。
+
 | 术语 | 一句话解释 | 本课程在哪里用 |
 | --- | --- | --- |
 | TTFT | 从请求发出到第一个 token 返回的时间，也叫首 token 延迟 | 推理指标、API 服务、profiling |
@@ -38,3 +64,22 @@ title: 端侧部署术语表
 | 低比特 vs 更快 | 低比特通常更小，是否更快取决于 kernel、带宽和 offload |
 | GGUF vs 量化算法 | GGUF 是文件格式，Q4_K_M 等是具体块量化格式 |
 | CLI 跑通 vs API 可用 | API 还要验证端口、JSON、超时、日志和资源占用 |
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 LLM、量化、runtime、serving、Jetson 和 benchmark 资料中提取会影响实验判断的术语。
+- **图解**：重画为“术语来源 -> Qwen/量化/profiling/API -> 部署结论”的 Mermaid 图。
+- **实验**：每个术语都对应 Qwen GGUF、Q8/Q5/Q4、profiling、local API 或最终报告字段。
+- **取舍**：不做完整术语百科，不复制外部定义，也不收录本课程不会用到的厂商 API 名词。
+
+- [类似教材与教程参考](/docs/similar-courses)
+- [参考资料地图](/docs/reference-map)
+- [公式与符号约定](/docs/math-conventions)
+- [Hugging Face LLM Course](https://huggingface.co/learn/llm-course)
+- [Hugging Face Transformers chat templates](https://huggingface.co/docs/transformers/chat_templating)
+- [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

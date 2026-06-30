@@ -43,6 +43,31 @@ flowchart LR
   G --> H[部署报告]
 ```
 
+## 公开资料怎么转成本页安排
+
+公开课程通常比本课范围更宽：MIT/EfficientML 偏高效深度学习体系，DeepLearning.AI 课程偏量化和 serving，Jetson/Edge AI 资料偏设备生态，MLPerf/Nsight/llama-bench 偏评估方法。本页只吸收它们的学时分配逻辑，把内容压成 40 学时可交付主线和 60 学时扩展路线。
+
+```mermaid
+flowchart LR
+  A["公开课程: EfficientML / serving / edge / benchmark"] --> B["60 学时: 完整部署训练"]
+  A --> C["40 学时: 主线交付"]
+  B --> D["扩展: LoRA / Jetson compare / VLM-Agent / mobile route"]
+  C --> E["保留: Qwen / GGUF / llama.cpp / Q8-Q5-Q4 / profiling / API / report"]
+  D --> F["最终报告: 扩展风险和后续路线"]
+  E --> F
+```
+
+| 外部资料中的经典内容 | 本页吸收什么 | 学时安排里的落点 |
+| --- | --- | --- |
+| MIT 6.5940 / EfficientML | 高效深度学习、压缩、量化和硬件感知优化的课程骨架 | 60 学时完整结构和 Part III/Part V 比重 |
+| DeepLearning.AI 量化与 serving 课程 | 量化后继续 benchmark、serving、API 和项目化验收 | 40 学时必须保留 profiling、local API 和 final report |
+| Qwen / llama.cpp | 统一模型和 runtime，减少变量 | 40 学时主线必做内容 |
+| Jetson / Edge AI 资料 | 边缘功耗、温度、共享内存和迁移风险 | 60 学时设备对照；40 学时可选目标设备 |
+| vLLM / TensorRT-LLM / MLC / LiteRT | 横向 runtime 和移动端路线 | 60 学时扩展或阅读，不进入 40 学时必做 |
+| MLPerf / Nsight / llama-bench | 评估要有指标、条件和日志 | 项目里程碑、最终报告和评分边界 |
+
+所以，40 学时不是“删掉实验”，而是删掉横向铺开；保留能完成部署报告的最短证据链。
+
 ## 项目里程碑
 
 | 里程碑 | 时间点 | 交付物 | 最低证据 |
@@ -165,3 +190,20 @@ gantt
 | 第 4 阶段 | runtime 加速 | offload、ctx、threads、llama-bench | profiling table |
 | 第 5 阶段 | API 服务 | local API smoke test | API 证据包 |
 | 第 6 阶段 | 复盘 | final report | 部署评估报告 |
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从高效 AI、量化 serving、Jetson、runtime 和 benchmark 资料中吸收学时分配和裁剪边界。
+- **图解**：把外部课程体量重画为 40 学时主线和 60 学时扩展的安排图。
+- **实验**：40 学时仍保留 Qwen baseline、Q8/Q5/Q4、profiling、local API 和最终报告。
+- **取舍**：不把 vLLM、TensorRT-LLM、Android、完整 VLM/Agent 写进基础必做链路。
+
+- [类似教材与教程参考](/docs/similar-courses)
+- [参考资料地图](/docs/reference-map)
+- [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
+- [DeepLearning.AI Efficiently Serving LLMs](https://www.deeplearning.ai/courses/efficiently-serving-llms/)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

@@ -285,7 +285,34 @@ VLM/Agent 很容易让课程发散。这里的取舍是：
 - 对实验设计的影响：
 ```
 
+## 本页吸收方式总览
+
+本页本身就是资料取舍页，所以不再重复整理外部课程目录。它只把公开资料的价值压成一条课程化闭环：先判断资料类型，再抽取可迁移内容，最后落到 Qwen/llama.cpp 实验和部署报告证据。
+
+```mermaid
+flowchart LR
+  A["外部资料"] --> B["吸收: 结构 / 动机 / 术语 / 实验"]
+  B --> C["课程化: Part I-VII"]
+  C --> D["主线: Qwen / GGUF / llama.cpp"]
+  D --> E["证据: Q8-Q5-Q4 / profiling / local API"]
+  E --> F["部署报告: recommendation + risk"]
+```
+
+| 吸收维度 | 本页怎么处理 | 课程落点 |
+| --- | --- | --- |
+| 知识点 | 只保留会影响端侧部署判断的概念和边界 | Part I-VII 的章节定位 |
+| 图解 | 用课程自己的对比框架和主线图说明资料如何进入课程 | 导读、技术细纲、教师备课 |
+| 实验 | 把可执行内容收束到 Qwen GGUF、量化、profiling、API 和报告 | Ubuntu / Jetson / 最终项目 |
+| 取舍 | 明确不复制外部目录、榜单、厂商 API 手册或完整平台课 | 40/60 学时裁剪和课程边界 |
+
 ## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从课程、论文、官方文档和工具项目中吸收结构、方法动机、术语和可执行实验。
+- **图解**：重画为资料类型对比、课程主线和资料吸收闭环三类 Mermaid 图。
+- **实验**：所有可吸收内容必须能回到 Qwen、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 或最终报告。
+- **取舍**：不把外部内容并入课程授权范围，不复制原图原表，也不引用外部 benchmark 数字作为课程结论。
 
 - [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
 - [EfficientML.ai](https://efficientml.ai/)

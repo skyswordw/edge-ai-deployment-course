@@ -62,6 +62,31 @@ flowchart LR
   G --> H[部署报告]
 ```
 
+## 公开资料怎么转成本课程
+
+这门课参考了多类公开课程、官方文档、论文和工具资料，但不会把它们照搬成资料合集。导读页的作用是把这些来源收束到一条可执行课程线：先建立推理和量化判断，再用 Qwen GGUF 与 llama.cpp 做实验，最后把 profiling、local API 和风险判断写进部署报告。
+
+```mermaid
+flowchart LR
+  A["公开资料: LLM / quant / runtime / edge / benchmark"] --> B["课程取舍: 概念 -> 边界 -> 工程判断"]
+  B --> C["统一实作: Qwen + GGUF + llama.cpp"]
+  C --> D["实验闭环: baseline / quant / profiling / API"]
+  D --> E["报告闭环: evidence / risk / recommendation"]
+  A --> F["扩展路线: Jetson / mobile / VLM-Agent"]
+  F --> E
+```
+
+| 外部资料中的经典内容 | 本课程吸收什么 | 导读里的落点 |
+| --- | --- | --- |
+| Hugging Face LLM Course / Transformers | tokenizer、生成、chat template 和模型生态基础 | Part I 与微调数据适配 |
+| DeepLearning.AI 量化与 serving 课程 | 量化、KV Cache、serving、TTFT/throughput 的课程结构 | Part III、Part V 和 local API |
+| Qwen / llama.cpp | Qwen GGUF、本地推理、量化、benchmark、server | 课程主线实作 |
+| Jetson / Edge AI 资料 | 功耗、温度、共享内存、边缘节点约束 | Part VI Jetson 路径 |
+| MLPerf / Nsight / llama-bench | 指标、条件、日志和复盘严谨性 | profiling、最终项目和案例复盘 |
+| VLM/Agent 资料 | 组件拆解、权限边界、端云协同和失败恢复 | Part VII 扩展与复盘 |
+
+所以，课程导读的核心边界是：外部资料负责提供概念和判断框架，课程本身负责把它们落到可复现的 Qwen/llama.cpp 实验和部署报告。
+
 建议按两条线阅读：
 
 | 阅读线 | 适合对象 | 重点产出 |
@@ -106,6 +131,13 @@ flowchart LR
 
 ## 参考资料
 
+本章吸收方式：
+
+- **知识点**：从 LLM、量化、runtime、Jetson、benchmark 和系统设计资料中吸收课程边界、学习顺序和工程判断。
+- **图解**：把外部资料体系重画为“公开资料 -> 课程取舍 -> Qwen/llama.cpp 实作 -> 部署报告”的导读图。
+- **实验**：导读页只规定主线，后续实验落到 Qwen GGUF、Q8/Q5/Q4、profiling、local API 和最终报告。
+- **取舍**：不把公开课程目录、厂商 API、论文榜单或云端 serving 全量搬进课程。
+
 - [前置知识学习路径](/docs/prerequisites)
 - [Start Here：我该怎么学这门课](/docs/start-here)
 - [环境与版本矩阵](/docs/environment-matrix)
@@ -123,5 +155,10 @@ flowchart LR
 - [参考资料地图](/docs/reference-map)
 - [类似教材与教程参考](/docs/similar-courses)
 - [Docusaurus Mermaid diagrams](https://docusaurus.io/docs/markdown-features/diagrams/)
+- [Hugging Face LLM Course](https://huggingface.co/learn/llm-course)
+- [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
+- [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

@@ -40,6 +40,34 @@ title: 模型微调与 LoRA/QLoRA
 
 这一路线来自公开教程的共同粒度：数据、模板、训练入口、评估和部署要串起来，而不是只展示一条训练命令。
 
+## 公开资料怎么转成本章内容
+
+Hugging Face LLM Course、Transformers chat template、TRL/PEFT、Qwen/LLaMA-Factory 和中文后训练资料都会讲数据格式、训练入口、adapter 和部署参数。本章不复刻这些教程的 API 细节，而是把它们收束成一个端侧部署闭环：先判断是否需要微调，再用最小 LoRA smoke test 验证数据和训练链路，最后回到 GGUF、量化、profiling 和本地 API。
+
+```mermaid
+flowchart LR
+  A["公开资料: 微调与后训练教程"] --> B["判断: 是否真的需要微调"]
+  B --> C["数据: messages / chat template / eval split"]
+  C --> D["训练: LoRA / QLoRA smoke test"]
+  D --> E["产物: adapter / logs / 输出对比"]
+  E --> F{"进入部署吗?"}
+  F -- "否" --> G["修数据 / prompt / 评估"]
+  F -- "是" --> H["合并或保留 adapter"]
+  H --> I["GGUF 转换 / Q8-Q5-Q4 量化"]
+  I --> J["profiling / local API / 部署报告"]
+```
+
+| 外部资料中的经典内容 | 本章吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| Hugging Face LLM Course / Transformers | tokenizer、generation、chat template 和模型生态 | 训练数据、部署 prompt 和本地推理使用同一 template |
+| TRL SFTTrainer | SFT 数据入口、assistant loss、训练参数 | 只保留最小 smoke test 和日志阅读，不写成长训练手册 |
+| PEFT | LoRA/QLoRA adapter、target modules、合并与加载 | 用于解释 adapter 产物和合并后再量化 |
+| Qwen / LLaMA-Factory | Qwen 微调流程、配置和训练命令组织 | 作为 Qwen 小模型实作参考，结论必须回到 GGUF 部署 |
+| 中文后训练与部署资料 | 微调、部署参数、KV Cache、LoRA serving 边界 | 用于补工程表达和 adapter 到服务化的取舍 |
+| LoRA / QLoRA 论文 | 低秩增量、NF4、double quantization | 用公式解释参数和显存，不扩展成论文精读 |
+
+本章每个微调实验都要留下四类证据：数据检查结果、训练日志、固定 prompt 输出对比、量化部署回归。
+
 ## 学习目标
 
 完成本章后，学习者应能：
@@ -562,11 +590,14 @@ python llama.cpp/convert_hf_to_gguf.py \
 - **取舍**：不把课程变成完整训练课；微调必须服务于端侧部署质量问题。
 
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course/chapter1/1)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
 - [Hugging Face Transformers Chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face PEFT documentation](https://huggingface.co/docs/peft/index)
 - [TRL SFTTrainer documentation](https://huggingface.co/docs/trl/sft_trainer)
 - [Qwen LLaMA-Factory fine-tuning guide](https://qwen.readthedocs.io/en/v3.0/training/llama_factory.html)
 - [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)
+- [LLM 后训练实践：模型压缩、部署优化与能力扩展](https://posttrain.gaozhijun.me/docs/lecture-5/)
+- [大模型微调与部署指南](https://wuduoyi.com/llm-finetune/deploy.html)
 - [Unsloth documentation](https://docs.unsloth.ai/)
 - [LoRA paper](https://arxiv.org/abs/2106.09685)
 - [QLoRA paper](https://arxiv.org/abs/2305.14314)

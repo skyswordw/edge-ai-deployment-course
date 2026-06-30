@@ -97,6 +97,34 @@ sequenceDiagram
 
 这张图说明：首 token 延迟通常更受 prefill、模型加载、上下文长度影响；稳定 tokens/s 更受 decode、KV Cache 读取、kernel、内存带宽和 GPU offload 影响。
 
+## 公开资料怎么转成本章内容
+
+vLLM、TensorRT-LLM、TensorRT、llama.cpp、MLPerf 和 Nsight 的资料都能讲推理性能，但本章不复制它们的 benchmark 图或厂商性能表。这里把外部资料改写成一个课堂可执行的问题：同一个 Qwen GGUF 模型，在同一设备上改变 `-ngl`、`ctx-size`、量化格式和服务形态时，瓶颈到底移动到了哪里。
+
+```mermaid
+flowchart LR
+  A["公开资料: Runtime / Benchmark / Profiling"] --> B["抽取概念: prefill / decode / KV / batch / kernel"]
+  B --> C["课程实验: Qwen GGUF + llama.cpp"]
+  C --> D["改变变量: Q8-Q5-Q4 / ngl / ctx / threads / API"]
+  D --> E["采集证据: timing / llama-bench / nvidia-smi / tegrastats"]
+  E --> F{"瓶颈判断"}
+  F -- "prefill" --> G["缩短 prompt / 检查 GPU offload"]
+  F -- "decode" --> H["看内存带宽 / low-bit kernel"]
+  F -- "KV Cache" --> I["调整 ctx / cache dtype"]
+  F -- "服务化" --> J["比较 CLI 与 server"]
+```
+
+| 外部资料中的经典内容 | 本章吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| vLLM / PagedAttention | KV Cache 管理、batching、TTFT、throughput | 用来解释服务化指标，不作为主实验框架 |
+| TensorRT / TensorRT-LLM | graph、engine、kernel、precision 和 NVIDIA GPU 路线 | 用于说明低比特必须被 runtime/kernel 承接 |
+| llama.cpp / llama-bench | GGUF 本地推理、server、benchmark 工具 | 本章主实验入口和日志来源 |
+| MLPerf Inference | 明确硬件、负载、指标和报告口径 | 用于规范结果表，不引用外部成绩 |
+| Nsight Systems | CPU/GPU 时间线和系统级 profiling | 作为进阶排查工具，课堂先用日志和监控命令 |
+| Qwen llama.cpp 文档 | Qwen 本地运行和量化路径 | 保持所有加速实验回到同一模型主线 |
+
+所以，本章的结论必须写成“在哪个设备、哪个模型、哪个参数组合下观察到什么”，不能写成泛泛的“某框架更快”。
+
 ## 核心概念
 
 ### 推理加速六层框架
@@ -438,8 +466,11 @@ tegrastats --interval 1000 --logfile ~/edge-ai-lab/logs/tegrastats-accel.log
 - [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
 - [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
 - [llama.cpp llama-bench README](https://github.com/ggml-org/llama.cpp/blob/master/tools/llama-bench/README.md)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
 - [TensorRT documentation](https://docs.nvidia.com/deeplearning/tensorrt/latest/)
 - [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)
 - [vLLM documentation](https://docs.vllm.ai/)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
 - [Roofline: An Insightful Visual Performance Model](https://dl.acm.org/doi/10.1145/1498765.1498785)

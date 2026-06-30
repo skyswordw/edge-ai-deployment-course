@@ -294,3 +294,49 @@ title: 课程迭代反馈记录
 ### 暂停点
 
 - 本轮未做内容改写；后续可进入提交前最终差异复查。
+
+## 公开资料怎么转成本页反馈
+
+外部课程、官方文档和工具项目进入课程后，不能只停留在“加了链接”或“补了术语”。本页把吸收结果转成可追踪的课程迭代：先记录学习者或教师的具体困惑，再回到对应章节、实验、报告模板或排障入口做最小修改。
+
+```mermaid
+flowchart LR
+  A["外部资料 / 学生反馈 / 教师反馈"] --> B["识别问题: 概念 / 实验 / 报告 / 评分"]
+  B --> C["定位章节"]
+  C --> D["最小改动: 图 / 表 / 检查点 / 参考资料"]
+  D --> E["验证: typecheck + build"]
+  E --> F["回填本页处理状态"]
+  F --> G["下一轮候选"]
+```
+
+| 反馈来源 | 本页吸收什么 | 课程落点 |
+| --- | --- | --- |
+| 公开课程和教材 | 哪些讲解顺序、图表思路和项目结构值得借鉴 | Start Here、课程导读、Part 细纲 |
+| 官方文档和工具项目 | 哪些术语、命令、日志字段和失败模式需要统一 | 实验页、样例日志、排障索引 |
+| benchmark / profiling 资料 | 哪些指标、条件和证据必须进入验收 | final project、report template、instructor guide |
+| 学生反馈 | 哪些入口、字段和概念最容易卡住 | 本页初学者视角 |
+| 教师反馈 | 哪些边界、评分和助教口径需要收紧 | 本页教师视角 |
+
+反馈记录只处理能服务主线的改动：Qwen 小模型、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 和部署报告。不能落到这条主线的建议，先放入候选，不直接扩写成新章节。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从公开课程、官方文档、benchmark 资料和课程实跑反馈中吸收可改进的概念、边界和验收口径。
+- **图解**：重画为“资料/反馈 -> 问题分类 -> 章节改动 -> 验证 -> 下一轮候选”的 Mermaid 图。
+- **实验**：每轮反馈都要求回到 Qwen GGUF、Q8/Q5/Q4、profiling、local API、报告模板或排障记录。
+- **取舍**：不把反馈页变成需求池；只记录已经处理或明确进入下一轮候选的课程改动。
+
+- [Start Here：我该怎么学这门课](/docs/start-here)
+- [教师使用指南](/docs/instructor-guide)
+- [资料对比与课程取舍](/docs/source-comparison)
+- [参考资料地图](/docs/reference-map)
+- [类似教材与教程参考](/docs/similar-courses)
+- [最终报告模板](/docs/report-template)
+- [最终项目与验收标准](/docs/final-project)
+- [样例日志与结果表](/docs/sample-logs)
+- [排障索引](/docs/troubleshooting-index)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

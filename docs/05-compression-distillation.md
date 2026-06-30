@@ -102,6 +102,34 @@ flowchart LR
   G --> E
 ```
 
+## 公开资料怎么转成本章内容
+
+EfficientML 和 MIT 6.5940 的价值在于把剪枝、量化、蒸馏、NAS、TinyML 和 LLM 部署放进同一个高效 AI 框架里；蒸馏论文和 DistilBERT/TinyBERT/MobileBERT 则提供 teacher/student、软标签和小模型能力迁移的经典例子。本章不把这些内容扩成训练课，而是把它们改写成端侧部署的路线选择表。
+
+```mermaid
+flowchart LR
+  A["外部资料: 压缩方法体系"] --> B["先定位瓶颈"]
+  B --> C{"瓶颈类型"}
+  C -- "权重内存" --> D["量化 / 低秩 / 参数共享"]
+  C -- "算子延迟" --> E["结构化剪枝 / 换架构"]
+  C -- "质量不足" --> F["蒸馏 / LoRA / 混合精度"]
+  C -- "设备仍放不下" --> G["换小模型 / 端云协同"]
+  D --> H["回到 Qwen GGUF 证据表"]
+  E --> H
+  F --> H
+  G --> H
+```
+
+| 外部资料中的经典内容 | 本章吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| EfficientML / MIT 6.5940 | 压缩、剪枝、量化、NAS、蒸馏和硬件约束的整体视角 | 把“继续压缩还是换路线”写成路线选择表 |
+| PyTorch pruning tutorial | 非结构化剪枝演示和 mask 机制 | 用一个最小例子说明参数少不等于真实加速 |
+| TensorRT structured sparsity | 稀疏性必须被 runtime/kernel 利用 | 解释为什么 Jetson/Ubuntu 上要看实际 tokens/s |
+| Distillation 和 DistilBERT 系列论文 | teacher/student、软标签、任务级能力迁移 | 用于设计蒸馏样例和第二阶段路线，不作为第一轮必做训练 |
+| Qwen、GGUF 和 llama.cpp 实验 | Q8/Q5/Q4 的真实部署证据 | 决定是否接受量化、换小模型、蒸馏或端云协同 |
+
+因此，本章的产物不是一个训练好的蒸馏模型，而是一份能写进部署报告的压缩路线判断。
+
 ## 压缩方法总览
 
 | 方法 | 主要目标 | 是否通常需要训练 | 端侧收益 | 主要风险 |
@@ -572,7 +600,10 @@ tegrastats --interval 1000 --logfile logs/jetson-compression-choice.log
 
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [EfficientML.ai](https://efficientml.ai/)
+- [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
 - [Distilling the Knowledge in a Neural Network](https://arxiv.org/abs/1503.02531)
+- [DistilBERT](https://arxiv.org/abs/1910.01108)
 - [TinyBERT](https://arxiv.org/abs/1909.10351)
 - [MobileBERT](https://arxiv.org/abs/2004.02984)
 - [The Lottery Ticket Hypothesis](https://arxiv.org/abs/1803.03635)

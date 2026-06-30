@@ -15,6 +15,32 @@ title: 教师使用指南
 | 排查学生实验失败 | [排障索引](/docs/troubleshooting-index) |
 | 追踪课程迭代反馈 | [课程迭代反馈记录](/docs/course-review-feedback) |
 
+## 公开资料怎么转成本页备课
+
+教师备课不需要把所有外部课程重新讲一遍。公开课程提供结构，官方文档提供可靠术语，工具项目提供可执行命令，benchmark 资料提供验收口径。本页只把这些资料转成教师可操作的三件事：讲什么、删什么、怎么验收。
+
+```mermaid
+flowchart LR
+  A["公开课程 / 官方文档 / 工具项目"] --> B["备课取舍"]
+  B --> C["40 学时: 保留主线"]
+  B --> D["60 学时: 增加扩展"]
+  C --> E["Qwen / GGUF / llama.cpp"]
+  D --> F["LoRA / Jetson / VLM-Agent / mobile route"]
+  E --> G["里程碑和评分"]
+  F --> G
+  G --> H["部署报告验收"]
+```
+
+| 外部资料中的可吸收点 | 教师页怎么处理 | 课堂落点 |
+| --- | --- | --- |
+| MIT/EfficientML 的 lecture/lab/project 结构 | 保留理论、实验、项目三段式 | 40/60 学时安排和里程碑 |
+| DeepLearning.AI 量化与 serving 课程 | 量化后继续讲 benchmark、serving 和 API 化 | M2-M4 和最终报告 |
+| Qwen / llama.cpp 文档 | 固定模型、格式和 runtime，减少变量 | 40 学时主线必做 |
+| Jetson / Edge AI 资料 | 作为 60 学时设备扩展和功耗/温度证据 | Jetson 对照和优秀项目要求 |
+| MLPerf / Nsight / llama-bench | 评分看指标、条件、日志和失败记录 | 评分建议和助教评分锚点 |
+
+教师备课时应先保护主线，再安排扩展。扩展内容只有能回到最终报告证据链时才进入课堂。
+
 ## 40 学时讲法
 
 40 学时只保留主线：
@@ -85,3 +111,24 @@ Qwen -> GGUF -> llama.cpp -> Q8/Q5/Q4 -> profiling -> local API -> final report
 - 量化对比可以用教师预先准备的日志讲解。
 - Jetson 演示前先确认电源、散热和存储。
 - 学生报告必须引用自己的日志路径，不接受只有截图的结论。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从公开课程结构、量化/serving 教程、Jetson 文档和 benchmark 资料中吸收备课边界。
+- **图解**：重画为“外部资料 -> 40/60 学时取舍 -> 里程碑和评分 -> 部署报告验收”的 Mermaid 图。
+- **实验**：教师页把外部资料转成 Qwen GGUF、Q8/Q5/Q4、profiling、local API 和最终报告的课堂任务。
+- **取舍**：不把扩展路线变成必做项，不把外部 benchmark 数字用于评分。
+
+- [40/60 学时教学安排](/docs/course-hours)
+- [Part 技术递进与工程实作细纲](/docs/part-technical-outline)
+- [资料对比与课程取舍](/docs/source-comparison)
+- [最终项目与验收标准](/docs/final-project)
+- [类似教材与教程参考](/docs/similar-courses)
+- [参考资料地图](/docs/reference-map)
+- [MIT 6.5940 TinyML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2024-fall-65940)
+- [DeepLearning.AI Efficiently Serving LLMs](https://www.deeplearning.ai/courses/efficiently-serving-llms/)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

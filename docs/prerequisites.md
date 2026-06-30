@@ -54,6 +54,27 @@ flowchart TD
 - 学 `nvidia-smi` 和 `tegrastats`, 是为了在 Ubuntu Server 和 Jetson 上观察显存, 负载, 温度和功耗。
 - 学 `chat template`, 是为了避免把提示词格式错误误判为模型量化损伤。
 
+## 公开资料怎么转成本章内容
+
+本章吸收公开课程和官方文档时, 不复制原图或原表。它们通常会用模型生态图, 推理流程图, KV Cache 图, CUDA/Jetson 软件栈图来解释各自主题。本课程把这些图表重画成一条更窄的学习入口: 先理解模型输入契约, 再看推理状态, 最后落到可验证的本地部署日志。
+
+```mermaid
+flowchart LR
+  A["模型生态: Transformers / Qwen"] --> B["输入契约: tokenizer + chat template"]
+  B --> C["推理状态: prefill + decode + KV Cache"]
+  C --> D["执行环境: llama.cpp + CUDA / Jetson"]
+  D --> E["课程产物: GGUF 记录 + profiling 日志 + 部署报告"]
+```
+
+| 外部资料中的经典图表思路 | 本章重画/改写成 | 后续落点 |
+| --- | --- | --- |
+| Transformers 生态中的模型、tokenizer、processor 和 pipeline 关系 | “模型输入契约”检查：模型名、tokenizer、chat template、prompt、输出格式必须一起记录 | Qwen baseline、LoRA 数据检查、本地 API |
+| KV Cache 文档中的缓存位置和生成阶段说明 | “prefill/decode/KV Cache”三段式推理状态图 | 长上下文显存估算、推理加速、VLM token 成本 |
+| CUDA 和 Jetson 文档中的驱动、runtime、工具链层次 | “系统栈到模型命令”的依赖表 | Ubuntu 环境检查、Jetson 迁移、profiling |
+| ONNX Runtime / ML 系统资料中的性能指标表 | “端到端指标口径”表：加载、首 token、tokens/s、内存、功耗分开记录 | 量化对比、服务化 smoke test、最终报告 |
+
+这张表的用法是反向检查: 如果后续实验失败, 先判断问题属于输入契约, 推理状态, 执行环境, 还是实验记录口径, 不要直接把所有异常归因于“模型不好”或“量化失败”。
+
 ## 前置知识分层
 
 | 层级 | 需要掌握 | 不要求掌握 | 课程中用来解决的问题 |

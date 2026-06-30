@@ -30,6 +30,31 @@ flowchart LR
   I --> J[部署评估报告]
 ```
 
+## 公开资料怎么转成本章内容
+
+外部课程、MLPerf、llama.cpp、Qwen、Jetson 和服务化文档都能启发最终项目，但本章只吸收它们的项目组织方式：从场景约束出发，逐步积累 baseline、Q8/Q5/Q4、profiling、local API 和风险证据，最后写成可审查的部署建议。不要把外部课程里的 Docker、云端集群、厂商 benchmark 或完整 MLOps 流程搬进本项目。
+
+```mermaid
+flowchart LR
+  A["公开资料: course / benchmark / runtime / edge docs"] --> B["项目问题: device + workload + constraints"]
+  B --> C["课程主线: Qwen -> GGUF -> llama.cpp"]
+  C --> D["实验证据: baseline + Q8/Q5/Q4 + profiling + API"]
+  D --> E["风险证据: quality / memory / power / timeout / license"]
+  E --> F["验收判断: recommend + reject + next validation"]
+  F --> G["最终报告: sections 1-9 + appendix"]
+```
+
+| 外部资料中的经典内容 | 本项目吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| Coursera 量化/Serving/Edge AI 课程 | 压缩、serving、benchmark、edge 和 final project 串成链路 | 里程碑 M0-M5 和报告第 1-9 节 |
+| ML Systems Book | 从系统约束、可靠性和风险看部署 | 场景约束、风险登记和不推荐方案 |
+| MLPerf Inference | 指标、负载、条件、结果一起报告 | 评分维度和结果记录模板 |
+| Qwen / llama.cpp | Qwen GGUF、runtime commit、CLI/server 主线 | baseline、量化、推理加速和本地 API |
+| Jetson / Nsight 资料 | 端侧功耗、温度、profiling 和设备差异 | Jetson 对照、profiling 质量和优秀项目要求 |
+| 课程公开运行记录 | 脱敏日志、失败样例和未测项说明 | 附录证据索引和最终报告引用 |
+
+本章验收的不是“功能多”，而是“证据链闭合”：每个推荐和不推荐方案都能回到自己的日志、表格或运行记录。
+
 ## 里程碑交付
 
 | 里程碑 | 时间点 | 交付物 | 对应报告位置 | 最低证据 |
@@ -164,9 +189,13 @@ flowchart LR
 - **取舍**：不引用外部 benchmark 数字作为结论；最终判断只基于学生自己的设备、日志和模型记录。
 
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)
+- [Coursera Deploying Deep Learning: Quantization, Serving, and Edge AI](https://www.coursera.org/learn/deploying-deep-learning-quantization-serving-and-edge-ai)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
 - [公开运行记录仓库](https://github.com/neardws/edge-ai-deployment-course-runs)

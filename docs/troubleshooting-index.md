@@ -6,6 +6,36 @@ title: 排障索引
 
 先按现象定位，再回到对应实验页。不要一开始就重装环境。
 
+## 公开资料怎么转成本页排障
+
+外部文档通常按工具或平台写排错：CUDA 文档看驱动，llama.cpp 文档看构建和模型参数，Jetson 文档看 JetPack、功耗和温度，benchmark/profiling 资料看指标和日志。本页把这些排错入口改写成课程自己的闭环：现象先归类，再回到 Qwen、GGUF、llama.cpp、Q8/Q5/Q4、profiling、local API 和最终报告。
+
+```mermaid
+flowchart LR
+  A["失败现象"] --> B{"先归类"}
+  B --> C["环境: driver / CUDA / JetPack"]
+  B --> D["模型: GGUF / hash / chat template"]
+  B --> E["runtime: llama.cpp / offload / ctx"]
+  B --> F["设备: memory / temp / power"]
+  B --> G["服务: port / JSON / timeout / log"]
+  C --> H["保存原始日志"]
+  D --> H
+  E --> H
+  F --> H
+  G --> H
+  H --> I["写入报告第 2-7 节"]
+```
+
+| 外部资料中的排错入口 | 本页改写成什么 | 最终报告里的作用 |
+| --- | --- | --- |
+| Ubuntu / CUDA / PyTorch 文档 | 先分清 driver 可见、CUDA toolkit 可见、框架可用三件事 | 第 2 节环境限制 |
+| Qwen / llama.cpp 文档 | 模型路径、GGUF 完整性、runtime commit 和启动参数要一起查 | 第 3/4/5 节实验失败说明 |
+| Jetson / JetPack 文档 | Jetson 问题优先查 L4T、功耗模式、统一内存、温度和存储 | 第 2 节环境、第 7 节温度/功耗风险 |
+| llama-bench / Nsight / MLPerf | 性能问题先保留条件和原始日志，再判断瓶颈 | 第 5 节 profiling、第 7 节风险 |
+| llama.cpp server / API 文档 | API 问题要区分服务启动、HTTP 状态、JSON 响应和模型质量 | 第 6 节 local API、第 7 节并发/超时风险 |
+
+排障不是额外作业。它是部署报告的证据来源：解决了的问题写进实验结论，未解决的问题写进风险登记。
+
 | 现象 | 先看什么 | 常见原因 | 报告位置 / 第 7 节风险项 | 回看章节 |
 | --- | --- | --- | --- | --- |
 | CUDA 找不到 | `nvidia-smi`、CMake 日志 | 驱动可见但开发库缺失 | 第 2 节环境限制；未解决再写内存/显存或 runtime 风险 | [Ubuntu 环境](/docs/lab-ubuntu-nvidia) |
@@ -48,3 +78,23 @@ title: 排障索引
 5. 在报告中记录失败现象、证据日志、影响和下一步。
 
 失败日志不是脏数据。端侧部署报告需要失败样例来说明边界。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 CUDA、Jetson、llama.cpp、profiling 和 API 文档中吸收按层定位故障的边界。
+- **图解**：重画为“现象 -> 归类 -> 原始日志 -> 报告风险”的 Mermaid 图。
+- **实验**：所有排障建议都回到 Qwen GGUF、Q8/Q5/Q4、profiling、local API 或最终报告字段。
+- **取舍**：不复制厂商排错手册，不把重装环境当默认答案，也不引入自动诊断工具。
+
+- [参考资料地图](/docs/reference-map)
+- [样例日志与结果表](/docs/sample-logs)
+- [Profiling 与结果记录](/docs/lab-profiling)
+- [本地 API 服务实验](/docs/lab-local-service)
+- [Jetson 环境与 Qwen 迁移](/docs/lab-jetson-setup)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp server](https://github.com/ggml-org/llama.cpp/tree/master/examples/server)
+- [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

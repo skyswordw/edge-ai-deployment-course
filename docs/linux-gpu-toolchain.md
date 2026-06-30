@@ -77,6 +77,29 @@ flowchart TD
   H --> I["nvidia-smi / tegrastats / llama 日志 / API 计时"]
 ```
 
+## 公开资料怎么转成本章内容
+
+Ubuntu、CUDA、NVIDIA Container Toolkit、Jetson/JetPack 和 llama.cpp 构建文档各自关注安装步骤和配置细节。本章不复制安装页面的命令清单, 而是把它们重画成课程自己的“环境证据链”: 每个系统组件都必须能落到一个可保存的检查命令、构建日志或推理记录。
+
+```mermaid
+flowchart LR
+  A["系统层: Ubuntu / Jetson Linux"] --> B["驱动层: NVIDIA driver / JetPack"]
+  B --> C["运行层: CUDA runtime / libraries"]
+  C --> D["构建层: CMake + GGML_CUDA"]
+  D --> E["推理层: llama.cpp + Qwen GGUF"]
+  E --> F["证据层: env log + build log + runtime log + resource log"]
+```
+
+| 外部资料中的经典图表思路 | 本章重画/改写成 | Qwen 主线中的落点 |
+| --- | --- | --- |
+| Ubuntu NVIDIA driver guide 的“系统识别 GPU”链路 | `nvidia-smi` 环境快照和 driver/CUDA 字段解释 | Ubuntu Qwen baseline 前的硬件证据 |
+| CUDA Installation Guide 的 driver、runtime、toolkit 关系 | “可运行”和“可从源码构建”分开的依赖表 | 判断 llama.cpp CUDA 构建失败还是运行失败 |
+| NVIDIA Container Toolkit 的宿主机 GPU 到容器权限关系 | 容器作为可选层, 必须先证明宿主机 driver 正常 | 后续服务化或课程复现实验 |
+| Jetson docs / JetPack 的板端软件栈 | JetPack/L4T、`nvpmodel`、`tegrastats` 三件套记录 | Jetson 迁移和功耗/温度对比 |
+| llama.cpp build docs 的后端开关 | `GGML_CUDA=ON`、`-ngl`、运行日志共同证明 GPU offload | Q8/Q5/Q4 profiling 和 local API |
+
+这张表的实用规则是: 看到“能跑”还不够, 必须能说明它跑在哪个后端、哪个设备、哪个功耗模式、哪个 commit、哪个模型文件上。否则后续量化和推理加速结果无法比较。
+
 ## 核心概念
 
 ### NVIDIA Driver

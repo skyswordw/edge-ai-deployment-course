@@ -109,6 +109,31 @@ flowchart LR
 - [Jetson Qwen baseline](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-qwen-baseline)
 - [Jetson 本地 API 服务](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-jetson-local-service)
 
+## 公开资料怎么转成本章内容
+
+Jetson documentation、JetPack SDK、Jetson AI Lab、TensorRT 和 Qwen/llama.cpp 资料都能提供边缘设备部署线索。本实验不整理 Jetson 型号百科，也不要求学生复现所有 Jetson AI demo；只把这些资料转成迁移检查：软件栈是否清楚、功耗模式是否记录、`tegrastats` 是否覆盖推理过程、Qwen GGUF 是否能形成 Ubuntu vs Jetson 对比。
+
+```mermaid
+flowchart LR
+  A["公开资料: Jetson / JetPack / Jetson AI Lab"] --> B["环境证据: L4T / JetPack / CUDA / TensorRT"]
+  B --> C["构建证据: llama.cpp CUDA / arch / build log"]
+  C --> D["运行证据: Qwen GGUF baseline"]
+  D --> E["设备证据: tegrastats / nvpmodel / temperature / power"]
+  E --> F["对比: Ubuntu Server vs Jetson"]
+  F --> G["部署报告: 继续量化 / 降 ctx / 换模型 / 改散热"]
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| Jetson documentation | Jetson 软件栈、设备概念和系统检查入口 | Step 2-4 的 L4T、内存、功耗模式记录 |
+| JetPack SDK | CUDA、TensorRT、Jetson Linux 的版本关系 | 用于解释为什么要记录 JetPack/Jetson Linux |
+| Jetson AI Lab | 边缘 AI demo 和设备约束示例 | 作为案例参考，不替代 Qwen/llama.cpp 主线 |
+| TensorRT / TensorRT Edge-LLM | NVIDIA edge runtime 和加速路线 | 说明 Jetson 上还有 TensorRT 路线，但本实验先跑 GGUF baseline |
+| Qwen / llama.cpp | Qwen GGUF、本地推理、server 和 benchmark | Step 6-8 的构建、baseline 和短 benchmark |
+| 课程实跑记录 | 登录、构建、baseline、local service 的真实日志 | 用失败和成功样例提醒学生保留证据 |
+
+所以，本章验收的是迁移判断能力：同一模型到了 Jetson 后，是内存、功耗、温度、构建参数还是模型尺寸限制了下一步。
+
 ## Step 0：确认能登录 Jetson
 
 先确认 SSH 账号、密钥或密码可用，再进入环境检查。
@@ -496,5 +521,8 @@ Qwen2.5 0.5B Q4_K_M 在一台 Orin NX Super 类设备上的实测参考：
 
 - [Jetson AI Lab](https://www.jetson-ai-lab.com/)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [NVIDIA JetPack SDK](https://developer.nvidia.com/embedded/jetpack)
 - [NVIDIA Jetson Linux Developer Guide](https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/)
+- [TensorRT documentation](https://docs.nvidia.com/deeplearning/tensorrt/latest/)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [llama.cpp build documentation](https://www.mintlify.com/ggml-org/llama.cpp/development/build)

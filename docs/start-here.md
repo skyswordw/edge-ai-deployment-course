@@ -34,6 +34,31 @@ Qwen 小模型 -> GGUF -> llama.cpp -> Q8/Q5/Q4 -> profiling -> local API -> 部
 | 确认最终验收标准 | [最终项目与验收标准](/docs/final-project) |
 | 教师或助教批改 | [教师使用指南](/docs/instructor-guide) |
 
+## 公开资料怎么转成本页路径
+
+外部课程和官方文档很多，本页只把它们转成第一次学习的顺序：先跑通 Qwen GGUF 和 llama.cpp，再做 Q8/Q5/Q4、profiling、local API，最后写报告。资料地图和类似课程页放在后面，是为了避免新学员一开始被 vLLM、TensorRT-LLM、Jetson、移动端和 VLM/Agent 分支打散。
+
+```mermaid
+flowchart LR
+  A["公开资料: courses / docs / benchmark"] --> B["收束主线: Qwen + GGUF + llama.cpp"]
+  B --> C["最小可跑: baseline log"]
+  C --> D["可比较: Q8 / Q5 / Q4 + profiling"]
+  D --> E["可集成: local API smoke test"]
+  E --> F["可评审: deployment report"]
+  A --> G["扩展阅读: Jetson / vLLM / mobile / VLM-Agent"]
+  G --> F
+```
+
+| 外部资料中的经典内容 | 本页吸收什么 | 学习路径里的落点 |
+| --- | --- | --- |
+| Hugging Face LLM Course / ML Systems Book | 先建立 token、推理指标和系统约束 | “第一次学习该做什么” |
+| Qwen llama.cpp / llama.cpp 文档 | Qwen GGUF、本地 runtime、CLI/bench/server | 2 小时路径和 40 学时主线 |
+| DeepLearning.AI 量化与 serving 课程 | 量化后继续 benchmark、serving 和 API 化 | 40 学时基础路径 |
+| Jetson / Edge AI 资料 | 端侧功耗、温度、共享内存和迁移风险 | 60 学时完整路径 |
+| MLPerf / Nsight / llama-bench | 结果要能追溯到条件和日志 | 学生实跑覆盖索引和最终报告模板 |
+
+所以，首次学习的原则是：先拿到一条能跑、能比较、能写报告的证据链，再回头读资料地图做扩展。
+
 ## 适合谁
 
 | 学员类型 | 建议路径 | 重点 |
@@ -159,3 +184,18 @@ mkdir -p ~/edge-ai-lab/{env,models,repos,scripts,logs,results,report}
 - 哪些结果来自真实日志。
 - 哪些方案不推荐，以及原因。
 - 下一轮优化应该做什么。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 LLM 入门、runtime、量化、serving 和 benchmark 资料中抽出学习顺序。
+- **图解**：把外部资料重画为“公开资料 -> 主线 -> baseline -> 量化/profiling -> local API -> 报告”的入口路径。
+- **实验**：入口页只指向已有实验章节，不新增命令。
+- **取舍**：首次学习先跳过扩展资料，避免把课程展开成厂商文档索引。
+
+- [类似教材与教程参考](/docs/similar-courses)
+- [参考资料地图](/docs/reference-map)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

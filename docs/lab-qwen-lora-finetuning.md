@@ -76,6 +76,34 @@ Jetson 更适合做部署验证，而不是作为本课程第一训练设备。
 
 - [Qwen LoRA smoke run](https://github.com/neardws/edge-ai-deployment-course-runs/tree/main/runs/2026-06-29-qwen-lora-smoke)
 
+## 公开资料怎么转成本章内容
+
+Hugging Face、TRL/PEFT、Qwen/LLaMA-Factory 和中文后训练资料通常会给出完整训练命令、数据格式和配置字段。本实验只吸收它们能服务教学闭环的部分：数据可检查、训练可复现、adapter 可定位、输出可对比，最后能判断是否进入 GGUF 量化和端侧部署。
+
+```mermaid
+flowchart LR
+  A["公开资料: SFT / LoRA 教程"] --> B["数据检查: messages / role / template"]
+  B --> C["环境检查: Python / Torch / CUDA"]
+  C --> D["5-step LoRA smoke test"]
+  D --> E["证据: log / adapter / 失败原因"]
+  E --> F["base vs adapter 固定 prompt 对比"]
+  F --> G{"是否继续部署?"}
+  G -- "停止" --> H["修数据 / prompt / 配置"]
+  G -- "继续" --> I["合并或挂载 adapter"]
+  I --> J["GGUF / Q8-Q5-Q4 / profiling / report"]
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| Transformers chat templates | `messages`、role、generation prompt 一致性 | Step 4-5 的数据和模板检查 |
+| TRL SFTTrainer | SFT 训练入口、日志和训练参数 | Step 6-7 的短步数 smoke test 和日志表 |
+| PEFT | LoRA adapter、target modules、保存与加载 | adapter 路径、base vs adapter 输出对比 |
+| Qwen / LLaMA-Factory | Qwen 微调配置、模型选择和训练流程 | 使用 Qwen 小模型，不把实验扩成多框架训练 |
+| 中文后训练与部署资料 | LoRA、KV Cache、服务化和部署参数边界 | 判断合并/挂载 adapter 后是否进入量化和本地 API |
+| 课程实跑记录 | 真实错误、日志和可复查路径 | 明确失败也算结果，不删除失败日志 |
+
+本实验的核心不是“训练出更强模型”，而是把微调路线纳入同一份部署证据链。
+
 ## 目录结构
 
 建议训练相关文件放在课程仓库外部：
@@ -499,8 +527,12 @@ TypeError: SFTTrainer.__init__() got an unexpected keyword argument 'dataset_tex
 - **取舍**：不新增长训练任务；微调是否继续由质量证据决定。
 
 - [模型微调与 LoRA/QLoRA](/docs/finetuning-lora)
+- [Hugging Face LLM Course](https://huggingface.co/learn/llm-course/chapter1/1)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
 - [Hugging Face Transformers Chat templates](https://huggingface.co/docs/transformers/chat_templating)
 - [Hugging Face PEFT documentation](https://huggingface.co/docs/peft/index)
 - [TRL SFTTrainer documentation](https://huggingface.co/docs/trl/sft_trainer)
 - [Qwen LLaMA-Factory fine-tuning guide](https://qwen.readthedocs.io/en/v3.0/training/llama_factory.html)
 - [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)
+- [LLM 后训练实践：模型压缩、部署优化与能力扩展](https://posttrain.gaozhijun.me/docs/lecture-5/)
+- [大模型微调与部署指南](https://wuduoyi.com/llm-finetune/deploy.html)

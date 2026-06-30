@@ -101,6 +101,34 @@ flowchart LR
   F --> G[部署决策]
 ```
 
+## 公开资料怎么转成本章内容
+
+llama.cpp、Qwen、ONNX Runtime、TensorRT、TensorRT-LLM、ExecuTorch、TFLite、Core ML、MLC LLM 和 vLLM 的文档都能讲 runtime，但本章不把它们展开成 API 手册。课程把这些资料分成三层：主线必须跑通，横向路线用于选型，进阶 serving 用于解释为什么本地 API 和高并发服务不是一回事。
+
+```mermaid
+flowchart LR
+  A["公开资料: Runtime 与端侧部署"] --> B["主线: Qwen GGUF + llama.cpp"]
+  A --> C["横向: ONNX / TensorRT / TFLite / ExecuTorch / MLC"]
+  A --> D["服务化: llama.cpp server / vLLM / TensorRT-LLM"]
+  B --> E["CLI baseline -> profiling -> local API"]
+  C --> F["选型矩阵: 格式 / backend / device / fallback"]
+  D --> G["服务指标: latency / throughput / parallel / ctx budget"]
+  E --> H["部署报告"]
+  F --> H
+  G --> H
+```
+
+| 外部资料中的经典内容 | 本章吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| llama.cpp 与 Qwen 文档 | GGUF、CUDA 构建、CLI、server、Q8/Q5/Q4 路线 | 本课程 runtime 主线和本地 API 入口 |
+| ONNX Runtime | provider、跨平台执行、CPU/GPU fallback | 用 provider 检查解释“可运行但不加速” |
+| TensorRT / TensorRT-LLM | engine、kernel、precision、NVIDIA GPU 路线 | 说明图优化和低比特 kernel 需要目标后端承接 |
+| TFLite / ExecuTorch / Core ML | 移动端和嵌入式部署路径 | 作为移动端路线图，不新增完整手机实验 |
+| MLC LLM | 跨平台 LLM 编译和多后端部署 | 用于解释移动端和 Web/本地 LLM 的扩展方向 |
+| vLLM / OpenAI-compatible API | serving、KV Cache、parallel、throughput、接口形态 | 对照 llama.cpp server，帮助理解本地服务化边界 |
+
+所以，本章的核心问题不是“哪个 runtime 最快”，而是“哪个 runtime 能在目标设备上以可复查日志跑通本课程的 Qwen 部署链路”。
+
 ## 核心概念
 
 ### 部署链路中的关键对象
@@ -454,5 +482,9 @@ trtexec --onnx=model-fp32.onnx --saveEngine=model.engine --fp16 \
 - [ONNX Runtime documentation](https://onnxruntime.ai/docs/)
 - [TensorRT documentation](https://docs.nvidia.com/deeplearning/tensorrt/latest/)
 - [TensorRT-LLM documentation](https://nvidia.github.io/TensorRT-LLM/)
+- [vLLM documentation](https://docs.vllm.ai/)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference)
 - [ExecuTorch documentation](https://pytorch.org/executorch/stable/)
+- [TensorFlow Lite](https://www.tensorflow.org/lite)
+- [Core ML Tools optimization](https://apple.github.io/coremltools/docs-guides/source/opt-overview.html)
 - [MLC LLM documentation](https://llm.mlc.ai/docs/)

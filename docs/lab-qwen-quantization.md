@@ -101,6 +101,33 @@ flowchart LR
   E --> F
 ```
 
+## 公开资料怎么转成本章内容
+
+Qwen 量化指南、llama.cpp quantize/llama-bench 文档和量化课程会给出很多格式、命令和指标。本实验只吸收其中最少但可验证的一部分：同一模型基座、同一 runtime、同一 prompt 与上下文条件下，比较 Q8/Q5/Q4 的文件大小、资源占用、速度和输出质量。
+
+```mermaid
+flowchart LR
+  A["公开资料: quantization / GGUF / llama.cpp"] --> B["格式证据: Q8 / Q5 / Q4 文件名与来源"]
+  B --> C["控制变量: same prompt / ctx-size / ngl / seed"]
+  C --> D["运行记录: completion log / llama-bench / device monitor"]
+  D --> E["结果表: size / memory / tokens/s / quality"]
+  E --> F{"部署判断"}
+  F --> G["保守路线: Q8/Q5"]
+  F --> H["资源优先: Q4"]
+  F --> I["待验证: Jetson 或更长 ctx"]
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| DeepLearning.AI 量化课程 | bit-width、量化粒度和误差-效率取舍的直觉 | 解释为什么 Q4 更小但不一定无条件更好 |
+| Qwen llama.cpp 量化指南 | Qwen GGUF 量化路线和文件命名习惯 | Step 1 的模型清单和 Step 3 的 Q8/Q5/Q4 文件选择 |
+| llama.cpp quantize 文档 | GGUF 量化格式和工具边界 | 作为“本实验不要求从原始权重量化”的扩展阅读 |
+| llama.cpp llama-bench 文档 | 把 prompt processing 和 text generation 拆开记录 | 失败排查和后续 profiling 章节的补充测试 |
+| MLPerf / Benchmark 资料 | 指标、条件、结果要一起报告 | 结果记录表必须包含硬件、参数、日志和质量备注 |
+| 课程 baseline 章节 | baseline 是量化对比的参照物 | 所有量化版本都和同一 baseline 条件比，不引用外部排行榜数字 |
+
+因此，本章不是“找一个别人说最快的量化格式”，而是训练学生把量化选择写成有证据的部署判断。
+
 ## 前置条件
 
 已经完成：
@@ -421,5 +448,10 @@ python3 labs/scripts/parse_llama_log.py ~/edge-ai-lab/logs/qwen2.5-0.5b-instruct
 - **取舍**：不把外部模型榜单写入结论；课程结论只来自自己的运行记录。
 
 - [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
+- [Qwen2.5-0.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF)
 - [llama.cpp quantize documentation](https://www.mintlify.com/ggml-org/llama.cpp/tools/quantize)
 - [llama.cpp quantize README](https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
+- [DeepLearning.AI Quantization in Depth](https://www.deeplearning.ai/courses/quantization-in-depth/)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

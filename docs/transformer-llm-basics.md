@@ -97,6 +97,31 @@ flowchart TD
 
 这也是为什么课程后续要求分开记录模型文件大小, 运行峰值显存, 上下文长度和并发条件。
 
+## 公开资料怎么转成本章内容
+
+Attention 论文、Hugging Face chat template/KV Cache 文档、Qwen llama.cpp 教程和 vLLM PagedAttention 论文都在解释 LLM 的不同层面。本章不复制它们的结构图或表格, 而是把这些资料收束成一个部署契约: 输入格式要一致, token 数要可记录, prefill/decode 要分开看, KV Cache 要单独估算, 日志要能回到最终报告。
+
+```mermaid
+flowchart LR
+  A["messages: system / user / assistant"] --> B["chat template"]
+  B --> C["token ids + special tokens"]
+  C --> D["prefill: prompt processing"]
+  D --> E["KV Cache"]
+  E --> F["decode: one token at a time"]
+  F --> G["sampling + stop condition"]
+  G --> H["Qwen / llama.cpp 日志与质量备注"]
+```
+
+| 外部资料中的经典图表思路 | 本章重画/改写成 | Qwen 主线中的落点 |
+| --- | --- | --- |
+| Attention 论文中的 Q/K/V 和 scaled dot-product attention | “prompt 长度、context、attention 成本”的部署解释 | 解释长 prompt 的 TTFT 和 KV Cache 读取 |
+| Hugging Face chat template 文档中的 messages/role/template 关系 | “输入契约”图：同一模型在训练、CLI、API、微调中必须使用同一 template | Qwen baseline、LoRA 数据、local API 请求 |
+| Hugging Face KV Cache 文档中的生成缓存概念 | “prefill 生成 cache, decode 复用 cache”的流程图 | ctx-size 实验、长上下文显存估算 |
+| Qwen llama.cpp 教程中的本地运行链路 | “Qwen -> GGUF -> llama.cpp -> 日志字段”的实作路径 | Q8/Q5/Q4 对比、prompt eval/eval 标注 |
+| vLLM PagedAttention 论文中的 KV 管理问题 | “单机本地实验也要关注 KV Cache 作为资源”的工程判断 | 服务化、并发、端云协同扩展 |
+
+因此, 这一章的重点不是背 Transformer 术语, 而是让每个术语能落到一个可检查字段: token 数, template 输出, ctx-size, prompt eval, eval, 峰值内存, 停止条件或质量备注。
+
 ## 核心概念
 
 ### Token 与 Tokenizer

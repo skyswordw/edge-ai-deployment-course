@@ -8,6 +8,29 @@ title: 学生实跑覆盖索引
 
 公开运行记录仓库：[edge-ai-deployment-course-runs](https://github.com/neardws/edge-ai-deployment-course-runs)
 
+## 公开资料怎么转成本页内容
+
+MLPerf、llama-bench、Nsight Systems 和最终报告模板强调同一件事：结论必须能回到指标、条件和日志。本页把这个证据口径落到课程自己的公开运行记录上，帮助学生判断哪些内容已经有实跑证据，哪些只能写成“未记录”“未测扩展”或“下一轮验证”。
+
+```mermaid
+flowchart LR
+  A["公开资料: benchmark / profiling / report method"] --> B["证据口径: 指标 + 条件 + 日志"]
+  B --> C["公开运行记录: sanitized commands + summaries"]
+  C --> D["课程主线: baseline / quant / profiling / API"]
+  D --> E["报告章节: 1-9"]
+  E --> F["结论边界: supported / untested / next step"]
+```
+
+| 外部资料中的经典内容 | 本页吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| MLPerf Inference | 指标和运行条件要一起出现 | 不把运行摘要当成孤立数字 |
+| llama.cpp llama-bench | 标准化 benchmark 要和业务 prompt 分开解释 | Part V 推理加速覆盖说明 |
+| Nsight Systems | profiling 结论要能回到资源证据 | Part V profiling 和第 7 节风险 |
+| 最终报告模板 | 每个结论都要指向日志或附录 | “使用方式”的证据链 |
+| 公开运行记录仓库 | 脱敏命令、环境摘要和失败边界 | 主线覆盖表 |
+
+本页不是评分标准，也不替代学生自己的日志。它只说明：课程材料中的哪些判断已经有公开样例支撑。
+
 ## 主线覆盖
 
 | 课程位置 | 已实跑证据 | 对应报告位置 | 结论 |
@@ -41,3 +64,18 @@ title: 学生实跑覆盖索引
 ```
 
 如果某项没有实测，报告写“未记录”或“未做扩展”，不要用别人的数字补空格。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 benchmark、profiling 和报告模板吸收“指标、条件、日志、结论边界”这条证据口径。
+- **图解**：把外部评估方法重画为“公开资料 -> 运行记录 -> 报告章节 -> 结论边界”的覆盖图。
+- **实验**：本页只映射课程公开运行记录，不新增实验要求。
+- **取舍**：不把公开样例数字写成学生自己的结果，也不把未测扩展伪装成已验证。
+
+- [公开运行记录仓库](https://github.com/neardws/edge-ai-deployment-course-runs)
+- [最终报告模板](/docs/report-template)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)

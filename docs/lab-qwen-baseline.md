@@ -96,6 +96,32 @@ flowchart TD
   A --> F[本地 API 服务]
 ```
 
+## 公开资料怎么转成本章内容
+
+Qwen llama.cpp 教程、llama.cpp 构建和工具文档、Hugging Face 模型仓库规范，以及课程自己的服务器实跑记录，都可以补强本实验。但本章不把官方教程改写成命令大全，也不引用外部 benchmark 数字作为课程结论；它只吸收一条可回放的 baseline 证据链：模型从哪里来、runtime 怎么构建、参数如何固定、日志怎样进入后续 Q8/Q5/Q4 对比。
+
+```mermaid
+flowchart LR
+  A["公开资料: Qwen / llama.cpp / GGUF"] --> B["模型证据: 来源 / 许可证 / SHA256 / 量化格式"]
+  B --> C["Runtime 证据: llama.cpp commit / CUDA build / executable check"]
+  C --> D["Baseline 证据: fixed prompt / ctx-size / ngl / seed"]
+  D --> E["性能证据: prompt eval / eval / tokens/s / VRAM"]
+  E --> F["质量证据: 是否答题 / 格式 / 重复 / 错误"]
+  F --> G["后续对比: Q8-Q5-Q4 / offload / ctx / local API"]
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| Qwen llama.cpp 本地运行教程 | Qwen GGUF 到 llama.cpp 的最短可运行路径 | Step 3 的模型准备和 Step 5 的 baseline 推理 |
+| llama.cpp build documentation | CUDA 构建、目标可执行文件和 commit 记录 | Step 1-2 的构建日志与验收表 |
+| llama.cpp CLI / completion 文档 | prompt、ctx、GPU offload、性能日志等参数口径 | Step 4-7 的固定参数和日志解释 |
+| llama.cpp llama-bench 文档 | 可重复的 prompt processing / text generation benchmark | Step 7 的补充标准化测试 |
+| llama.cpp server 文档 | 从 CLI baseline 过渡到本地 HTTP API 的接口形态 | 本章只埋下服务化入口，后续 local API 章节展开 |
+| Hugging Face 模型仓库和 model card | 模型来源、许可证、文件名和 hash 记录习惯 | “模型文件记录表”和部署报告证据 |
+| 课程服务器实跑记录 | 脱敏命令、环境摘要、结果摘要的写法 | 作为学生保存日志和解释失败原因的样例 |
+
+本实验的底线是：baseline 必须能回放，后续量化、加速、服务化只能和这份 baseline 比。
+
 ## 前置条件
 
 已经完成：
@@ -469,5 +495,9 @@ baseline 质量不是绝对评分，而是后续量化对比的参照。
 - **取舍**：不追逐更多模型族；baseline 只为后续量化、profiling 和服务化提供基准。
 
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [Qwen llama.cpp 量化指南](https://qwen.readthedocs.io/en/v2.5/quantization/llama.cpp.html)
+- [Qwen2.5-0.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF)
 - [llama.cpp build documentation](https://www.mintlify.com/ggml-org/llama.cpp/development/build)
 - [llama.cpp llama-cli documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/llama-cli)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)

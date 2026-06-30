@@ -101,6 +101,33 @@ flowchart TD
   G -- 是 --> I[进入应用或 Agent 集成]
 ```
 
+## 公开资料怎么转成本章内容
+
+llama.cpp server、OpenAI API reference、vLLM serving 课程和 Qwen 本地运行文档都能解释服务化接口。本章只吸收最小可验收路径：把已经通过 CLI baseline 的 Qwen GGUF 暴露成本地 OpenAI-compatible API，并证明请求、响应、日志、端口、安全边界和资源占用都能被记录。
+
+```mermaid
+flowchart LR
+  A["公开资料: llama.cpp server / OpenAI API / serving docs"] --> B["接口契约: /v1/chat/completions"]
+  B --> C["本地服务: host / port / model / ctx / ngl"]
+  C --> D["客户端证据: curl or Python request"]
+  D --> E["响应证据: HTTP status / JSON / elapsed"]
+  C --> F["运行证据: server log / GPU-RAM monitor"]
+  E --> G["服务化判断"]
+  F --> G
+  G --> H["最终报告: API usable / risk / next guardrails"]
+```
+
+| 外部资料中的经典内容 | 本实验吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| llama.cpp server 文档 | 本地 server 参数、OpenAI-compatible endpoint 和日志入口 | Step 1-2 的启动命令、健康检查和 chat completions smoke test |
+| OpenAI API reference | chat completions 的请求/响应形态 | Step 2-3 的 JSON 请求和客户端验证，不调用云端 API |
+| Qwen llama.cpp 本地运行指南 | Qwen GGUF、llama.cpp 和本地部署主线 | 约束模型来源，保证 API 测试接在 baseline/量化之后 |
+| vLLM / serving 课程 | serving 开销、KV Cache、吞吐和接口稳定性问题 | Step 4 的 CLI vs API 记录，作为扩展阅读 |
+| VLM / Agent 资料 | 应用或 Agent 需要稳定工具接口 | 本章只验证接口可被调用，不实现完整 Agent |
+| 课程实跑记录 | Jetson local service 的日志和失败边界 | 验收表要求保存 server 日志、请求响应和资源证据 |
+
+因此，本章不追求完整后端工程；它只回答一个部署问题：这个本地模型是否已经有足够证据进入应用接口。
+
 ## 核心概念
 
 | 项目 | 第一阶段要求 | 后续扩展 |
@@ -479,3 +506,6 @@ API smoke test 的结果是 ______，主要新增开销或风险是 ______。
 
 - [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference)
+- [vLLM documentation](https://docs.vllm.ai/)
+- [DeepLearning.AI Efficiently Serving LLMs](https://www.deeplearning.ai/courses/efficiently-serving-llms/)

@@ -89,6 +89,29 @@ flowchart TD
   D --> D1["长上下文和并发内存"]
 ```
 
+## 公开资料怎么转成本章内容
+
+PyTorch、ONNX Runtime、TFLite 和 DeepLearning.AI 量化课程通常从 PTQ/QAT 流程、校准、线性量化和粒度开始讲；GPTQ、AWQ、SmoothQuant、LLM.int8() 论文则从 LLM 的 outlier、敏感权重和层输出误差解释低比特难点。本章不复制它们的公式推导图或实验表, 而是把这些资料收束成一条课程数学入口: 先会算 scale 和误差, 再理解粒度和 outlier, 最后落到 Qwen GGUF 的 Q8/Q5/Q4 对比。
+
+```mermaid
+flowchart LR
+  A["量化范围: min/max 或 max abs"] --> B["量化参数: scale + zero-point"]
+  B --> C["离散化: round + clamp"]
+  C --> D["误差来源: rounding / clipping / outlier"]
+  D --> E["方法选择: PTQ / QAT / GPTQ / AWQ / SmoothQuant"]
+  E --> F["课程实验: Qwen GGUF Q8/Q5/Q4 + 质量备注"]
+```
+
+| 外部资料中的经典图表思路 | 本章重画/改写成 | Qwen 主线中的落点 |
+| --- | --- | --- |
+| DeepLearning.AI 量化课程中的线性量化、对称/非对称、per-tensor/per-channel/per-group 对比 | `scale`、`zero-point`、粒度和误差上界的最小数学表 | 先能手算 INT8/INT4, 再看 GGUF 格式 |
+| PyTorch/ONNX/TFLite 的 PTQ/QAT 流程图 | “统计范围 -> 计算参数 -> round/clamp -> 反量化/低比特 kernel”的课程流程图 | 解释校准数据、QAT 成本和部署格式 |
+| GPTQ/AWQ/SmoothQuant/LLM.int8() 论文中的 outlier 和误差修复图 | “量化误差来源 -> 处理策略”的方法映射表 | 判断 Q4 质量下降时该回退格式还是进入修复流程 |
+| llama.cpp quantize 文档中的 Q4/Q5/Q8 和 K-quants 格式 | “名义 bit-width 不等于实际文件大小”的 bpw 估算 | Qwen Q8/Q5/Q4 文件大小、内存和速度对比 |
+| 端侧 runtime 文档中的低比特 kernel 说明 | “变小不等于变快”的工程判断 | 最终报告同时记录文件、内存、tokens/s 和质量 |
+
+这张表避免两个常见误解: 第一, 量化数学不是论文证明课, 它要能解释实验现象；第二, Qwen 的 GGUF 量化格式不是抽象 INT4 标签, 它必须和 runtime、设备和质量备注一起记录。
+
 ## 核心概念
 
 ### 浮点与整数表示
@@ -416,6 +439,8 @@ LLM 权重矩阵很大, 不同区域分布差异明显。per-tensor 太粗, per-
 - **实验**：用 NumPy toy example 和 Qwen Q8/Q5/Q4 表格连接数学直觉与真实部署记录。
 - **取舍**：不把每个框架 API 逐条展开，优先解释为什么低比特可能变小、变慢或变差。
 
+- [DeepLearning.AI Quantization Fundamentals](https://www.deeplearning.ai/courses/quantization-fundamentals/)
+- [DeepLearning.AI Quantization in Depth](https://www.deeplearning.ai/courses/quantization-in-depth/)
 - [PyTorch Quantization documentation](https://pytorch.org/docs/stable/quantization.html)
 - [ONNX Runtime Quantization](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 - [TensorFlow Lite post-training quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)

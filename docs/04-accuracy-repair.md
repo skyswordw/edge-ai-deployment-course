@@ -102,6 +102,35 @@ flowchart LR
   E --> F
 ```
 
+## 公开资料怎么转成本章内容
+
+AWQ、GPTQ、SmoothQuant 和 LLM.int8() 论文常用 outlier、敏感层和校准输入解释低比特退化；lm-evaluation-harness、Hugging Face Evaluate、OpenAI Evals 和 MLPerf 更强调评估条件、指标和结果可复现。本章不复制外部 benchmark 表，而是把这些资料改写成 Qwen GGUF 量化后的质量排查闭环。
+
+```mermaid
+flowchart LR
+  A["公开资料: 量化误差与评估方法"] --> B["固定 baseline: F16 / Q8"]
+  B --> C["固定输入: prompt / template / ctx / sampling"]
+  C --> D["对比变体: Q8 / Q5 / Q4 / protect"]
+  D --> E["记录证据: PPL / 规则检查 / 失败样例 / logs"]
+  E --> F{"失败来自哪里?"}
+  F -- "数据或校准" --> G["重构校准集 / imatrix"]
+  F -- "敏感层或 outlier" --> H["mixed precision / 回退量化档"]
+  F -- "runtime 或设备" --> I["检查日志 / offload / Jetson 状态"]
+  G --> J["重新 profiling 并写入报告"]
+  H --> J
+  I --> J
+```
+
+| 外部资料中的经典内容 | 本章吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| GPTQ / AWQ / SmoothQuant / LLM.int8() | 校准输入、敏感权重、activation outlier、低比特风险 | 用于解释 Q4 失败时先定位误差来源 |
+| Qwen 与 llama.cpp 文档 | GGUF 量化、imatrix、局部张量精度控制、perplexity 工具 | 用于构造 Q8/Q5/Q4 和 protect 变体对比 |
+| lm-evaluation-harness | 固定任务、固定模型后端、选择题 logits 对比 | 用于说明自由生成之外还要有任务级评估 |
+| Hugging Face Evaluate / OpenAI Evals | 指标、样例、评分规则和评估记录 | 用于设计课堂质量检查集和失败类型枚举 |
+| MLPerf Inference | 明确硬件、负载、指标和可复现报告 | 用于最终部署报告的证据格式，不引用外部成绩 |
+
+所以，本章的修复动作必须同时回答三件事：质量是否恢复，资源成本是否可接受，证据是否能回放。
+
 ## 先确认 baseline
 
 没有可靠 baseline，就无法判断量化是否造成了质量下降。
@@ -608,4 +637,5 @@ tegrastats --interval 1000 --logfile logs/jetson-qwen-quality.log
 - [Hugging Face Evaluate](https://huggingface.co/docs/evaluate/index)
 - [OpenAI Evals](https://github.com/openai/evals)
 - [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
 - [llama.cpp perplexity 工具](https://github.com/ggml-org/llama.cpp/tree/master/tools/perplexity)

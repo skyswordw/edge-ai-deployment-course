@@ -16,6 +16,33 @@ title: 环境与版本矩阵
 | Mac | 补充本地体验 | llama.cpp 或 MLC 路线阅读 | 移动端路线调研 |
 | Android / iOS | 扩展路线 | 阅读 MLC LLM、LiteRT、ExecuTorch | 选做 demo |
 
+## 公开资料怎么转成本页矩阵
+
+外部资料里的环境说明通常分散在系统文档、runtime README、Jetson 教程和 benchmark 规范里。本页只吸收它们的记录方法：先能复现环境，再做 Qwen GGUF 和 Q8/Q5/Q4 对比，最后把 profiling、local API 和报告字段串起来。
+
+```mermaid
+flowchart LR
+  A["Ubuntu / CUDA / Jetson / runtime docs"] --> B["环境路径选择"]
+  B --> C["Ubuntu: 快速 baseline"]
+  B --> D["Jetson: 功耗、温度、统一内存"]
+  B --> E["CPU / Mac / mobile: 可选路线"]
+  C --> F["Qwen GGUF: Q8 / Q5 / Q4"]
+  D --> F
+  E --> G["报告中标注未验证或选做"]
+  F --> H["profiling + local API + 部署报告"]
+  G --> H
+```
+
+| 资料类型 | 本页吸收什么 | 转成哪个字段或规则 |
+| --- | --- | --- |
+| Ubuntu / NVIDIA 驱动文档 | OS、driver、CUDA 和工具链版本要可追溯 | OS、Driver、CUDA、Python、CMake |
+| Qwen / llama.cpp 文档 | 模型、GGUF 文件和 runtime commit 影响实验可复现性 | Qwen 模型、llama.cpp commit、模型 SHA256 |
+| Jetson / JetPack 文档 | Jetson 要记录 L4T、功耗模式、统一内存和散热状态 | JetPack / L4T、`nvpmodel`、`jetson_clocks`、`tegrastats` |
+| MLPerf / Nsight / llama-bench | benchmark 结果必须写清硬件、输入和运行条件 | 报告第 2 节环境字段、profiling 附录 |
+| MLC / LiteRT / ExecuTorch / Core ML | 移动端是扩展路线，不进入 40 学时必做 | Android / iOS 标为阅读或选做 |
+
+这页不替学习者判断“哪台机器最快”。它只要求把环境差异记录清楚，避免把 Ubuntu Server 上的结论直接套到 Jetson、CPU 或移动端。
+
 ## 已测试环境记录模板
 
 课程不预置性能数字。教师或学员应把自己的环境填到下面这张表。
@@ -97,3 +124,23 @@ Jetson：
 - 每次换模型、runtime 或驱动后，都要更新报告里的环境字段。
 - 服务器结果不能直接代表 Jetson 结果。
 - Jetson engine、TensorRT engine 等硬件相关产物通常需要在目标设备或匹配环境中生成。
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 Ubuntu/CUDA、Jetson、Qwen、llama.cpp 和 benchmark 资料中提取环境可复现字段。
+- **图解**：重画为“环境路径 -> Qwen GGUF 实验 -> profiling/API/report”的 Mermaid 图。
+- **实验**：把外部环境要求落到 `nvidia-smi`、JetPack/L4T、llama.cpp commit、模型 hash 和报告字段。
+- **取舍**：不复制外部硬件表，不引用外部 benchmark 数字作为本课程结论。
+
+- [类似教材与教程参考](/docs/similar-courses)
+- [参考资料地图](/docs/reference-map)
+- [课程来源对照与取舍](/docs/source-comparison)
+- [Ubuntu Server NVIDIA driver guide](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp)
+- [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
+- [NVIDIA JetPack SDK](https://developer.nvidia.com/embedded/jetpack)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)

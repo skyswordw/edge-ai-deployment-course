@@ -6,6 +6,32 @@ title: 样例日志与结果表
 
 本页只展示“怎么读日志”和“怎么填表”。这些片段不代表标准性能。
 
+## 公开资料怎么转成本页样例
+
+MLPerf、Nsight、llama-bench 和服务化文档都强调同一件事：数字必须和条件、日志、输入、版本一起出现。本页只吸收这种证据习惯，把它改写成课堂可填写的日志样例；不复制外部日志格式，也不引用外部 benchmark 数字。
+
+```mermaid
+flowchart LR
+  A["运行命令"] --> B["原始 stdout / stderr"]
+  A --> C["环境和模型字段"]
+  B --> D["字段提取: load / prefill / decode / error"]
+  C --> E["条件记录: device / quant / ctx / ngl / hash"]
+  D --> F["结果表: Q8 / Q5 / Q4"]
+  E --> F
+  F --> G["local API smoke test"]
+  G --> H["部署报告结论"]
+```
+
+| 外部资料中的记录习惯 | 本页改写成什么 | 报告落点 |
+| --- | --- | --- |
+| MLPerf 的“指标 + 条件 + 结果” | 每个数字都要带模型、量化、上下文、硬件和日志路径 | 第 3-5 节结果表 |
+| llama-bench 区分 prompt processing 和 token generation | 分开读 `prompt eval time` 和 `eval time` | TTFT / prefill、tokens/s |
+| Nsight 的时间线和资源证据 | 不只看单个速度数字，还要保留显存、功耗、fallback 或 OOM | 第 7 节风险 |
+| llama.cpp server / OpenAI-compatible API | API 状态、elapsed、server log 和 CLI 指标分开记录 | 第 6 节 API 服务测试 |
+| 课程实跑记录 | 失败和未测项也进入表格 | 附录和部署建议 |
+
+这页的目标不是教自动解析脚本，而是让学习者在没有复杂工具时，也能把 Qwen GGUF、Q8/Q5/Q4、profiling 和 local API 证据写清楚。
+
 ## llama.cpp timings 样例
 
 ```text
@@ -89,3 +115,21 @@ client: curl 或 Python 版本
 Q5 在当前设备上比 Q8 更省内存，质量退化不明显，速度提升有限。
 因此后续 profiling 以 Q5 作为主版本，Q4 作为低内存备选。
 ```
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 benchmark、profiling、llama.cpp 和 API 服务资料中吸收“指标必须可追溯”的记录口径。
+- **图解**：重画为“命令 -> 原始日志 -> 字段提取 -> 结果表 -> API -> 报告”的 Mermaid 图。
+- **实验**：把 Qwen GGUF、Q8/Q5/Q4、profiling 和 local API 的日志字段放进可填写样表。
+- **取舍**：不复制外部原始日志，不引用外部 benchmark 数字，也不新增自动解析工具。
+
+- [参考资料地图](/docs/reference-map)
+- [Profiling 与结果记录](/docs/lab-profiling)
+- [端侧部署评估报告模板](/docs/report-template)
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [llama.cpp server](https://github.com/ggml-org/llama.cpp/tree/master/examples/server)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)

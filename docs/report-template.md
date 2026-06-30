@@ -18,6 +18,30 @@ title: 最终报告模板
 | API smoke test | 第 6、7 节 | 请求记录、响应 JSON、HTTP 状态、elapsed/meta、是否超时、server 日志异常检查、模型 hash、server 参数 |
 | 推荐和不推荐方案 | 第 8 节 | 支撑结论的日志和表格 |
 
+## 公开资料怎么转成本报告
+
+MLPerf、llama-bench、Nsight Systems、Qwen/llama.cpp 文档和服务化资料都能提供报告写法，但本课程不复制外部榜单数字。报告只吸收它们的证据习惯：实验条件要写清楚，指标要能追溯，失败和未测项要进入风险登记，最后推荐必须来自自己的 Qwen GGUF、量化、profiling 和 local API 记录。
+
+```mermaid
+flowchart LR
+  A["公开资料: benchmark / runtime / serving docs"] --> B["报告口径: 指标 + 条件 + 日志路径"]
+  B --> C["课程证据: baseline / Q8-Q5-Q4 / profiling / API"]
+  C --> D["风险登记: OOM / 质量退化 / 超时 / 温度"]
+  D --> E["部署建议: 推荐方案 + 不推荐方案"]
+  E --> F["附录: 原始日志 / JSON / hash / 环境快照"]
+```
+
+| 外部资料中的经典内容 | 报告模板吸收什么 | 模板里的落点 |
+| --- | --- | --- |
+| MLPerf Inference | 指标、负载和运行条件一起报告 | 第 3-5 节每个数字都附日志路径和参数 |
+| llama.cpp llama-bench | 区分 prompt processing 和 token generation | 第 5 节 `llama-bench` 行，不替代业务 prompt 质量判断 |
+| Nsight Systems | 性能分析要回到时间线和资源证据 | 第 7 节风险登记，必要时说明下一轮深入 profiling |
+| Qwen / llama.cpp 文档 | 模型来源、GGUF、runtime commit 和 server 参数 | 第 2、3、6 节的模型、hash、commit、API 字段 |
+| OpenAI-compatible API 资料 | 请求、响应、HTTP 状态和端到端耗时要分开 | 第 6 节 API 服务测试 |
+| 课程实跑记录 | 脱敏日志、失败记录和未测说明的写法 | 附录和“缺失和失败怎么写” |
+
+底线：报告不能把“跑过一次”写成“可以部署”。推荐方案至少要同时有量化对比、runtime/API 记录和风险登记支撑。
+
 ```markdown
 # 端侧模型量化部署评估报告
 
@@ -205,3 +229,19 @@ title: 最终报告模板
 | 未做 60 学时扩展 | 写“未布置/未做”，说明 vLLM、移动端、LoRA smoke test 或双设备对照不属于本轮最低验收。 |
 | 未做移动端路线 | 40 学时写“未做完整移动端实验”，说明课程范围或设备限制；如教师要求路线图，列候选模型格式、runtime、未实测原因和下一步。 |
 | API 非 200 或非 JSON | 写“失败”，附 HTTP 状态、响应文件和 server 日志路径。 |
+
+## 参考资料
+
+本章吸收方式：
+
+- **知识点**：从 benchmark、runtime 和 serving 文档吸收报告指标、条件记录、服务化证据和风险登记口径。
+- **图解**：把外部评估方法重画为“资料口径 -> 课程证据 -> 风险登记 -> 部署建议 -> 附录”的报告链路。
+- **实验**：要求所有 Qwen GGUF、Q8/Q5/Q4、profiling 和 local API 结论都回到日志、表格或 JSON。
+- **取舍**：不引用外部榜单数字当作本课程结论，也不把报告模板扩成论文综述。
+
+- [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
+- [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
+- [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
+- [llama.cpp server documentation](https://www.mintlify.com/ggml-org/llama.cpp/inference/server)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference)

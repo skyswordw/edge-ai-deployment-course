@@ -56,6 +56,31 @@ flowchart TD
 
 这个闭环要求每一步都有证据。没有证据的“感觉更快”“好像质量还可以”不能作为课程项目结论。
 
+## 公开资料怎么转成本章内容
+
+案例复盘最容易变成“讲故事”或“展示最高数字”。MLPerf、Nsight、llama-bench、ML Systems Book、Jetson 资料和课程公开运行记录提供的不是可照抄的结论，而是复盘方法：每个案例都要写清目标、条件、指标、日志、失败样例和下一步动作。
+
+```mermaid
+flowchart LR
+  A["公开资料: benchmark / profiling / systems cases"] --> B["复盘口径: 目标 + 条件 + 指标"]
+  B --> C["课程证据: baseline / quant / runtime / API"]
+  C --> D["失败样例: OOM / 质量退化 / 降频 / 超时"]
+  D --> E["归因: 模型 / 量化 / runtime / 硬件 / 系统"]
+  E --> F["下一步: 重测 / 换格式 / 调参数 / 改架构"]
+  F --> G["最终报告和答辩"]
+```
+
+| 外部资料中的经典内容 | 本章吸收什么 | 课程里的落点 |
+| --- | --- | --- |
+| MLPerf Inference | 报告要有明确 workload、指标和条件 | 评分建议、复盘闭环和最终报告模板 |
+| llama.cpp / llama-bench | LLM 本地运行和标准 benchmark 记录 | Qwen 小型 LLM 案例与推理加速复盘 |
+| Nsight Systems | profiling 结果要回到时间线和资源瓶颈 | 失败样例归因和“不要只看最快结果” |
+| Jetson documentation / Jetson AI Lab | 边缘设备功耗、温度、共享内存和长期稳定性 | Jetson 迁移案例和 Ubuntu vs Jetson 对比 |
+| ML Systems Book | 系统可靠性、部署生命周期和复盘视角 | 端云协同、风险清单、上线边界 |
+| 课程公开运行记录 | 脱敏日志、失败记录和未测说明 | 作业中的失败复盘和最终报告附录 |
+
+因此，本章把外部资料转成一套答辩规则：结论要能复现，失败要能归因，下一步要能执行。
+
 ## 案例一：传统视觉模型
 
 传统视觉模型是端侧部署最成熟的路径之一。它适合讲清楚量化、runtime 和硬件加速之间的关系。
@@ -297,9 +322,11 @@ VLM 和 Hybrid Agent 用于把课程从单模型部署扩展到系统架构。
 - **取舍**：不奖励最高单项数字，优先评估可复现、可解释、可改进的工程报告。
 
 - [llama.cpp 项目](https://github.com/ggml-org/llama.cpp)
+- [llama.cpp llama-bench documentation](https://www.mintlify.com/ggml-org/llama.cpp/api/tools/llama-bench)
 - [Qwen llama.cpp 本地运行指南](https://qwen.readthedocs.io/en/v2.5/run_locally/llama.cpp.html)
 - [NVIDIA Container Toolkit Install Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [NVIDIA Jetson documentation](https://docs.nvidia.com/jetson/)
 - [NVIDIA Nsight Systems](https://developer.nvidia.com/nsight-systems)
 - [MLPerf Inference](https://mlcommons.org/benchmarks/inference/)
 - [The Machine Learning Systems Book](https://www.mlsysbook.ai/)
+- [公开运行记录仓库](https://github.com/neardws/edge-ai-deployment-course-runs)
