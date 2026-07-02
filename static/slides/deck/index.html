@@ -102,7 +102,7 @@
       .lab-slide .split { grid-template-columns: minmax(0, 1.1fr) 390px; }
       .lab-slide ul { margin-top: 10px; }
       .lab-slide li { font-size: 23px; line-height: 1.38; }
-      pre { margin: 0; padding: 22px; background: #10212a; color: #eef8f5; white-space: pre-wrap; overflow: hidden; }
+      pre { margin: 0; padding: 22px; background: #10212a; color: #eef8f5; white-space: pre-wrap; overflow: hidden; overflow-wrap: anywhere; }
       pre code { color: #eef8f5; font-size: 18px; line-height: 1.45; font-family: "SFMono-Regular", Consolas, monospace; }
       .log-panel { display: flex; flex-direction: column; justify-content: center; border-left: 8px solid var(--accent); }
       .log-panel strong { display: block; margin: 12px 0 14px; font-size: 27px; line-height: 1.22; color: var(--ink); }
@@ -119,6 +119,86 @@
         .reveal h1 { font-size: 46px; }
         .reveal h2 { font-size: 32px; }
       }
+
+      /* ================================================================
+         v2 design system — additive only, scoped to 专题一 (001-040) pilot.
+         No existing rule above is modified; 041-288 keep rendering as-is.
+         ================================================================ */
+
+      .term, .frame code:not(pre code) {
+        font-family: "SFMono-Regular", Consolas, "Menlo", monospace;
+        font-size: .89em; font-weight: 650; color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 11%, white);
+        padding: 1px 7px; border-radius: 4px;
+      }
+
+      .icon { display: inline-flex; flex: none; align-items: center; justify-content: center; }
+      .icon svg { width: 100%; height: 100%; display: block; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+      .eyebrow-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+      .eyebrow-row .icon { width: 32px; height: 32px; color: var(--accent); background: var(--soft); border-radius: 9px; padding: 6px; box-sizing: border-box; }
+      .eyebrow-row .kicker { margin: 0 !important; }
+
+      .claim-v2 { position: relative; margin: 24px 0 0; padding-left: 26px; border-left: 5px solid var(--accent); color: #1c333d !important; font-size: 30px !important; line-height: 1.4 !important; font-weight: 640; }
+
+      .cards-v2 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 8px; flex: 1; min-height: 0; }
+      .card-v2 { position: relative; border: 1px solid var(--line); background: var(--surface); padding: 24px 22px 20px; box-shadow: 0 10px 22px rgba(31,55,66,.07); }
+      .card-v2::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: var(--accent); }
+      .card-v2 .icon { width: 44px; height: 44px; color: var(--accent); background: var(--soft); border-radius: 13px; padding: 10px; box-sizing: border-box; margin-bottom: 14px; }
+      .card-v2 h3 { margin-bottom: 10px; }
+      .card-v2 li { font-size: 18px; line-height: 1.42; }
+
+      .pipeline { display: flex; align-items: stretch; gap: 0; margin-top: 10px; flex: 1; min-height: 0; }
+      .pipeline .node { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; border: 1.5px solid color-mix(in srgb, var(--accent) 30%, var(--line)); background: var(--surface); padding: 18px 16px; box-shadow: 0 8px 18px rgba(31,55,66,.06); }
+      .pipeline .node .icon { width: 30px; height: 30px; color: var(--accent); }
+      .pipeline .node strong { font-size: 17px; line-height: 1.28; color: var(--ink); }
+      .pipeline .node span.tag { font-size: 12.5px; color: var(--muted); font-family: "SFMono-Regular", Consolas, monospace; }
+      .pipeline .arrow { flex: none; width: 22px; display: flex; align-items: center; justify-content: center; color: color-mix(in srgb, var(--accent) 55%, var(--muted)); }
+      .pipeline .arrow .icon { width: 20px; height: 20px; }
+
+      .terminal { background: #0b1a20; border-radius: 10px; overflow: hidden; box-shadow: 0 16px 30px rgba(10,20,25,.3); }
+      .terminal .terminal-bar { display: flex; align-items: center; gap: 7px; padding: 10px 14px; background: #0f242c; }
+      .terminal .terminal-bar i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #3a4d54; }
+      .terminal .terminal-bar i:nth-child(1) { background: #e2635a; }
+      .terminal .terminal-bar i:nth-child(2) { background: #e0b04a; }
+      .terminal .terminal-bar i:nth-child(3) { background: #57b978; }
+      .terminal pre { background: transparent; padding: 16px 20px 18px; margin: 0; }
+      .reveal .terminal pre code { white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere; overflow: visible; max-height: none; }
+      .terminal .o { color: #7fd9c4; }
+      .terminal .c { color: #6f8890; }
+
+      .risk-panel-v2, .report-panel-v2 { border: 1px solid var(--line); background: rgba(255,255,255,.92); padding: 24px 26px; }
+      .risk-panel-v2 { border-top: 6px solid var(--red); }
+      .report-panel-v2 { border-top: 6px solid var(--accent); background: var(--soft); }
+      .risk-panel-v2 h3, .report-panel-v2 h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+      .risk-panel-v2 h3 .icon { color: var(--red); width: 24px; height: 24px; }
+      .report-panel-v2 h3 .icon { color: var(--accent); width: 24px; height: 24px; }
+      .risk-panel-v2 ul, .report-panel-v2 ul { gap: 11px; }
+      .risk-panel-v2 li, .report-panel-v2 li { font-size: 19px; line-height: 1.4; padding-left: 28px; position: relative; }
+      .risk-panel-v2 li::before, .report-panel-v2 li::before { content: ""; position: absolute; left: 0; top: 3px; width: 18px; height: 18px; border-radius: 50%; }
+      .risk-panel-v2 li::before { background: var(--red); }
+      .report-panel-v2 li::before { background: var(--accent); }
+      .risk-panel-v2 li::after, .report-panel-v2 li::after { position: absolute; left: 5px; top: 2px; color: #fff; font-size: 11px; font-weight: 800; }
+      .risk-panel-v2 li::after { content: "!"; left: 7px; }
+      .report-panel-v2 li::after { content: "\2713"; }
+
+      .matrix-v2 { width: 100%; margin-top: 10px; background: var(--surface); box-shadow: 0 10px 22px rgba(31,55,66,.07); border-collapse: collapse; }
+      .matrix-v2 th { background: var(--accent); color: #fff; padding: 13px 18px; font-size: 17px; text-align: left; }
+      .matrix-v2 td { border-top: 1px solid var(--line); padding: 12px 18px; color: #263f49; font-size: 17px; line-height: 1.34; vertical-align: top; }
+      .matrix-v2 tr:nth-child(even) td { background: rgba(255,255,255,.72); }
+      .matrix-v2 .term { font-size: .85em; }
+
+      .cover-mark { position: absolute; right: 56px; top: 46px; width: 200px; height: 200px; color: var(--accent); opacity: .13; }
+      .divider-mark { position: absolute; right: 64px; top: 54px; width: 168px; height: 168px; color: #ffffff; opacity: .22; }
+
+      .meta-strip { display: flex; gap: 22px; margin-top: 26px; }
+      .meta-strip div { display: flex; flex-direction: column; gap: 3px; }
+      .meta-strip strong { font-size: 24px; color: var(--ink); font-family: "SFMono-Regular", Consolas, monospace; }
+      .meta-strip span { font-size: 14px; color: var(--muted); }
+
+      .stack-note { display: flex; align-items: flex-start; gap: 12px; margin-top: 18px; padding: 14px 16px; background: var(--soft); border-left: 4px solid var(--accent); }
+      .stack-note .icon { width: 22px; height: 22px; color: var(--accent); margin-top: 2px; }
+      .stack-note p { margin: 0 !important; font-size: 17px !important; line-height: 1.4 !important; color: #2b444e !important; }
     </style>
   </head>
   <body>
@@ -126,11 +206,18 @@
       <div class="slides">
 <section data-screen-label="001 这是一门端侧部署工程课">
   <div class="frame cover teal">
+    <div class="icon cover-mark"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.4"/><path d="M15.6 8.4l-2.1 5.6-5.6 2.1 2.1-5.6z"/></svg></div>
     <div class="topline"><span>Samsung Edge AI Training</span><span>端侧 LLM / 小模型量化部署工程课</span></div>
     <div class="cover-copy">
-      <p class="kicker">一日工程课</p>
+      <p class="kicker">一日工程课 · 09:00-17:00</p>
       <h1>端侧模型量化部署技术专题</h1>
       <p class="subtitle">从端侧部署共同语言、Qwen/GGUF 量化证据、低比特/KV 质量归因，到 Runtime/Local API 验收、Jetson/移动端迁移和最终报告。</p>
+      <div class="meta-strip">
+        <div><strong>288</strong><span>页 · 6 个工程专题</span></div>
+        <div><strong>8×5</strong><span>页闭环 / 专题</span></div>
+        <div><strong>Qwen2.5-0.5B</strong><span>GGUF 实作主线</span></div>
+        <div><strong>9</strong><span>节部署评估报告</span></div>
+      </div>
       <div class="cover-tags"><span>Qwen</span><span>GGUF</span><span>llama.cpp</span><span>Q8/Q5/Q4</span><span>Profiling</span><span>Local API</span><span>Final Report</span></div>
     </div>
     <div class="footer"><span>GitHub 大纲 + docs/intro.md + docs/final-project.md</span><span>001 / 288 · 001-040</span></div>
@@ -138,32 +225,51 @@
 </section>
 <section data-screen-label="002 学完后要能做三类工程判断">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>学完后要能做三类工程判断</h2>
-    <div class="cards three"><div class="card"><h3>判断能不能端侧化</h3><ul><li>说清目标设备、隐私边界、延迟要求和质量阈值。</li><li>知道哪些任务适合本地，哪些需要云端兜底。</li></ul></div><div class="card"><h3>判断哪种量化可用</h3><ul><li>用同源 Qwen/GGUF 跑 baseline、Q8、Q5、Q4。</li><li>同时比较质量、速度、内存和日志 warning。</li></ul></div><div class="card"><h3>判断能不能交付</h3><ul><li>把 runtime、profiling、local API 和风险写进报告。</li><li>推荐、回退或暂不推荐都要能被证据复核。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><h3>判断能不能端侧化</h3><ul><li>说清目标设备、隐私边界、延迟要求和质量阈值。</li><li>知道哪些任务适合本地，哪些需要云端兜底。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 20h4v-5.5h-4zM10 20h4V9h-4zM16.5 20h4V4h-4z"/></svg></div><h3>判断哪种量化可用</h3><ul><li>用同源 Qwen/GGUF 跑 baseline、<span class="term">Q8</span> / <span class="term">Q5</span> / <span class="term">Q4</span>。</li><li>同时比较质量、速度、内存和日志 warning。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6z"/><path d="M9 12.2l2 2 4-4.2"/></svg></div><h3>判断能不能交付</h3><ul><li>把 runtime、profiling、local API 和风险写进报告。</li><li>推荐、回退或暂不推荐都要能被证据复核。</li></ul></div>
+    </div>
     <div class="footer"><span>GitHub 大纲 + docs/intro.md + docs/final-project.md</span><span>002 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="003 一天课程按六个工程专题推进">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>一天课程按六个工程专题推进</h2>
-    <div class="flow"><div><span>1</span><strong>端侧共同语言与准入</strong></div><div><span>2</span><strong>Qwen/GGUF 量化证据</strong></div><div><span>3</span><strong>低比特/KV 质量归因</strong></div><div><span>4</span><strong>修复/压缩/微调决策</strong></div><div><span>5</span><strong>Runtime/API 验收</strong></div><div><span>6</span><strong>Jetson/移动端与报告</strong></div></div>
+    <div class="pipeline">
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.4"/><path d="M15.6 8.4l-2.1 5.6-5.6 2.1 2.1-5.6z"/></svg></div><strong>端侧共同语言与准入</strong><span class="tag">001-040</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 20h4v-5.5h-4zM10 20h4V9h-4zM16.5 20h4V4h-4z"/></svg></div><strong>Qwen/GGUF 量化证据</strong><span class="tag">041-080</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.4"/><path d="M9 2.5v3.2M15 2.5v3.2M9 18.3v3.2M15 18.3v3.2M2.5 9h3.2M2.5 15h3.2M18.3 9h3.2M18.3 15h3.2"/></svg></div><strong>低比特/KV 质量归因</strong><span class="tag">081-120</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 00-5.3 5.3L3.6 17.4l3 3 5.8-5.8a4 4 0 005.3-5.3l-2.6 2.6-2-2z"/></svg></div><strong>修复/压缩/微调决策</strong><span class="tag">121-160</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><strong>Runtime/API 验收</strong><span class="tag">161-200</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/></svg></div><strong>Jetson/移动端与报告</strong><span class="tag">201-240</span></div>
+    </div>
     <div class="footer"><span>docs/slides-day-flow.md + docs/part-technical-outline.md</span><span>003 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="004 今天的实作主线是一条可复现部署链路">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="12" r="1.8"/><path d="M6 7.8V12a4 4 0 004 4M18 12H10"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>今天的实作主线是一条可复现部署链路</h2>
-        <ul><li>从 Qwen GGUF baseline 起步，先确认模型能在本地稳定输出</li><li>用 Q8/Q5/Q4 做同源对比，记录质量、速度和内存</li><li>用 profiling 和本地 API 验证它能否进入应用</li><li>最后写成推荐、回退或暂不推荐</li></ul>
+        <ul><li>从 <span class="term">Qwen2.5-0.5B-Instruct GGUF</span> baseline 起步，先确认模型能在本地稳定输出</li><li>用 <span class="term">Q8</span> / <span class="term">Q5</span> / <span class="term">Q4</span> 做同源对比，记录质量、速度和内存</li><li>用 profiling 和本地 API 验证它能否进入应用</li><li>最后写成推荐、回退或暂不推荐</li></ul>
       </div>
-      <div class="log-panel">
-        <span>主线产物</span>
-        <strong>一组命令和一份部署评估报告</strong>
-        <p>每一步都保留参数、日志和输出样例；后面所有专题只是在补强这条链路。</p>
+      <div class="terminal">
+        <div class="terminal-bar"><i></i><i></i><i></i></div>
+        <pre><code>~/edge-ai-lab/
+├── models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf
+├── logs/qwen2.5-0.5b-instruct-q4_k_m-completion.log
+├── results/quant_compare.csv
+└── report/final-report.md</code></pre>
       </div>
     </div>
     <div class="footer"><span>GitHub 大纲 + docs/intro.md + docs/final-project.md</span><span>004 / 288 · 001-040</span></div>
@@ -171,48 +277,70 @@
 </section>
 <section data-screen-label="005 课程网站被压成六个课堂专题">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>课程网站被压成六个课堂专题</h2>
-    <table class="matrix"><thead><tr><th>网站内容</th><th>一日课专题</th><th>课堂交付</th></tr></thead><tbody><tr><td>导读 + Part I/II</td><td>端侧部署共同语言与环境准入</td><td>场景、指标、设备画像、日志字段</td></tr><tr><td>Part III + Part VI</td><td>Qwen/GGUF Baseline 与 PTQ/QAT 量化证据</td><td>baseline log、Q8/Q5/Q4 实验单</td></tr><tr><td>Part III + 样例日志</td><td>低比特 LLM、KV Cache 与质量归因</td><td>方法矩阵、低比特失败样例</td></tr><tr><td>Part III + Part IV</td><td>精度修复、压缩蒸馏与 LoRA/QLoRA 决策</td><td>修复路径、训练去留判断</td></tr><tr><td>Part V + Part VI</td><td>Runtime、Profiling 与 Local API 验收</td><td>瓶颈定位、服务化 smoke test</td></tr><tr><td>Part VI + Part VII</td><td>Jetson/移动端迁移、VLM/Agent 与最终报告</td><td>迁移风险、最终部署评估报告</td></tr></tbody></table>
+    <table class="matrix-v2"><thead><tr><th>网站内容</th><th>一日课专题</th><th>课堂交付</th></tr></thead><tbody><tr><td>导读 + Part I/II</td><td>端侧部署共同语言与环境准入</td><td>场景、指标、设备画像、日志字段</td></tr><tr><td>Part III + Part VI</td><td>Qwen/GGUF Baseline 与 PTQ/QAT 量化证据</td><td>baseline log、<span class="term">Q8/Q5/Q4</span> 实验单</td></tr><tr><td>Part III + 样例日志</td><td>低比特 LLM、KV Cache 与质量归因</td><td>方法矩阵、低比特失败样例</td></tr><tr><td>Part III + Part IV</td><td>精度修复、压缩蒸馏与 LoRA/QLoRA 决策</td><td>修复路径、训练去留判断</td></tr><tr><td>Part V + Part VI</td><td>Runtime、Profiling 与 Local API 验收</td><td>瓶颈定位、服务化 smoke test</td></tr><tr><td>Part VI + Part VII</td><td>Jetson/移动端迁移、VLM/Agent 与最终报告</td><td>迁移风险、最终部署评估报告</td></tr></tbody></table>
     <div class="footer"><span>sidebars.ts + docs/course-hours.md + docs/slides-day-flow.md</span><span>005 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="006 上午先把问题和量化证据立住">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>上午先把问题和量化证据立住</h2>
-    <div class="cards three"><div class="card"><h3>1. 共同语言与准入</h3><ul><li>先写清目标设备、场景约束和端云边界。</li><li>环境快照决定今天能跑哪条路线。</li></ul></div><div class="card"><h3>2. Qwen 量化证据</h3><ul><li>先跑通同一 Qwen/GGUF 和同一 runtime。</li><li>Q8/Q5/Q4 只允许在固定条件下比较。</li></ul></div><div class="card"><h3>3. 低比特质量归因</h3><ul><li>把权重、激活、KV Cache 和生成质量分开记。</li><li>GPTQ/AWQ 进入方法边界，不替代主实验。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.4"/><path d="M15.6 8.4l-2.1 5.6-5.6 2.1 2.1-5.6z"/></svg></div><h3>1. 共同语言与准入</h3><ul><li>先写清目标设备、场景约束和端云边界。</li><li>环境快照决定今天能跑哪条路线。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 20h4v-5.5h-4zM10 20h4V9h-4zM16.5 20h4V4h-4z"/></svg></div><h3>2. Qwen 量化证据</h3><ul><li>先跑通同一 Qwen/GGUF 和同一 runtime。</li><li><span class="term">Q8/Q5/Q4</span> 只允许在固定条件下比较。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.4"/><path d="M9 2.5v3.2M15 2.5v3.2M9 18.3v3.2M15 18.3v3.2M2.5 9h3.2M2.5 15h3.2M18.3 9h3.2M18.3 15h3.2"/></svg></div><h3>3. 低比特质量归因</h3><ul><li>把权重、激活、KV Cache 和生成质量分开记。</li><li>GPTQ/AWQ 进入方法边界，不替代主实验。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/part-technical-outline.md + docs/lab-qwen-quantization.md</span><span>006 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="007 下午把质量、Runtime 和端侧迁移闭环">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>下午把质量、Runtime 和端侧迁移闭环</h2>
-    <div class="cards three"><div class="card"><h3>4. 修复与训练决策</h3><ul><li>先定位质量下降是不是量化造成的。</li><li>再判断回退、混精、蒸馏或 LoRA/QLoRA。</li></ul></div><div class="card"><h3>5. Runtime/API 验收</h3><ul><li>模型格式、backend、kernel 和服务接口分层验证。</li><li>profiling、bench 和 server log 一起入报告。</li></ul></div><div class="card"><h3>6. Jetson/移动端与报告</h3><ul><li>区分 Ubuntu baseline、Jetson 实测和移动端路线图。</li><li>VLM/Agent 只在报告里扩展系统边界。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 00-5.3 5.3L3.6 17.4l3 3 5.8-5.8a4 4 0 005.3-5.3l-2.6 2.6-2-2z"/></svg></div><h3>4. 修复与训练决策</h3><ul><li>先定位质量下降是不是量化造成的。</li><li>再判断回退、混精、蒸馏或 LoRA/QLoRA。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><h3>5. Runtime/API 验收</h3><ul><li>模型格式、backend、kernel 和服务接口分层验证。</li><li>profiling、bench 和 server log 一起入报告。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/></svg></div><h3>6. Jetson/移动端与报告</h3><ul><li>区分 Ubuntu baseline、Jetson 实测和移动端路线图。</li><li>VLM/Agent 只在报告里扩展系统边界。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/inference-acceleration.md + docs/final-project.md</span><span>007 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="008 每个专题都按同一套五页闭环讲">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>每个专题都按同一套五页闭环讲</h2>
-    <div class="flow"><div><span>1</span><strong>先提出工程问题</strong></div><div><span>2</span><strong>再给必要概念</strong></div><div><span>3</span><strong>用表格或流程压实变量</strong></div><div><span>4</span><strong>进入命令、日志和样例</strong></div><div><span>5</span><strong>最后回到报告字段</strong></div></div>
+    <div class="pipeline">
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><strong>先提出工程问题</strong><span class="tag">问题框架</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><path d="M9 18.5h6M10 21h4"/><path d="M12 3a6 6 0 00-3.4 10.9c.6.4.9 1 .9 1.8v.3h5v-.3c0-.8.3-1.4.9-1.8A6 6 0 0012 3z"/></svg></div><strong>再给必要概念</strong><span class="tag">核心概念</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><strong>用表格或流程压实变量</strong><span class="tag">证据图表</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><strong>进入命令、日志和样例</strong><span class="tag">课堂实作</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><strong>最后回到报告字段</strong><span class="tag">风险与报告</span></div>
+    </div>
     <div class="footer"><span>docs/slides-day-flow.md</span><span>008 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="009 课堂实作只允许改变一个主变量">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>课堂实作只允许改变一个主变量</h2>
-        <ul><li>固定模型、prompt、ctx-size、seed 和采样参数</li><li>固定 runtime commit、构建参数、offload 和设备状态</li><li>每次只改变一个量化版本、backend 或服务化参数</li><li>证据不足时只能写“未验证”，不能写推荐</li></ul>
+        <ul><li>固定 <span class="term">prompt</span> / <span class="term">--ctx-size</span> / <span class="term">--seed</span> 和采样参数</li><li>固定 runtime commit、构建参数、offload 和设备状态</li><li>每次只改变一个量化版本、backend 或服务化参数</li><li>证据不足时只能写“未验证”，不能写推荐</li></ul>
       </div>
-      <div class="log-panel">
-        <span>课堂工作方式</span>
-        <strong>命令、日志、表格同步进入报告草稿</strong>
-        <p>这一天不是听完再写报告；每个专题结束都要补齐一段可复核证据。</p>
+      <div class="terminal">
+        <div class="terminal-bar"><i></i><i></i><i></i></div>
+        <pre><code><span class="c"># 只切换 -m 模型文件，其余参数逐字不变</span>
+./build/bin/llama-completion \
+  -m ~/edge-ai-lab/models/qwen/qwen2.5-0.5b-instruct-q4_k_m.gguf \
+  -p "用三句话解释端侧模型量化的价值。" \
+  -n 128 --ctx-size 2048 --temp 0.2 --seed 42 \
+  -ngl 99 -cnv -st --no-display-prompt --perf</code></pre>
       </div>
     </div>
     <div class="footer"><span>docs/report-template.md + docs/lab-qwen-quantization.md</span><span>009 / 288 · 001-040</span></div>
@@ -220,15 +348,15 @@
 </section>
 <section data-screen-label="010 进入量化实验前先完成准入检查">
   <div class="frame failure-slide teal">
-    <p class="kicker">专题 01 · 风险与报告</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><p class="kicker">专题 01 · 风险与报告</p></div>
     <h2>进入量化实验前先完成准入检查</h2>
     <div class="split two-panels">
-      <div class="risk-panel">
-        <h3>不能直接进入实验</h3>
+      <div class="risk-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div>不能直接进入实验</h3>
         <ul><li>目标设备、系统版本和 runtime 来源没记录。</li><li>baseline 还不能稳定输出固定 prompt。</li><li>没有日志路径，后面无法复核性能或质量。</li></ul>
       </div>
-      <div class="report-panel">
-        <h3>下一专题准入门槛</h3>
+      <div class="report-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.7 12.3l2.8 2.8 5.8-6.5"/></svg></div>下一专题准入门槛</h3>
         <ul><li>报告第 1-2 节草稿已完成。</li><li>设备表、模型表、指标表和实验单已建立。</li><li>Qwen/GGUF baseline 可以开始同条件对比。</li></ul>
       </div>
     </div>
@@ -237,11 +365,11 @@
 </section>
 <section data-screen-label="011 目标场景先决定端侧路线">
   <div class="frame problem teal">
-    <p class="kicker">专题 01 · 问题框架</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M14.8 14.8L20 20"/></svg></div><p class="kicker">专题 01 · 问题框架</p></div>
     <div class="split hero-split">
       <div>
         <h2>目标场景先决定端侧路线</h2>
-        <p class="claim">同一个 Qwen 小模型，放在手机、PC、车载、摄像头、Jetson 或本地服务器里，验收口径会完全不同。</p>
+        <p class="claim-v2">同一个 Qwen 小模型，放在手机、PC、车载、摄像头、Jetson 或本地服务器里，验收口径会完全不同。</p>
       </div>
       <div class="question-box">
         <span>课堂追问</span>
@@ -253,32 +381,36 @@
 </section>
 <section data-screen-label="012 场景地图要覆盖设备和使用边界">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>场景地图要覆盖设备和使用边界</h2>
-    <div class="cards three"><div class="card"><h3>个人设备</h3><ul><li>手机、PC、本地工作站强调交互延迟、权限和离线体验。</li><li>要写清哪些数据留在本地，哪些允许端云协同。</li></ul></div><div class="card"><h3>边缘终端</h3><ul><li>车载、IoT、摄像头更关心弱网、功耗、温度和长期稳定性。</li><li>持续流、传感器输入和恢复策略要进入验收。</li></ul></div><div class="card"><h3>实验与网关</h3><ul><li>Ubuntu GPU、Jetson、本地服务器适合建立 baseline 和迁移证据。</li><li>不能把开发机结果直接写成所有端侧设备可用。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/></svg></div><h3>个人设备</h3><ul><li>手机、PC、本地工作站强调交互延迟、权限和离线体验。</li><li>要写清哪些数据留在本地，哪些允许端云协同。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 9a12 12 0 0116 0M7.5 12.5a7 7 0 019 0"/><circle cx="12" cy="18.2" r="1.1" fill="currentColor"/></svg></div><h3>边缘终端</h3><ul><li>车载、IoT、摄像头更关心弱网、功耗、温度和长期稳定性。</li><li>持续流、传感器输入和恢复策略要进入验收。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1.2"/><rect x="4" y="14" width="16" height="6" rx="1.2"/><circle cx="7.5" cy="7" r=".9" fill="currentColor"/><circle cx="7.5" cy="17" r=".9" fill="currentColor"/></svg></div><h3>实验与网关</h3><ul><li>Ubuntu GPU、Jetson、本地服务器适合建立 baseline 和迁移证据。</li><li>不能把开发机结果直接写成所有端侧设备可用。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/01-framework.md + docs/environment-matrix.md</span><span>012 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="013 场景约束决定第一轮证据">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>场景约束决定第一轮证据</h2>
-    <table class="matrix"><thead><tr><th>场景</th><th>硬约束</th><th>第一轮证据</th></tr></thead><tbody><tr><td>本地助手 / PC 工具</td><td>首 token、格式稳定、隐私文件不外发</td><td>固定 prompt、TTFT、tokens/s、local API log</td></tr><tr><td>车载 / IoT / 摄像头</td><td>弱网、低功耗、温度、连续运行</td><td>设备状态、功耗温度、失败恢复记录</td></tr><tr><td>Jetson / 边缘网关</td><td>统一内存、GPU offload、部署维护</td><td>JetPack、tegrastats、Qwen GGUF baseline</td></tr></tbody></table>
+    <table class="matrix-v2"><thead><tr><th>场景</th><th>硬约束</th><th>第一轮证据</th></tr></thead><tbody><tr><td>本地助手 / PC 工具</td><td>首 token、格式稳定、隐私文件不外发</td><td>固定 prompt、<span class="term">TTFT</span>、<span class="term">tokens/s</span>、local API log</td></tr><tr><td>车载 / IoT / 摄像头</td><td>弱网、低功耗、温度、连续运行</td><td>设备状态、功耗温度、失败恢复记录</td></tr><tr><td>Jetson / 边缘网关</td><td>统一内存、GPU offload、部署维护</td><td><span class="term">JetPack</span>、<span class="term">tegrastats</span>、Qwen GGUF baseline</td></tr></tbody></table>
     <div class="footer"><span>docs/01-framework.md + docs/environment-matrix.md</span><span>013 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="014 每个小组先写一张场景画像">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>每个小组先写一张场景画像</h2>
-        <ul><li>目标用户、输入数据、输出格式和失败后果</li><li>目标设备、系统版本、内存和可用 runtime</li><li>隐私、离线、首 token、tokens/s 和稳定性阈值</li><li>允许本地、云端兜底或必须人工确认的边界</li></ul>
+        <ul><li>目标用户、输入数据、输出格式和失败后果</li><li>目标设备、系统版本、内存和可用 runtime</li><li>隐私、离线、首 token、<span class="term">tokens/s</span> 和稳定性阈值</li><li>允许本地、云端兜底或必须人工确认的边界</li></ul>
       </div>
       <div class="log-panel">
         <span>课堂验收</span>
         <strong>画像要能直接生成实验单</strong>
-        <p>写不出约束和阈值，就不能判断 Q4 是否可用，也不能解释为什么需要本地推理。</p>
+        <p>写不出约束和阈值，就不能判断 <span class="term">Q4</span> 是否可用，也不能解释为什么需要本地推理。</p>
       </div>
     </div>
     <div class="footer"><span>docs/01-framework.md + docs/environment-matrix.md</span><span>014 / 288 · 001-040</span></div>
@@ -286,15 +418,15 @@
 </section>
 <section data-screen-label="015 场景画像不足会让后续实验失真">
   <div class="frame failure-slide teal">
-    <p class="kicker">专题 01 · 风险与报告</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><p class="kicker">专题 01 · 风险与报告</p></div>
     <h2>场景画像不足会让后续实验失真</h2>
     <div class="split two-panels">
-      <div class="risk-panel">
-        <h3>失败样例</h3>
-        <ul><li>在服务器上测出 Q4 快，就推断手机和摄像头也快。</li><li>只写“保护隐私”，但没有列出哪些字段不能外发。</li><li>没有定义质量阈值，后面无法判断量化退化是否可接受。</li></ul>
+      <div class="risk-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div>失败样例</h3>
+        <ul><li>在服务器上测出 <span class="term">Q4</span> 快，就推断手机和摄像头也快。</li><li>只写“保护隐私”，但没有列出哪些字段不能外发。</li><li>没有定义质量阈值，后面无法判断量化退化是否可接受。</li></ul>
       </div>
-      <div class="report-panel">
-        <h3>报告落点</h3>
+      <div class="report-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.7 12.3l2.8 2.8 5.8-6.5"/></svg></div>报告落点</h3>
         <ul><li>报告第 1 节: 场景、任务和端侧必要性</li><li>报告第 2 节: 目标设备和 runtime 约束</li><li>第 7 节: 未测设备、端云协同和隐私风险</li></ul>
       </div>
     </div>
@@ -303,11 +435,11 @@
 </section>
 <section data-screen-label="016 先拆开一次请求，后面指标才可比">
   <div class="frame problem teal">
-    <p class="kicker">专题 01 · 问题框架</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M14.8 14.8L20 20"/></svg></div><p class="kicker">专题 01 · 问题框架</p></div>
     <div class="split hero-split">
       <div>
         <h2>先拆开一次请求，后面指标才可比</h2>
-        <p class="claim">量化、KV Cache、runtime 和 profiling 都会改变不同阶段；不拆 tokenize、prefill、decode 和服务开销，速度结论就会混在一起。</p>
+        <p class="claim-v2">量化、KV Cache、runtime 和 profiling 都会改变不同阶段；不拆 tokenize、prefill、decode 和服务开销，速度结论就会混在一起。</p>
       </div>
       <div class="question-box">
         <span>课堂追问</span>
@@ -319,32 +451,54 @@
 </section>
 <section data-screen-label="017 三组词决定后续指标是否可比">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>三组词决定后续指标是否可比</h2>
-    <div class="cards three"><div class="card"><h3>输入契约</h3><ul><li>messages、chat template、tokenizer、ctx-size。</li><li>模板错了，模型能跑但质量不可信。</li></ul></div><div class="card"><h3>生成阶段</h3><ul><li>prefill 处理 prompt，decode 逐 token 生成。</li><li>TTFT 和 tokens/s 不能混成一个速度数字。</li></ul></div><div class="card"><h3>运行资源</h3><ul><li>weights、activations、KV Cache、runtime buffers。</li><li>权重量化不等于 KV Cache 自动变小。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></div><h3>输入契约</h3><ul><li><span class="term">messages</span>、chat template、tokenizer、<span class="term">ctx-size</span>。</li><li>模板错了，模型能跑但质量不可信。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><h3>生成阶段</h3><ul><li>prefill 处理 prompt，decode 逐 token 生成。</li><li><span class="term">TTFT</span> 和 <span class="term">tokens/s</span> 不能混成一个速度数字。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.4"/><path d="M9 2.5v3.2M15 2.5v3.2M9 18.3v3.2M15 18.3v3.2M2.5 9h3.2M2.5 15h3.2M18.3 9h3.2M18.3 15h3.2"/></svg></div><h3>运行资源</h3><ul><li>weights、activations、<span class="term">KV Cache</span>、runtime buffers。</li><li>权重量化不等于 KV Cache 自动变小。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/ml-inference-basics.md + docs/transformer-llm-basics.md</span><span>017 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="018 Qwen 请求不是一行 prompt">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>Qwen 请求不是一行 prompt</h2>
-    <div class="flow"><div><span>1</span><strong>messages</strong></div><div><span>2</span><strong>chat template</strong></div><div><span>3</span><strong>tokenizer</strong></div><div><span>4</span><strong>prefill</strong></div><div><span>5</span><strong>KV Cache</strong></div><div><span>6</span><strong>decode</strong></div><div><span>7</span><strong>detokenize</strong></div><div><span>8</span><strong>API / CLI output</strong></div></div>
+    <div class="pipeline">
+      <div class="node"><strong>messages</strong><span class="tag">chat 输入</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><strong>chat template</strong><span class="tag">格式化</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><strong>tokenizer</strong><span class="tag">编码</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><strong>prefill</strong><span class="tag">TTFT</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><strong>KV Cache</strong><span class="tag">显存/内存</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><strong>decode</strong><span class="tag">tokens/s</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><strong>detokenize</strong><span class="tag">解码</span></div>
+      <div class="arrow"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 12h15M13 6l6 6-6 6"/></svg></div></div>
+      <div class="node"><strong>API / CLI output</strong><span class="tag">最终输出</span></div>
+    </div>
     <div class="footer"><span>docs/ml-inference-basics.md + docs/transformer-llm-basics.md</span><span>018 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="019 第一轮 baseline 必须记录推理字段">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>第一轮 baseline 必须记录推理字段</h2>
-        <ul><li>messages / prompt 文件和 chat template</li><li>prompt tokens、ctx-size、生成 token 数</li><li>prompt eval time、eval time、tokens/s</li><li>峰值内存、warning、fallback 日志</li></ul>
+        <ul><li>messages / prompt 文件和 chat template</li><li>prompt tokens、<span class="term">ctx-size</span>、生成 token 数</li><li><span class="term">prompt eval time</span>、<span class="term">eval time</span>、<span class="term">tokens/s</span></li><li>峰值内存、warning、fallback 日志</li></ul>
       </div>
-      <div class="log-panel">
-        <span>课堂验收</span>
-        <strong>baseline 不是一句输出</strong>
-        <p>同一条 prompt 后面会用于 Q8/Q5/Q4、runtime 参数和 API smoke test；字段缺失会让后续比较失效。</p>
+      <div class="terminal">
+        <div class="terminal-bar"><i></i><i></i><i></i></div>
+        <pre><code><span class="c"># llama.cpp stderr 会直接打印这几行，逐字段抄进日志</span>
+llama_print_timings: prompt eval time = <span class="o">N</span> ms /  <span class="o">N</span> tokens
+llama_print_timings:        eval time = <span class="o">N</span> ms /  <span class="o">N</span> runs
+llama_print_timings:               total time = <span class="o">N</span> ms</code></pre>
       </div>
     </div>
     <div class="footer"><span>docs/ml-inference-basics.md + docs/transformer-llm-basics.md</span><span>019 / 288 · 001-040</span></div>
@@ -352,16 +506,16 @@
 </section>
 <section data-screen-label="020 推理字段缺失会让量化对比失真">
   <div class="frame failure-slide teal">
-    <p class="kicker">专题 01 · 风险与报告</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><p class="kicker">专题 01 · 风险与报告</p></div>
     <h2>推理字段缺失会让量化对比失真</h2>
     <div class="split two-panels">
-      <div class="risk-panel">
-        <h3>失败样例</h3>
-        <ul><li>只记录输出文本，没有 prompt token 数。</li><li>只记录 tokens/s，没有 prompt eval time。</li><li>chat template 换了，却继续比较量化质量。</li></ul>
+      <div class="risk-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div>失败样例</h3>
+        <ul><li>只记录输出文本，没有 prompt token 数。</li><li>只记录 <span class="term">tokens/s</span>，没有 <span class="term">prompt eval time</span>。</li><li>chat template 换了，却继续比较量化质量。</li></ul>
       </div>
-      <div class="report-panel">
-        <h3>报告落点</h3>
-        <ul><li>报告第 3 节: Baseline 输入契约</li><li>报告第 4 节: Q8/Q5/Q4 对比条件</li><li>报告第 5 节: prefill/decode profiling</li></ul>
+      <div class="report-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.7 12.3l2.8 2.8 5.8-6.5"/></svg></div>报告落点</h3>
+        <ul><li>报告第 3 节: Baseline 输入契约</li><li>报告第 4 节: <span class="term">Q8/Q5/Q4</span> 对比条件</li><li>报告第 5 节: prefill/decode profiling</li></ul>
       </div>
     </div>
     <div class="footer"><span>docs/ml-inference-basics.md + docs/transformer-llm-basics.md</span><span>020 / 288 · 001-040</span></div>
@@ -369,11 +523,11 @@
 </section>
 <section data-screen-label="021 端云协同要先写清路由证据">
   <div class="frame problem teal">
-    <p class="kicker">专题 01 · 问题框架</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M14.8 14.8L20 20"/></svg></div><p class="kicker">专题 01 · 问题框架</p></div>
     <div class="split hero-split">
       <div>
         <h2>端云协同要先写清路由证据</h2>
-        <p class="claim">端侧部署不是只选本地或云端；真正要决定的是每条请求为什么留在本地、为什么允许兜底、为什么必须确认或拒绝。</p>
+        <p class="claim-v2">端侧部署不是只选本地或云端；真正要决定的是每条请求为什么留在本地、为什么允许兜底、为什么必须确认或拒绝。</p>
       </div>
       <div class="question-box">
         <span>课堂追问</span>
@@ -385,27 +539,31 @@
 </section>
 <section data-screen-label="022 路由先按隐私、复杂度和风险分三类">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>路由先按隐私、复杂度和风险分三类</h2>
-    <div class="cards three"><div class="card"><h3>必须本地</h3><ul><li>隐私原文、离线场景、低延迟控制面。</li><li>结果不达标时也不能直接上传原文。</li></ul></div><div class="card"><h3>脱敏后兜底</h3><ul><li>复杂 reasoning、长上下文、开放问答。</li><li>只上传允许字段、摘要或用户确认内容。</li></ul></div><div class="card"><h3>确认或拒绝</h3><ul><li>高风险工具、外发数据、不可逆动作。</li><li>本地模型只能给建议，不能越权执行。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6z"/></svg></div><h3>必须本地</h3><ul><li>隐私原文、离线场景、低延迟控制面。</li><li>结果不达标时也不能直接上传原文。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="12" r="1.8"/><path d="M6 7.8V12a4 4 0 004 4M18 12H10"/></svg></div><h3>脱敏后兜底</h3><ul><li>复杂 reasoning、长上下文、开放问答。</li><li>只上传允许字段、摘要或用户确认内容。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><h3>确认或拒绝</h3><ul><li>高风险工具、外发数据、不可逆动作。</li><li>本地模型只能给建议，不能越权执行。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/01-framework.md + docs/07-vlm-agent.md</span><span>022 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="023 路由表必须能被日志字段复核">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>路由表必须能被日志字段复核</h2>
-    <table class="matrix"><thead><tr><th>判断条件</th><th>默认路径</th><th>日志字段</th></tr></thead><tbody><tr><td>包含隐私原文、图片或本地文件</td><td>本地处理，必要时只上传脱敏摘要</td><td>sensitivity、redaction、upload_allowed</td></tr><tr><td>短指令、格式化、摘要草稿</td><td>端侧小模型优先</td><td>route=local、latency、quality_check</td></tr><tr><td>复杂推理或长上下文</td><td>云端或大模型兜底</td><td>fallback_reason、uploaded_fields</td></tr><tr><td>高风险工具或外发动作</td><td>确认后执行或拒绝</td><td>confirm_required、policy_result</td></tr></tbody></table>
+    <table class="matrix-v2"><thead><tr><th>判断条件</th><th>默认路径</th><th>日志字段</th></tr></thead><tbody><tr><td>包含隐私原文、图片或本地文件</td><td>本地处理，必要时只上传脱敏摘要</td><td><span class="term">sensitivity</span>、<span class="term">redaction</span>、<span class="term">upload_allowed</span></td></tr><tr><td>短指令、格式化、摘要草稿</td><td>端侧小模型优先</td><td><span class="term">route=local</span>、latency、quality_check</td></tr><tr><td>复杂推理或长上下文</td><td>云端或大模型兜底</td><td><span class="term">fallback_reason</span>、uploaded_fields</td></tr><tr><td>高风险工具或外发动作</td><td>确认后执行或拒绝</td><td><span class="term">confirm_required</span>、policy_result</td></tr></tbody></table>
     <div class="footer"><span>docs/01-framework.md + docs/07-vlm-agent.md</span><span>023 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="024 每条请求都要留下路由判定">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>每条请求都要留下路由判定</h2>
-        <ul><li>request_id、请求类型、敏感等级和上传许可</li><li>本地模型、质量检查、超时阈值和延迟</li><li>fallback 触发原因、上传字段和脱敏结果</li><li>最终响应来源、拒绝原因或人工确认记录</li></ul>
+        <ul><li><span class="term">request_id</span>、请求类型、敏感等级和上传许可</li><li>本地模型、质量检查、超时阈值和延迟</li><li>fallback 触发原因、上传字段和脱敏结果</li><li>最终响应来源、拒绝原因或人工确认记录</li></ul>
       </div>
       <div class="log-panel">
         <span>最小验收</span>
@@ -418,15 +576,15 @@
 </section>
 <section data-screen-label="025 fallback 失败通常败在边界没写清">
   <div class="frame failure-slide teal">
-    <p class="kicker">专题 01 · 风险与报告</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><p class="kicker">专题 01 · 风险与报告</p></div>
     <h2>fallback 失败通常败在边界没写清</h2>
     <div class="split two-panels">
-      <div class="risk-panel">
-        <h3>失败样例</h3>
+      <div class="risk-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div>失败样例</h3>
         <ul><li>低质量本地结果直接返回，没有触发兜底。</li><li>fallback 上传了原始敏感内容，报告里没有边界说明。</li><li>本地和云端输出格式不一致，应用层无法稳定处理。</li></ul>
       </div>
-      <div class="report-panel">
-        <h3>报告落点</h3>
+      <div class="report-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.7 12.3l2.8 2.8 5.8-6.5"/></svg></div>报告落点</h3>
         <ul><li>第 1 节: 哪些数据必须留在本地</li><li>第 7 节: fallback、隐私和未测风险</li><li>第 8 节: local-first、hybrid 或暂不推荐</li></ul>
       </div>
     </div>
@@ -435,11 +593,11 @@
 </section>
 <section data-screen-label="026 baseline 前先完成环境准入">
   <div class="frame problem teal">
-    <p class="kicker">专题 01 · 问题框架</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M14.8 14.8L20 20"/></svg></div><p class="kicker">专题 01 · 问题框架</p></div>
     <div class="split hero-split">
       <div>
         <h2>baseline 前先完成环境准入</h2>
-        <p class="claim">环境准入不是证明机器够强，而是决定今天能跑 Ubuntu GPU、Jetson、CPU-only，还是只能写移动端路线图。</p>
+        <p class="claim-v2">环境准入不是证明机器够强，而是决定今天能跑 Ubuntu GPU、Jetson、CPU-only，还是只能写移动端路线图。</p>
       </div>
       <div class="question-box">
         <span>课堂追问</span>
@@ -451,32 +609,40 @@
 </section>
 <section data-screen-label="027 环境准入分成三类证据">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>环境准入分成三类证据</h2>
-    <div class="cards three"><div class="card"><h3>设备证据</h3><ul><li>OS、CPU、RAM、GPU 或 Jetson 型号。</li><li>Jetson 还要记录 JetPack/L4T、功耗模式和散热条件。</li></ul></div><div class="card"><h3>工具链证据</h3><ul><li>Python、Git、CMake、CUDA、llama.cpp commit。</li><li>确认 llama-cli、llama-bench、llama-server 是否构建成功。</li></ul></div><div class="card"><h3>模型证据</h3><ul><li>模型来源、许可证、文件大小、SHA256。</li><li>日志目录、命令输出和报告字段要能对应。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3.5v3M15 3.5v3M9 17.5v3M15 17.5v3M3.5 9h3M3.5 15h3M17.5 9h3M17.5 15h3"/></svg></div><h3>设备证据</h3><ul><li>OS、CPU、RAM、GPU 或 Jetson 型号。</li><li>Jetson 还要记录 <span class="term">JetPack/L4T</span>、功耗模式和散热条件。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M14.5 5.5a3.6 3.6 0 00-5 5L4 16l4 4 5.5-5.5a3.6 3.6 0 005-5l-2.3 2.3-2-2z"/></svg></div><h3>工具链证据</h3><ul><li>Python、Git、CMake、CUDA、llama.cpp commit。</li><li>确认 <span class="term">llama-cli</span>、<span class="term">llama-bench</span>、<span class="term">llama-server</span> 是否构建成功。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 8l8.5-4 8.5 4-8.5 4-8.5-4z"/><path d="M3.5 8v8l8.5 4 8.5-4V8"/><path d="M12 12v8"/></svg></div><h3>模型证据</h3><ul><li>模型来源、许可证、文件大小、<span class="term">SHA256</span>。</li><li>日志目录、命令输出和报告字段要能对应。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/environment-matrix.md + docs/lab-qwen-baseline.md</span><span>027 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="028 准入结果决定今天能跑哪条路线">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>准入结果决定今天能跑哪条路线</h2>
-    <table class="matrix"><thead><tr><th>准入结果</th><th>今天可以做</th><th>报告必须标注</th></tr></thead><tbody><tr><td>CUDA + llama.cpp + Qwen GGUF 都可用</td><td>baseline、Q8/Q5/Q4、profiling、local API</td><td>commit、hash、CUDA/offload 日志</td></tr><tr><td>只有 CPU 或 GPU 后端不可用</td><td>CPU baseline、API smoke test、报告结构</td><td>GPU offload 未验证，速度不代表目标设备</td></tr><tr><td>Jetson 可登录但构建不完整</td><td>JetPack、tegrastats、环境预检</td><td>Qwen 迁移未完成，不能写推荐</td></tr><tr><td>模型文件或 hash 不清楚</td><td>停止量化对比，先补模型清单</td><td>模型来源未确认，结果不可复查</td></tr></tbody></table>
+    <table class="matrix-v2"><thead><tr><th>准入结果</th><th>今天可以做</th><th>报告必须标注</th></tr></thead><tbody><tr><td>CUDA + llama.cpp + Qwen GGUF 都可用</td><td>baseline、<span class="term">Q8/Q5/Q4</span>、profiling、local API</td><td>commit、hash、CUDA/offload 日志</td></tr><tr><td>只有 CPU 或 GPU 后端不可用</td><td>CPU baseline、API smoke test、报告结构</td><td>GPU offload 未验证，速度不代表目标设备</td></tr><tr><td>Jetson 可登录但构建不完整</td><td><span class="term">JetPack</span>、<span class="term">tegrastats</span>、环境预检</td><td>Qwen 迁移未完成，不能写推荐</td></tr><tr><td>模型文件或 hash 不清楚</td><td>停止量化对比，先补模型清单</td><td>模型来源未确认，结果不可复查</td></tr></tbody></table>
     <div class="footer"><span>docs/environment-matrix.md + docs/lab-qwen-baseline.md</span><span>028 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="029 环境快照要能直接粘进报告第 2 节">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>环境快照要能直接粘进报告第 2 节</h2>
         <ul><li>OS、CPU、RAM、GPU / Jetson、Driver / CUDA / JetPack</li><li>Python、Git、CMake、llama.cpp commit</li><li>模型来源、许可证、文件大小、SHA256</li><li>日志路径、构建日志、API 端口和绑定地址</li></ul>
       </div>
-      <div class="log-panel">
-        <span>最小验收</span>
-        <strong>一份环境日志，一份模型清单</strong>
-        <p>后续所有速度、质量和 API 结论，都必须能回到这两份证据；缺失时先补记录，不继续调参。</p>
+      <div class="terminal">
+        <div class="terminal-bar"><i></i><i></i><i></i></div>
+        <pre><code><span class="c"># Ubuntu Server：一条命令生成可直接粘贴的环境记录</span>
+{
+  date; uname -a; lscpu | head -n 30; free -h; df -h
+  python3 --version; git --version; cmake --version
+  nvidia-smi || true; nvcc --version || true
+} | tee ~/edge-ai-lab/env/<span class="o">ubuntu-env.txt</span></code></pre>
       </div>
     </div>
     <div class="footer"><span>docs/environment-matrix.md + docs/report-template.md</span><span>029 / 288 · 001-040</span></div>
@@ -484,15 +650,15 @@
 </section>
 <section data-screen-label="030 环境准入没过只能标未验证">
   <div class="frame failure-slide teal">
-    <p class="kicker">专题 01 · 风险与报告</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><p class="kicker">专题 01 · 风险与报告</p></div>
     <h2>环境准入没过只能标未验证</h2>
     <div class="split two-panels">
-      <div class="risk-panel">
-        <h3>失败样例</h3>
-        <ul><li>llama-server 没构建，却临时把 API 章节跳过。</li><li>以为在跑 GPU，日志里其实没有 offload。</li><li>模型文件换过，但报告里仍用旧 hash 和旧 baseline。</li></ul>
+      <div class="risk-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div>失败样例</h3>
+        <ul><li><span class="term">llama-server</span> 没构建，却临时把 API 章节跳过。</li><li>以为在跑 GPU，日志里其实没有 offload。</li><li>模型文件换过，但报告里仍用旧 hash 和旧 baseline。</li></ul>
       </div>
-      <div class="report-panel">
-        <h3>报告落点</h3>
+      <div class="report-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.7 12.3l2.8 2.8 5.8-6.5"/></svg></div>报告落点</h3>
         <ul><li>第 2 节: 环境和模型证据</li><li>第 7 节: 未测、fallback、构建失败风险</li><li>附录: 环境日志、构建日志、模型清单</li></ul>
       </div>
     </div>
@@ -501,11 +667,11 @@
 </section>
 <section data-screen-label="031 变量控制单是进入量化实验的门票">
   <div class="frame problem teal">
-    <p class="kicker">专题 01 · 实验口径</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M14.8 14.8L20 20"/></svg></div><p class="kicker">专题 01 · 实验口径</p></div>
     <div class="split hero-split">
       <div>
         <h2>变量控制单是进入量化实验的门票</h2>
-        <p class="claim">专题一结束前，学员要先写清模型、输入、运行和日志字段。没有这张单，Q8/Q5/Q4 的差异只能算运行现象，不能算部署证据。</p>
+        <p class="claim-v2">专题一结束前，学员要先写清模型、输入、运行和日志字段。没有这张单，<span class="term">Q8/Q5/Q4</span> 的差异只能算运行现象，不能算部署证据。</p>
       </div>
       <div class="question-box">
         <span>课堂追问</span>
@@ -517,32 +683,40 @@
 </section>
 <section data-screen-label="032 三类变量先锁定，第四类结果再记录">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>三类变量先锁定，第四类结果再记录</h2>
-    <div class="cards three"><div class="card"><h3>模型</h3><ul><li>base model、量化格式、文件来源、size、SHA256。</li><li>Q8/Q5/Q4 必须来自同一基座，不能混用不同 tokenizer。</li></ul></div><div class="card"><h3>输入</h3><ul><li>prompt、ctx-size、生成长度、temperature、seed。</li><li>课程默认先用同一 prompt 跑通，再增加边界 prompt。</li></ul></div><div class="card"><h3>运行</h3><ul><li>llama.cpp commit、-ngl、threads、backend、设备状态。</li><li>内存不足可以调 ctx-size，但所有版本必须一起调。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3.5 8l8.5-4 8.5 4-8.5 4-8.5-4z"/><path d="M3.5 8v8l8.5 4 8.5-4V8"/><path d="M12 12v8"/></svg></div><h3>模型</h3><ul><li>base model、量化格式、文件来源、size、<span class="term">SHA256</span>。</li><li>Q8/Q5/Q4 必须来自同一基座，不能混用不同 tokenizer。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h9M4 12h5M4 18h9"/><circle cx="16" cy="6" r="2"/><circle cx="11" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg></div><h3>输入</h3><ul><li>prompt、<span class="term">ctx-size</span>、生成长度、temperature、seed。</li><li>课程默认先用同一 prompt 跑通，再增加边界 prompt。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3.5v3M15 3.5v3M9 17.5v3M15 17.5v3M3.5 9h3M3.5 15h3M17.5 9h3M17.5 15h3"/></svg></div><h3>运行</h3><ul><li>llama.cpp commit、<span class="term">-ngl</span>、threads、backend、设备状态。</li><li>内存不足可以调 ctx-size，但所有版本必须一起调。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/lab-qwen-quantization.md + docs/report-template.md</span><span>032 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="033 比较表要同时写条件和结果">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>比较表要同时写条件和结果</h2>
-    <table class="matrix"><thead><tr><th>表格列</th><th>课堂最低字段</th><th>不能省略的原因</th></tr></thead><tbody><tr><td>模型条件</td><td>model_path、quant_type、size、sha256</td><td>证明 Q8/Q5/Q4 同源，避免把不同模型混成量化差异。</td></tr><tr><td>输入条件</td><td>prompt_id、ctx-size、n_predict、seed</td><td>质量现象必须能按同一输入复跑。</td></tr><tr><td>运行条件</td><td>commit、backend、-ngl、threads、device_state</td><td>解释 GPU offload、CPU fallback、温度或功耗造成的变化。</td></tr><tr><td>结果证据</td><td>TTFT、tokens/s、memory、quality_note、log_path</td><td>最终报告只能引用可追溯数字和样例。</td></tr></tbody></table>
+    <table class="matrix-v2"><thead><tr><th>表格列</th><th>课堂最低字段</th><th>不能省略的原因</th></tr></thead><tbody><tr><td>模型条件</td><td><span class="term">model_path、quant_type、size、sha256</span></td><td>证明 Q8/Q5/Q4 同源，避免把不同模型混成量化差异。</td></tr><tr><td>输入条件</td><td><span class="term">prompt_id、ctx-size、n_predict、seed</span></td><td>质量现象必须能按同一输入复跑。</td></tr><tr><td>运行条件</td><td><span class="term">commit、backend、-ngl、threads、device_state</span></td><td>解释 GPU offload、CPU fallback、温度或功耗造成的变化。</td></tr><tr><td>结果证据</td><td><span class="term">TTFT、tokens/s、memory、quality_note、log_path</span></td><td>最终报告只能引用可追溯数字和样例。</td></tr></tbody></table>
     <div class="footer"><span>docs/lab-qwen-quantization.md + docs/report-template.md</span><span>033 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="034 第一张实验单只允许量化档位变化">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>第一张实验单只允许量化档位变化</h2>
         <ul><li>三行模型: Q8、Q5、Q4 或教师提供的同类变体</li><li>同一输入: prompt、ctx-size、生成长度、采样参数</li><li>同一运行: llama.cpp commit、backend、-ngl、threads</li><li>同一证据: stderr timing、监控日志、输出样例、日志路径</li></ul>
       </div>
-      <div class="log-panel">
-        <span>课堂验收</span>
-        <strong>先交空表，再跑实验</strong>
-        <p>学生先把字段和文件名填好，教师确认变量口径后再运行。缺字段就停在准备阶段，不进入量化结论。</p>
+      <div class="terminal">
+        <div class="terminal-bar"><i></i><i></i><i></i></div>
+        <pre><code><span class="c"># parse_llama_log.py 把 stderr timing 抽成一行 CSV，字段名不能自己改</span>
+python3 labs/scripts/parse_llama_log.py <span class="o">run-q4.log</span> \
+  --append results/quant_compare.csv
+
+<span class="c"># 追加后的表头（源自脚本 PATTERNS 字典，逐字段可追溯）</span>
+log,load_time_ms,prompt_eval_time_ms,prompt_eval_tokens_per_s,eval_time_ms,eval_tokens_per_s,total_time_ms</code></pre>
       </div>
     </div>
     <div class="footer"><span>docs/lab-qwen-quantization.md + docs/report-template.md</span><span>034 / 288 · 001-040</span></div>
@@ -550,15 +724,15 @@
 </section>
 <section data-screen-label="035 变量漂移要写进失败记录">
   <div class="frame failure-slide teal">
-    <p class="kicker">专题 01 · 风险与报告</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><p class="kicker">专题 01 · 风险与报告</p></div>
     <h2>变量漂移要写进失败记录</h2>
     <div class="split two-panels">
-      <div class="risk-panel">
-        <h3>失败样例</h3>
-        <ul><li>Q4 因内存不足改成 ctx-size 1024，Q8 仍用 2048。</li><li>一次运行实际 fallback 到 CPU，却仍写成 GPU 对比。</li><li>prompt template 或 seed 被改动，质量差异无法归因。</li></ul>
+      <div class="risk-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div>失败样例</h3>
+        <ul><li>Q4 因内存不足改成 <span class="term">ctx-size 1024</span>，Q8 仍用 2048。</li><li>一次运行实际 fallback 到 CPU，却仍写成 GPU 对比。</li><li>prompt template 或 seed 被改动，质量差异无法归因。</li></ul>
       </div>
-      <div class="report-panel">
-        <h3>报告落点</h3>
+      <div class="report-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.7 12.3l2.8 2.8 5.8-6.5"/></svg></div>报告落点</h3>
         <ul><li>第 4 节: 本轮量化对比无效或只作阶段记录</li><li>第 7 节: 写清变量漂移、影响和下一轮补测动作</li><li>附录: 保留失败命令和原始日志，不删除“跑坏了”的证据</li></ul>
       </div>
     </div>
@@ -567,11 +741,11 @@
 </section>
 <section data-screen-label="036 专题一交付 M0 和 M1 的报告材料">
   <div class="frame problem teal">
-    <p class="kicker">专题 01 · 报告收束</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M14.8 14.8L20 20"/></svg></div><p class="kicker">专题 01 · 报告收束</p></div>
     <div class="split hero-split">
       <div>
         <h2>专题一交付 M0 和 M1 的报告材料</h2>
-        <p class="claim">第一专题不是概念铺垫。它要交付场景约束卡、环境记录表、baseline plan 和量化实验变量单，后面五个专题只是在这份报告上继续补证据。</p>
+        <p class="claim-v2">第一专题不是概念铺垫。它要交付场景约束卡、环境记录表、baseline plan 和量化实验变量单，后面五个专题只是在这份报告上继续补证据。</p>
       </div>
       <div class="question-box">
         <span>课堂追问</span>
@@ -583,27 +757,31 @@
 </section>
 <section data-screen-label="037 第 1-2 节先证明任务边界和实验可信">
   <div class="frame cards-slide teal">
-    <p class="kicker">专题 01 · 核心概念</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg></div><p class="kicker">专题 01 · 核心概念</p></div>
     <h2>第 1-2 节先证明任务边界和实验可信</h2>
-    <div class="cards three"><div class="card"><h3>第 1 节</h3><ul><li>目标设备、固定 workload、质量阈值、延迟和内存预算。</li><li>说明为什么必须端侧，哪些输入不能上云。</li></ul></div><div class="card"><h3>第 2 节</h3><ul><li>OS、CPU/GPU/Jetson、CUDA/JetPack、Python。</li><li>llama.cpp commit、模型来源、许可证、SHA256。</li></ul></div><div class="card"><h3>第 3 节草稿</h3><ul><li>baseline prompt、ctx-size、-ngl、日志路径。</li><li>未采集字段写“未记录”，不能靠印象补。</li></ul></div></div>
+    <div class="cards-v2">
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21s7-7.5 7-11a7 7 0 10-14 0c0 3.5 7 11 7 11z"/></svg></div><h3>第 1 节</h3><ul><li>目标设备、固定 workload、质量阈值、延迟和内存预算。</li><li>说明为什么必须端侧，哪些输入不能上云。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3.2h6v2.3H9z"/><path d="M8.5 13l2 2 4-4.5"/></svg></div><h3>第 2 节</h3><ul><li>OS、CPU/GPU/Jetson、CUDA/JetPack、Python。</li><li>llama.cpp commit、模型来源、许可证、SHA256。</li></ul></div>
+      <div class="card-v2"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><h3>第 3 节草稿</h3><ul><li>baseline prompt、ctx-size、-ngl、日志路径。</li><li>未采集字段写“未记录”，不能靠印象补。</li></ul></div>
+    </div>
     <div class="footer"><span>docs/slides-day-flow.md + docs/report-template.md</span><span>037 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="038 第一专题留下五个可复用证据块">
   <div class="frame visual-slide teal">
-    <p class="kicker">专题 01 · 证据图表</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p class="kicker">专题 01 · 证据图表</p></div>
     <h2>第一专题留下五个可复用证据块</h2>
-    <table class="matrix"><thead><tr><th>证据块</th><th>回答的问题</th><th>后续用途</th></tr></thead><tbody><tr><td>场景约束卡</td><td>为什么必须端侧</td><td>判断推荐方案是否真的可部署。</td></tr><tr><td>环境记录表</td><td>今天能跑哪条路线</td><td>解释 Ubuntu、Jetson、CPU-only 或未测项。</td></tr><tr><td>模型清单</td><td>模型从哪里来</td><td>保证 baseline、量化、API 服务使用同一来源。</td></tr><tr><td>指标口径</td><td>速度、内存、质量怎么读</td><td>避免把一次快输出写成整体最佳。</td></tr><tr><td>变量控制单</td><td>对比是否可复现</td><td>支撑 Q8/Q5/Q4 和 runtime 参数结论。</td></tr></tbody></table>
+    <table class="matrix-v2"><thead><tr><th>证据块</th><th>回答的问题</th><th>后续用途</th></tr></thead><tbody><tr><td>场景约束卡</td><td>为什么必须端侧</td><td>判断推荐方案是否真的可部署。</td></tr><tr><td>环境记录表</td><td>今天能跑哪条路线</td><td>解释 Ubuntu、Jetson、CPU-only 或未测项。</td></tr><tr><td>模型清单</td><td>模型从哪里来</td><td>保证 baseline、量化、API 服务使用同一来源。</td></tr><tr><td>指标口径</td><td>速度、内存、质量怎么读</td><td>避免把一次快输出写成整体最佳。</td></tr><tr><td>变量控制单</td><td>对比是否可复现</td><td>支撑 <span class="term">Q8/Q5/Q4</span> 和 runtime 参数结论。</td></tr></tbody></table>
     <div class="footer"><span>docs/slides-day-flow.md + docs/report-template.md</span><span>038 / 288 · 001-040</span></div>
   </div>
 </section>
 <section data-screen-label="039 进入专题二前先过六项检查">
   <div class="frame lab-slide teal">
-    <p class="kicker">专题 01 · 课堂实作</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5l3 2.7-3 2.7M12.5 15h5"/></svg></div><p class="kicker">专题 01 · 课堂实作</p></div>
     <div class="split">
       <div>
         <h2>进入专题二前先过六项检查</h2>
-        <ul><li>第 1 节: 目标设备、workload、质量阈值和资源预算</li><li>第 2 节: 环境快照、模型来源、许可证和 hash</li><li>第 3 节草稿: baseline prompt、ctx-size、seed 和日志路径</li><li>第 4 节空表: Q8/Q5/Q4 字段、监控方式和质量备注栏</li></ul>
+        <ul><li>第 1 节: 目标设备、workload、质量阈值和资源预算</li><li>第 2 节: 环境快照、模型来源、许可证和 hash</li><li>第 3 节草稿: baseline prompt、ctx-size、seed 和日志路径</li><li>第 4 节空表: <span class="term">Q8/Q5/Q4</span> 字段、监控方式和质量备注栏</li></ul>
       </div>
       <div class="log-panel">
         <span>课堂验收</span>
@@ -616,15 +794,15 @@
 </section>
 <section data-screen-label="040 缺证据时要写未记录和未测">
   <div class="frame failure-slide teal">
-    <p class="kicker">专题 01 · 风险与报告</p>
+    <div class="eyebrow-row"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div><p class="kicker">专题 01 · 风险与报告</p></div>
     <h2>缺证据时要写未记录和未测</h2>
     <div class="split two-panels">
-      <div class="risk-panel">
-        <h3>失败样例</h3>
-        <ul><li>模型许可证查不到，却在建议里写“可上线”。</li><li>server 参数和 hash 没记录，API 结果无法复查。</li><li>Jetson 未实跑，却把 Ubuntu GPU 结果写成端侧结论。</li><li>没有质量阈值，最快结果被误写成最好结果。</li></ul>
+      <div class="risk-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.2l9.6 16.6H2.4z"/><path d="M12 10v4.2M12 17.3h.01"/></svg></div>失败样例</h3>
+        <ul><li>模型许可证查不到，却在建议里写“可上线”。</li><li>server 参数和 hash 没记录，API 结果无法复查。</li><li><span class="term">Jetson</span> 未实跑，却把 Ubuntu GPU 结果写成端侧结论。</li><li>没有质量阈值，最快结果被误写成最好结果。</li></ul>
       </div>
-      <div class="report-panel">
-        <h3>报告落点</h3>
+      <div class="report-panel-v2">
+        <h3><div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.7 12.3l2.8 2.8 5.8-6.5"/></svg></div>报告落点</h3>
         <ul><li>第 2 节: 查不到就写“未记录”，不要猜</li><li>第 7 节: 没跑过就写“未测”，不要推广结论</li><li>第 8 节: 推荐和不推荐方案都必须指向证据</li></ul>
       </div>
     </div>
